@@ -103,10 +103,9 @@ EOF
 fi
  
 #script Finish
-echo -e '\033[1;33m Finished....restarting the server \033[0m'
-reboot
+echo -e '\033[1;33m Finished....please restart the server \033[0m'
+return 1
 
 
 ## Install ceph support
 #pveceph install -y
-
