@@ -14,7 +14,10 @@
 ################################################################################
 #
 # Assumptions: proxmox installed
-#
+# Recommeneded partitioning scheme:
+# Raid 1 / 100GB ext4
+# 2x swap 8192mb (16384mb total)
+# Remaining unpartitioned
 #
 ################################################################################
 #
@@ -36,7 +39,14 @@ fi
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
 ## Update proxmox and install various system utils
-apt-get update && apt-get -y upgrade --force-yes && apt-get -y dist-upgrade --force-yes
+apt-get update && apt-get -y upgrade --force-yes && apt-get -y dist-upgrade --force-yes &&  pveam update
+
+## Install openvswitch for a viurtual internal network
+apt-get install -y openvswitch-switch
+
+## Install ceph support
+#pveceph install -y
+
 
 ## Install common system utilities
 apt-get install -y ntp pigz htop iptraf iotop iftop vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
@@ -47,7 +57,7 @@ cat > /bin/pigzwrapper <<EOF
 #!/bin/sh
 PATH=${GZIP_BINDIR-'/bin'}:$PATH
 GZIP="-1"
-exec /usr/bin/pigz -p 4 "$@"
+exec /usr/bin/pigz -p 4 "\$@"
 EOF
 chmod 755 /bin/pigzwrapper
 mv /bin/gzip /bin/gzip.original
@@ -107,5 +117,3 @@ echo -e '\033[1;33m Finished....please restart the server \033[0m'
 return 1
 
 
-## Install ceph support
-#pveceph install -y
