@@ -55,8 +55,8 @@ apt-get install -y ntp pigz htop iptraf iotop iftop vim vim-nox screen unzip zip
 # Set pigz to replace gzip, 2x faster gzip compression
 cat > /bin/pigzwrapper <<EOF
 #!/bin/sh
-PATH=${GZIP_BINDIR-'/bin'}:$PATH
-GZIP="-1"
+PATH=\${GZIP_BINDIR-'/bin'}:\$PATH
+#GZIP="-1"
 exec /usr/bin/pigz -p 4 "\$@"
 EOF
 chmod 755 /bin/pigzwrapper
