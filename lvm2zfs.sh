@@ -79,7 +79,7 @@ else
 	exit 0
 fi
 
-if [ $mydev != "" ] && [ $myraid != "" ] && [ $mylv != "" ] && [ $mydev1 != "" ] && [ $mydev2 != "" ] ; then
+if [ "$mydev" != "" ] && [ "$myraid" != "" ] && [ "$mylv" != "" ] && [ "$mydev1" != "" ] && [ "$mydev2" != "" ] ; then
 	echo "All required varibles detected"
 else
 	echo "ERROR: required varible not found or the server is already converted to zfs"
