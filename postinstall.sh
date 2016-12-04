@@ -53,15 +53,15 @@ apt-get install -y ntp pigz htop iptraf iotop iftop vim vim-nox screen unzip zip
 #snmpd snmp-mibs-downloader
 
 # Set pigz to replace gzip, 2x faster gzip compression
-cat > /bin/pigzwrapper <<EOF
-#!/bin/sh
-PATH=\${GZIP_BINDIR-'/bin'}:\$PATH
-#GZIP="-1"
-exec /usr/bin/pigz -p 4 "\$@"
-EOF
-chmod 755 /bin/pigzwrapper
-mv /bin/gzip /bin/gzip.original
-ln -s /bin/pigzwrapper /bin/gzip
+#cat > /bin/pigzwrapper <<EOF
+##!/bin/sh
+#PATH=\${GZIP_BINDIR-'/bin'}:\$PATH
+##GZIP="-1"
+#exec /usr/bin/pigz -p 4 "\$@"
+#EOF
+#chmod 755 /bin/pigzwrapper
+#mv /bin/gzip /bin/gzip.original
+#ln -s /bin/pigzwrapper /bin/gzip
 
 # Protect the web interface with fail2ban
 apt-get install -y fail2ban
