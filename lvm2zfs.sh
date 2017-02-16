@@ -26,6 +26,8 @@
 #
 ##############################################################
 
+apt-get install -y zfsutils
+
 mypart="/var/lib/vz"
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
