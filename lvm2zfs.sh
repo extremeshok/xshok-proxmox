@@ -32,6 +32,13 @@ mypart="/var/lib/vz"
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
 ret=$?
+
+if [ "$(which zpool)" == "" ] ; then
+	echo "ZFS not installed"
+	exit
+fi
+
+
 if [ $ret == 0 ] ; then
  	echo "Found partition, continuing"
  	echo "$mydev" #/dev/mapper/pve-data
