@@ -41,15 +41,18 @@ sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 ## Update proxmox and install various system utils
 apt-get update && apt-get -y upgrade --force-yes && apt-get -y dist-upgrade --force-yes &&  pveam update
 
-## Install openvswitch for a viurtual internal network
+## Install openvswitch for a virtual internal network
 apt-get install -y openvswitch-switch
 
+## Install zfs support, appears to be missing on some Proxmox installs.
+apt-get install -y zfsutils
+
 ## Install ceph support
-#pveceph install -y
+pveceph install -y
 
 
 ## Install common system utilities
-apt-get install -y ntp pigz htop iptraf iotop iftop vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y wget axel nano ntp pigz net-tools htop iptraf iotop iftop vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 # Set pigz to replace gzip, 2x faster gzip compression
@@ -86,11 +89,11 @@ systemctl restart fail2ban
 
 
 ## remove subscription banner
-sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/ext6/pvemanagerlib.js
+sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
 ##create a daily cron to make sure the banner does not re-appear
 cat > /etc/cron.daily/proxmox-nosub <<EOF
 #!/bin/sh
-sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/ext6/pvemanagerlib.js
+sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
 EOF
 chmod 755 /etc/cron.daily/proxmox-nosub 
 
