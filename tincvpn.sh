@@ -123,7 +123,7 @@ EOF
 echo "vpn" >> /etc/tinc/nets.boot
 
 # Enable at Boot
-systemctl enable tinc
+systemctl enable tinc.service
 
 #Display the Host config for simple cpy-paste to another node
 echo "Run the following on the other VPN nodes:"
