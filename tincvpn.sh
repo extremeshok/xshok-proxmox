@@ -11,6 +11,10 @@
 #
 # License: BSD (Berkeley Software Distribution)
 #
+# Usage: 
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
+# ./tincvpn.sh -h
+#
 ################################################################################
 #
 #    THERE ARE  USER CONFIGURABLE OPTIONS IN THIS SCRIPT
