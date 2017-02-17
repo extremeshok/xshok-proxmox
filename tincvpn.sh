@@ -65,8 +65,8 @@ mkdir -p /etc/tinc/vpn/hosts
 touch /etc/tinc/vpn/rsa_key.pub
 touch /etc/tinc/vpn/rsa_key.priv
 
-if [ grep -qi "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rsa_key.pub ] ; then
-	if [ grep -qi "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rsa_key.priv ] ; then
+if [ grep -qi "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rsa_key.pub > /dev/null ] ; then
+	if [ grep -qi "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rsa_key.priv > /dev/null ] ; then
 		echo "Using Previous RSA Keys"
 	else
 		tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
@@ -107,7 +107,9 @@ route add -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
 #echo 0 > /sys/devices/virtual/net/\$INTERFACE/bridge/multicast_snooping
 EOF
 
-cat > /tmp/tinc-down <<EOF
+chmod 755 /etc/tinc/vpn/tinc-up
+
+cat > /etc/tinc/vpn/tinc-down <<EOF
 #!/bin/bash
 ip route del 192.168.0.0/24 dev \$INTERFACE
 ip addr del 192.168.0.$vpn_ip_last/32 dev \$INTERFACE
@@ -118,6 +120,8 @@ route del -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
 
 #echo 0 > /proc/sys/net/ipv4/ip_forward
 EOF
+
+chmod 755 /etc/tinc/vpn/tinc-down
 
 # Set which VPN to start
 echo "vpn" >> /etc/tinc/nets.boot
