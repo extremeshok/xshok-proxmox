@@ -65,8 +65,8 @@ mkdir -p /etc/tinc/vpn/hosts
 touch /etc/tinc/vpn/rsa_key.pub
 touch /etc/tinc/vpn/rsa_key.priv
 
-if [[ grep -q "BEGIN RSA PUBLIC KEY" "/etc/tinc/vpn/rsa_key.pub" ]] ; then
-	if [[ grep -q "BEGIN RSA PRIVATE KEY" "/etc/tinc/vpn/rsa_key.priv" ]] ; then
+if [ grep -qi "BEGIN RSA PUBLIC KEY" "/etc/tinc/vpn/rsa_key.pub" ] ; then
+	if [ grep -qi "BEGIN RSA PRIVATE KEY" "/etc/tinc/vpn/rsa_key.priv" ] ; then
 		echo "Using Previous RSA Keys"
 	else
 		tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
