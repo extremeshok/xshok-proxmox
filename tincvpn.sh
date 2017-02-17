@@ -25,9 +25,9 @@ vpn_ip_last=1
 vpn_connect_to=prx-b
 vpn_port=655
 my_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tail -n 1)
+reset="no"
 
-
-while getopts i:p:c:a:h option
+while getopts i:p:c:a:rh option
 do
   case "${option}"
     in
@@ -35,9 +35,18 @@ do
     p) vpn_port=${OPTARG};;
     c) vpn_connect_to=${OPTARG};;
     a) my_address=${OPTARG};;
-    *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect>" ; exit;;
+    r) reset="yes";;
+    *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit;;
   esac
 done
+
+if [ "$reset" == "yes" ] ; then
+	echo "Resetting"
+	systemctl stop tinc.service
+	pkill -9 tincd
+	rm -rf /etc/tinc/
+fi
+	
 
 #Assign and Fix varibles
 vpn_connect_to=${vpn_connect_to/-/_}
