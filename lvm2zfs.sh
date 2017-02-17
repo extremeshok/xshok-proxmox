@@ -13,11 +13,15 @@
 #
 ################################################################################
 #
-# Assumptions: proxmox installed via OVH manager
+# Assumptions: proxmox installed via OVH manager (non zfs)
 # Recommeneded partitioning scheme:
 # Raid 1 / 100GB ext4
 # 2x swap 8192mb (16384mb total)
 # Remaining for /var/lib/vz
+#
+# Usage:
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
+# ./lvm2zfs.sh
 #
 ################################################################################
 #
