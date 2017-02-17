@@ -74,13 +74,15 @@ mkdir -p /etc/tinc/vpn/hosts
 touch /etc/tinc/vpn/rsa_key.pub
 touch /etc/tinc/vpn/rsa_key.priv
 
-if [ grep -qi "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rsa_key.pub > /dev/null ] ; then
-	if [ grep -qi "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rsa_key.priv > /dev/null ] ; then
+if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rssa_key.pub 2> /dev/null)" != "" ] ; then
+	if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
 		echo "Using Previous RSA Keys"
-	else
+	else 
+		echo "Generating New RSA Keys"
 		tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 	fi
-else
+else 
+	echo "Generating New RSA Keys"
 	tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 fi
 
@@ -88,7 +90,7 @@ fi
 cat > /etc/tinc/vpn/tinc.conf <<EOF
 Name = $my_name
 AddressFamily = ipv4
-Interfac = Tun0
+Interface = Tun0
 Mode = switch
 ConnectTo = $vpn_connect_to
 EOF
@@ -104,7 +106,7 @@ cat > /etc/tinc/vpn/tinc-up <<EOF
 #!/bin/bash
 ip link set \$INTERFACE up
 ip addr add  192.168.0.$vpn_ip_last/32 dev \$INTERFACE
-ip route add 192.168.0.0/24 dev $INTERFACE
+ip route add 192.168.0.0/24 dev \$INTERFACE
 
 # Set a multicast route over interface
 route add -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
