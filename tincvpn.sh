@@ -24,7 +24,7 @@
 vpn_ip_last=1
 vpn_connect_to=prx-b
 vpn_port=655
-my_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tail -n 1)
+my_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0' | grep -v '10.10.' | grep -v '127.0.0.1' | tail -n 1)
 reset="no"
 
 while getopts i:p:c:a:rh option
