@@ -87,6 +87,8 @@ systemctl restart fail2ban
 ##testing
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
+## Increase vzdump backup speed:q
+sed -i "s/#bwlimit: KBPS/bwlimit: 102400/" /etc/vzdump.conf
 
 ## remove subscription banner
 sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
@@ -96,8 +98,6 @@ cat > /etc/cron.daily/proxmox-nosub <<EOF
 sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
 EOF
 chmod 755 /etc/cron.daily/proxmox-nosub 
-
-
 
 if ! grep -q https "/etc/motd" ; then
 cat > /etc/motd.new <<'EOF'
