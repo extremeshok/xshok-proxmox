@@ -105,7 +105,7 @@ cat /etc/tinc/vpn/rsa_key.pub >> /etc/tinc/vpn/hosts/$my_name
 cat > /etc/tinc/vpn/tinc-up <<EOF
 #!/bin/bash
 ip link set \$INTERFACE up
-ip addr add  192.168.0.$vpn_ip_last/32 dev \$INTERFACE
+ip addr add  192.168.0.$vpn_ip_last/24 dev \$INTERFACE
 ip route add 192.168.0.0/24 dev \$INTERFACE
 
 # Set a multicast route over interface
@@ -123,7 +123,7 @@ chmod 755 /etc/tinc/vpn/tinc-up
 cat > /etc/tinc/vpn/tinc-down <<EOF
 #!/bin/bash
 ip route del 192.168.0.0/24 dev \$INTERFACE
-ip addr del 192.168.0.$vpn_ip_last/32 dev \$INTERFACE
+ip addr del 192.168.0.$vpn_ip_last/24 dev \$INTERFACE
 ip link set \$INTERFACE down
 
 # Set a multicast route over interface
