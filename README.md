@@ -14,7 +14,7 @@ https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.s
 
 Or run *postinstall.sh* after installation
 
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh && bash postinstall.sh && rm postinstall.sh
+```curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh && bash postinstall.sh && rm postinstall.sh```
 
 ## 
 
