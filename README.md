@@ -9,15 +9,22 @@ Raid 1 (mirror) 100GB ext4 /
 
 Remaining unpartitioned
 
-# Post Install Script
+# Post Install Script (postinstall.sh) *run once*
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 
 Or run *postinstall.sh* after installation
 
-```curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh && bash postinstall.sh && rm postinstall.sh```
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh && bash postinstall.sh && rm postinstall.sh
+```
+# Convert to ZFS (lvm2zfs.sh) *run once*
+Converts the storage into a ZFS raid 1 (mirror)
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+```
 
-## 
-
-Run *lvm2zfs.sh* after "postinstall.sh" to convert the storage into a ZFS mirror
-
-Run *tincvpn.sh* to create a private mesh vpn/network which supports multicast, ideal for cluster communication
+# Create Private mesh vpn/network (tincvpn.sh)
+tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && bash tincvpn.sh
+```
