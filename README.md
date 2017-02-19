@@ -2,15 +2,19 @@
 
 ## Install Proxmox
 Recommeneded partitioning scheme:
+
 Raid 1 (mirror) 100GB ext4 /
+
 2x swap 8192mb (16GB total)
+
 Remaining unpartitioned
 
-Run *postinstall.sh* after installation to optimise and configure a default Proxmox install
-
+# Post Install Script
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 
-Return value is 1
+Or run *postinstall.sh* after installation
+
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh && bash postinstall.sh && rm postinstall.sh
 
 ## 
 
