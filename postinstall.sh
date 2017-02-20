@@ -39,7 +39,7 @@ fi
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
 ## Update proxmox and install various system utils
-apt-get update && apt-get -y upgrade --force-yes && apt-get -y dist-upgrade --force-yes &&  pveam update
+apt-get update && apt-get -y dist-upgrade --force-yes &&  pveam update
 
 ## Install openvswitch for a virtual internal network
 apt-get install -y openvswitch-switch
