@@ -14,6 +14,9 @@
 # Usage: 
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
+# First Node
+#
+# Second Node
 #
 ################################################################################
 #
@@ -39,6 +42,11 @@ do
     *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit;;
   esac
 done
+
+if ["$my_address" == ""] ; then
+	echo "Error: address not detected, please use -a <public ip address>
+	exit
+fi
 
 if [ "$reset" == "yes" ] ; then
 	echo "Resetting"
