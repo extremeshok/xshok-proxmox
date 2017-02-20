@@ -14,9 +14,20 @@
 # Usage: 
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
-# First Node
-#
-# Second Node
+# 
+# Example for 3 node Cluster
+# First Host (hostname: host1)
+# ./tincvpn.sh -i 1 -c host2
+# Second Host (hostname: host2)
+# ./tincvpn.sh -i 2 -c host3
+# Third Host (hostname: host3)
+# ./tincvpn.sh -3 -c host1
+# 
+# Example for 2 node Cluster
+# First Host (hostname: host1)
+# ./tincvpn.sh -i 1 -c host2
+# Second Host (hostname: host2)
+# ./tincvpn.sh -i 2 -c host1
 #
 ################################################################################
 #
