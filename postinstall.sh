@@ -52,7 +52,7 @@ pveceph install -y
 
 
 ## Install common system utilities
-apt-get install -y wget axel nano ntp pigz net-tools htop iptraf iotop iftop vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 # Set pigz to replace gzip, 2x faster gzip compression
