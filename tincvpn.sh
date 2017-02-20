@@ -164,7 +164,7 @@ if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
 cat >> /etc/network/interfaces << EOF
 
 iface Tun0 inet static
-        address 192.168.0.11
+        address 192.168.0.$vpn_ip_last
         netmask 255.255.255.0
         broadcast 0.0.0.0
 
