@@ -38,6 +38,9 @@ fi
 # Add non-free to sources
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
+# Install the latest ceph (jewel, aka ceph 10.2.5 or higher)
+sed -i "s/hammer/jewel/g" /etc/apt/sources.list.d/ceph.list
+
 ## Update proxmox and install various system utils
 apt-get update && apt-get -y dist-upgrade --force-yes &&  pveam update
 
@@ -49,7 +52,6 @@ apt-get install -y zfsutils
 
 ## Install ceph support
 pveceph install -y
-
 
 ## Install common system utilities
 apt-get install -y wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
