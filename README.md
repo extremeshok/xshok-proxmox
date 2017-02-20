@@ -26,5 +26,5 @@ curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2z
 # Create Private mesh vpn/network (tincvpn.sh)
 tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
 ```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && bash tincvpn.sh
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && bash tincvpn.sh -h
 ```
