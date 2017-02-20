@@ -140,6 +140,19 @@ echo "vpn" >> /etc/tinc/nets.boot
 # Enable at Boot
 systemctl enable tinc.service
 
+# Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
+if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
+cat >> /etc/network/interfaces << EOF
+
+iface Tun0 inet static
+        address 192.168.0.11
+        netmask 255.255.255.0
+        broadcast 0.0.0.0
+
+EOF
+fi
+
+
 #Display the Host config for simple cpy-paste to another node
 echo "Run the following on the other VPN nodes:"
 echo "cat > /etc/tinc/vpn/hosts/$my_name << EOF"
