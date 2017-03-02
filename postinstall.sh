@@ -116,6 +116,13 @@ EOF
 	cat /etc/motd >> /etc/motd.new
 	mv /etc/motd.new /etc/motd
 fi
+
+## Increase max user watches
+## BUG FIX : No space left on device
+echo 1048576 > /proc/sys/fs/inotify/max_user_watches
+echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
+sysctl -p /etc/sysctl.conf
+
  
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
