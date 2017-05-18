@@ -28,3 +28,16 @@ tinc private mesh vpn/network which supports multicast, ideal for private cluste
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh -c -O tincvpn.sh && bash tincvpn.sh -h
 ```
+## Example for 3 node Cluster
+### First Host (hostname: host1)
+```
+bash tincvpn.sh -i 1 -c host2
+```
+### Second Host (hostname: host2)
+```
+bash tincvpn.sh -i 2 -c host3
+```
+### Third Host (hostname: host3)
+```
+bash tincvpn.sh -3 -c host1
+```
