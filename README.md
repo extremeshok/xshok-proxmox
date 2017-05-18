@@ -17,7 +17,7 @@ Or run *postinstall.sh* after installation
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
 ```
-# Convert to ZFS (lvm2zfs.sh) *run once*
+# Convert from LVM to ZFS (lvm2zfs.sh) *run once*
 Converts the storage into a ZFS raid 1 (mirror)
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
