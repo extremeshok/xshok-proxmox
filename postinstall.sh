@@ -134,6 +134,17 @@ echo 1048576 > /proc/sys/fs/inotify/max_user_watches
 echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
 sysctl -p /etc/sysctl.conf
 
+## Increase max FD limit / ulimit
+cat <<'EOF' >> /etc/security/limits.conf
+* soft     nproc          131072    
+* hard     nproc          131072   
+* soft     nofile         131072   
+* hard     nofile         131072
+root soft     nproc          131072    
+root hard     nproc          131072   
+root soft     nofile         131072   
+root hard     nofile         131072
+EOF
  
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
