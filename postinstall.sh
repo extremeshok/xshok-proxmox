@@ -48,7 +48,12 @@ if [ -f /etc/systemd/system/ceph.service ]; then
 fi
 
 ## Update proxmox and install various system utils
-apt-get update && apt-get -y dist-upgrade --force-yes &&  pveam update
+apt-get update && apt-get -y dist-upgrade --force-yes
+pveam update
+
+## Remove no longer required packages and purge old cached updates
+apt-get -y autoremove
+apt-get -y autoclean
 
 ## Install openvswitch for a virtual internal network
 apt-get install -y openvswitch-switch
