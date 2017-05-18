@@ -31,7 +31,7 @@ if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
 	echo -e "#deb https://enterprise.proxmox.com/debian jessie pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 # enable public proxmox repo
-if [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ]; then
+if [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
 	echo -e "deb http://download.proxmox.com/debian jessie pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
