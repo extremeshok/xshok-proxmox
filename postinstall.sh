@@ -96,6 +96,7 @@ maxretry = 3
 # 1 hour
 bantime = 3600
 EOF
+systemctl enable fail2ban
 systemctl restart fail2ban
 ##testing
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
