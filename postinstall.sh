@@ -28,18 +28,18 @@
 
 # disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-	echo -e "#deb https://enterprise.proxmox.com/debian jessie pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
+	echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 # enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-	echo -e "deb http://download.proxmox.com/debian jessie pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
+	echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
 # Add non-free to sources
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
-# Install the latest ceph (jewel, aka ceph 10.2.5 or higher)
-sed -i "s/hammer/jewel/g" /etc/apt/sources.list.d/ceph.list
+# Install the latest ceph provided by proxmox
+echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
 
 #Bugfix frozen/hung update caused by broken ceph systemd script
 if [ -f /etc/systemd/system/ceph.service ]; then
@@ -47,9 +47,18 @@ if [ -f /etc/systemd/system/ceph.service ]; then
 	systemctl daemon-reload; systemctl disable ceph.service; systemctl enable ceph.service; systemctl daemon-reexec
 fi
 
+# Refresh the package lists
+apt-get update
+
+## Fix no public key error for debian repo
+apt-get -y install debian-archive-keyring 
+
 ## Update proxmox and install various system utils
-apt-get update && apt-get -y dist-upgrade --force-yes
+apt-get -y dist-upgrade --force-yes
 pveam update
+
+## Fix no public key error for debian repo
+apt-get -y install debian-archive-keyring 
 
 ## Remove no longer required packages and purge old cached updates
 apt-get -y autoremove
