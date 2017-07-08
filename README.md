@@ -3,14 +3,16 @@
 ## Install Proxmox
 Recommeneded partitioning scheme:
 
-Raid 1 (mirror) 100GB ext4 /
+Raid 1 (mirror) 100 000MB XFS /
 
 2x swap 8192mb (16GB total)
 
-Remaining for /var/lib/vz (LVM)
+Remaining for lv	ext3	/var/lib/vz (LVM)
 
 # Post Install Script (postinstall.sh) *run once*
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+
+return value is 1
 
 Or run *postinstall.sh* after installation
 
