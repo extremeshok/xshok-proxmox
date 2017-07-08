@@ -7,7 +7,7 @@ Raid 1 (mirror) 100GB ext4 /
 
 2x swap 8192mb (16GB total)
 
-Remaining unpartitioned
+Remaining for /var/lib/vz (LVM)
 
 # Post Install Script (postinstall.sh) *run once*
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
