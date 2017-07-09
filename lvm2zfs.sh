@@ -32,6 +32,8 @@
 
 apt-get install -y zfsutils
 
+modprobe zfs
+
 mypart="/var/lib/vz"
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
