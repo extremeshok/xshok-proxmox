@@ -1,4 +1,4 @@
-# xshok-proxmox
+# xshok-proxmox :: proxmox post installation scripts
 
 ## Install Proxmox
 Recommeneded partitioning scheme:
