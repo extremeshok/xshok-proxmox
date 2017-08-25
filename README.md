@@ -3,10 +3,8 @@
 ## Install Proxmox
 Recommeneded partitioning scheme:
 
-Raid 1 (mirror) 100 000MB XFS /
-
+Raid 1 (mirror) 20 000MB ext4 /
 2x swap 8192mb (16GB total)
-
 Remaining for lv	ext3	/var/lib/vz (LVM)
 
 # Post Install Script (postinstall.sh) *run once*
@@ -19,6 +17,34 @@ Or run *postinstall.sh* after installation
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
 ```
+
+## OVH Proxmox Installation Guide ##
+````
+Select install for the specific server, via the ovh manager
+--INSTALL-->
+Install from an OVH template
+--NEXT-->
+Type of OS: Ready-to-go (graphical user interface)
+VPS Proxmox VE **(pick the latest non zfs version)**
+Language: EN
+Target disk arrray: **(always select the SSD array if you have ssd and hdd arrays)
+Enable/Tick: Customise the partition configuration
+--NEXT-->
+Disks used for this installation: **(All of them)
+(Remove all the partitions and do the following)
+Type: Filesystem: Mount Point: LVM Name: RAID: Size:
+ 1	primary	Ext4	/	 -	1	20.0 GB
+ 2	primary	Swap	swap -	-	2 x 8.0 GB	**(minimum 16GB total, recommended 50% ram)
+ 3	LV	Ext4	/var/lib/vz	data	1	REMAINING GB **(use all the remaining space)
+--NEXT-->
+Hostname: server.fqdn.com
+Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+Script return value: 1
+SSH keys: **(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)
+````
+--CONFIRM-->
+
+
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
 Converts the storage into a ZFS raid 1 (mirror)
 ```
