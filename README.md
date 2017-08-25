@@ -2,23 +2,11 @@
 
 ## Install Proxmox
 Recommeneded partitioning scheme:
-
 Raid 1 (mirror) 20 000MB ext4 /
 2x swap 8192mb (16GB total)
 Remaining for lv	ext3	/var/lib/vz (LVM)
 
-# Post Install Script (postinstall.sh) *run once*
-https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
-
-return value is 1
-
-Or run *postinstall.sh* after installation
-
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
-```
-
-## OVH Proxmox Installation Guide ##
+# OVH Proxmox Installation Guide #
 ````
 Select install for the specific server, via the ovh manager
 --INSTALL-->
@@ -44,7 +32,26 @@ SSH keys: **(always suggested, however if this value is used a webinterface logi
 --CONFIRM-->
 After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication 
 ````
+# Post Install Script (postinstall.sh) *run once*
+Disables the enterprise repo, enables the public repo
+Adds non-free sources
+Adds the latest ceph
+Fixes known bugs (public key missing, max user watches, etc)
+Updates the system
+Installs openvswitch-switch, zfsutils and common system utilities
+Protects the webinterface with fail2ban
+Increase vzdump backup speed
+Increase max File Discriptor Limits
 
+https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+
+return value is 1
+
+Or run *postinstall.sh* after installation
+
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
+```
 
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
 Converts the storage into a ZFS raid 1 (mirror)
