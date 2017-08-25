@@ -41,8 +41,9 @@ Hostname: server.fqdn.com
 Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 Script return value: 1
 SSH keys: **(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)
-````
 --CONFIRM-->
+After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication 
+````
 
 
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
