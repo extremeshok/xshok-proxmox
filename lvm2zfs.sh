@@ -30,7 +30,7 @@
 #
 ##############################################################
 
-apt-get install -y zfsutils
+apt-get install -y zfsutils-linux
 
 modprobe zfs
 
@@ -38,26 +38,23 @@ mypart="/var/lib/vz"
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
 ret=$?
-
-if [ "$(which zpool)" == "" ] ; then
-	echo "ZFS not installed"
-	exit
-fi
-
-
 if [ $ret == 0 ] ; then
  	echo "Found partition, continuing"
  	echo "$mydev" #/dev/mapper/pve-data
 else 
-	echo "ERROR: mypart not found"
+	echo "ERROR: $mypart not found"
 fi
 
+if [ "$(which zpool)" == "" ] ; then
+	echo "ERROR: ZFS not installed"
+	exit 0
+fi
 
-myraid=$(pvdisplay  | sed -n -e 's/^.*\/dev\///p')
+myraid=$(pvdisplay 2> /dev/null  | sed -n -e 's/^.*\/dev\///p')
 ret=$?
 if [ $ret == 0 ] ; then
- echo "Found raid, continuing"
- echo "$myraid" #md5
+	 echo "Found raid, continuing"
+	 echo "$myraid" #md5
 else 
 	echo "ERROR: myraid not found"
 	exit 0
@@ -67,32 +64,20 @@ fi
 mylv=$(lvdisplay $mydev | sed -n -e 's/^.*\/dev\///p')
 ret=$?
 if [ $ret == 0 ] ; then
- echo "Found lv, continuing"
- echo "$mylv" #sda1
+	echo "Found lv, continuing"
+	echo "$mylv" #sda1
 else 
 	echo "ERROR: mylv not found"
 	exit 0
 fi
 
-mydev1=$(mdadm --detail "/dev/$myraid" | tail -2 | head -n 1 | sed -n -e 's/^.*\/dev\///p')
-ret=$?
-if [ $ret == 0 ] ; then
- echo "Found raid member1, continuing"
- echo "$mydev1" #sda1
-else 
-	echo "ERROR: mydev1 not found"
+IFS=' ' read -r -a array <<< "$(cat /proc/mdstat | grep "$myraid :" | cut -d ' ' -f5- | xargs)"
+echo "${array[0]}"
+if [ "${array[0]}" == "" ] ; then
+	echo "ERROR: no devices found for $myraid in /proc/mdstat"
 	exit 0
 fi
 
-mydev2=$(mdadm --detail "/dev/$myraid" | tail -1 | sed -n -e 's/^.*\/dev\///p')
-ret=$?
-if [ $ret == 0 ] ; then
- echo "Found raid member2, continuing"
- echo "$mydev2" #sdb1
-else 
-	echo "ERROR: mydev2 not found"
-	exit 0
-fi
 
 if [ "$mydev" != "" ] && [ "$myraid" != "" ] && [ "$mylv" != "" ] && [ "$mydev1" != "" ] && [ "$mydev2" != "" ] ; then
 	echo "All required varibles detected"
