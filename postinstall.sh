@@ -4,7 +4,7 @@
 # You are free to use, modify and distribute, however you may not remove this notice.
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
-# 
+#
 # Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
 #
 # post-installation script for Proxmox
@@ -51,14 +51,14 @@ fi
 apt-get update
 
 ## Fix no public key error for debian repo
-apt-get -y install debian-archive-keyring 
+apt-get -y install debian-archive-keyring
 
 ## Update proxmox and install various system utils
 apt-get -y dist-upgrade --force-yes
 pveam update
 
 ## Fix no public key error for debian repo
-apt-get -y install debian-archive-keyring 
+apt-get -y install debian-archive-keyring
 
 ## Remove no longer required packages and purge old cached updates
 apt-get -y autoremove
@@ -74,19 +74,21 @@ apt-get install -y zfsutils
 pveceph install -y
 
 ## Install common system utilities
-apt-get install -y omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip python-software-properties aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 # Set pigz to replace gzip, 2x faster gzip compression
-#cat > /bin/pigzwrapper <<EOF
-##!/bin/sh
-#PATH=\${GZIP_BINDIR-'/bin'}:\$PATH
-##GZIP="-1"
-#exec /usr/bin/pigz -p 4 "\$@"
-#EOF
-#chmod 755 /bin/pigzwrapper
-#mv /bin/gzip /bin/gzip.original
-#ln -s /bin/pigzwrapper /bin/gzip
+cpu_count="$(echo "$(grep -c "processor" /proc/cpuinfo) / $(grep "physical id" /proc/cpuinfo |sort -u |wc -l)" | bc)"
+cat > /bin/pigzwrapper <<EOF
+#!/bin/sh
+PATH=/bin:\$PATH
+GZIP="-1"
+exec /usr/bin/pigz -p $cpu_count  "\$@"
+EOF
+mv -f /bin/gzip /bin/gzip.original
+cp -f /bin/pigzwrapper /bin/gzip
+chmod +x /bin/pigzwrapperchmod +x /bin/gzip
+
 
 # Protect the web interface with fail2ban
 apt-get install -y fail2ban
@@ -120,16 +122,16 @@ cat > /etc/cron.daily/proxmox-nosub <<EOF
 #!/bin/sh
 sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
 EOF
-chmod 755 /etc/cron.daily/proxmox-nosub 
+chmod 755 /etc/cron.daily/proxmox-nosub
 
 if ! grep -q https "/etc/motd" ; then
 cat > /etc/motd.new <<'EOF'
    This system is managed by:            https://eXtremeSHOK.com
      __   ___                            _____ _    _  ____  _  __
      \ \ / / |                          / ____| |  | |/ __ \| |/ /
-  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' / 
- / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <  
-|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \ 
+  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
+ / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
+|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
  \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
 
 
@@ -146,18 +148,16 @@ sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
 cat <<'EOF' >> /etc/security/limits.conf
-* soft     nproc          131072    
-* hard     nproc          131072   
-* soft     nofile         131072   
+* soft     nproc          131072
+* hard     nproc          131072
+* soft     nofile         131072
 * hard     nofile         131072
-root soft     nproc          131072    
-root hard     nproc          131072   
-root soft     nofile         131072   
+root soft     nproc          131072
+root hard     nproc          131072
+root soft     nofile         131072
 root hard     nofile         131072
 EOF
- 
+
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
 return 1
-
-
