@@ -87,7 +87,8 @@ exec /usr/bin/pigz -p $cpu_count  "\$@"
 EOF
 mv -f /bin/gzip /bin/gzip.original
 cp -f /bin/pigzwrapper /bin/gzip
-chmod +x /bin/pigzwrapperchmod +x /bin/gzip
+chmod +x /bin/pigzwrapper
+chmod +x /bin/gzip
 
 
 # Protect the web interface with fail2ban
