@@ -89,7 +89,7 @@ if [ "${mddevarray[0]}" == "" ] ; then
 	exit 0
 fi
 #check there is a minimum of 1 drives detected, not needed, but i rather have it.
-if [ "${#mddevarray[@]}" -ge "1" ] ; then
+if [ "${#mddevarray[@]}" -lt "1" ] ; then
   echo "ERROR: less than 1 devices were detected"
   exit 0
 fi
