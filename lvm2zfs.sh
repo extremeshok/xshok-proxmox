@@ -63,7 +63,7 @@ if [ $ret == 0 ] ; then
 	 echo "Found raid, continuing"
 	 echo "$myraid" #md5
 else
-	echo "ERROR: myraid not found"
+	echo "ERROR: $myraid not found"
 	exit 0
 fi
 
@@ -74,7 +74,7 @@ if [ $ret == 0 ] ; then
 	echo "Found lv, continuing"
 	echo "$mylv" #sda1
 else
-	echo "ERROR: mylv not found"
+	echo "ERROR: $mylv not found"
 	exit 0
 fi
 
@@ -111,7 +111,7 @@ done
 
 echo "Destroying LV (logical volume)"
 umount -l "$mypart"
-lvremove "/dev/$mylv" -y
+lvremove "/dev/$mylv" -y 2> /dev/null
 
 echo "Destroying MD (linux raid)"
 mdadm --stop "/dev/$myraid"
