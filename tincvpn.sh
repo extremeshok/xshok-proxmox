@@ -11,10 +11,10 @@
 #
 # License: BSD (Berkeley Software Distribution)
 #
-# Usage: 
+# Usage:
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
-# 
+#
 # Example for 3 node Cluster
 # First Host (hostname: host1)
 # ./tincvpn.sh -i 1 -c host2
@@ -22,7 +22,7 @@
 # ./tincvpn.sh -i 2 -c host3
 # Third Host (hostname: host3)
 # ./tincvpn.sh -3 -c host1
-# 
+#
 # Example for 2 node Cluster
 # First Host (hostname: host1)
 # ./tincvpn.sh -i 1 -c host2
@@ -54,8 +54,8 @@ do
   esac
 done
 
-if ["$my_address" == ""] ; then
-	echo "Error: address not detected, please use -a <public ip address>
+if [ "$my_address" == "" ] ; then
+	echo "Error: address not detected, please use -a <public ip address>"
 	exit
 fi
 
@@ -65,7 +65,7 @@ if [ "$reset" == "yes" ] ; then
 	pkill -9 tincd
 	rm -rf /etc/tinc/
 fi
-	
+
 
 #Assign and Fix varibles
 vpn_connect_to=${vpn_connect_to/-/_}
@@ -96,11 +96,11 @@ touch /etc/tinc/vpn/rsa_key.priv
 if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rssa_key.pub 2> /dev/null)" != "" ] ; then
 	if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
 		echo "Using Previous RSA Keys"
-	else 
+	else
 		echo "Generating New RSA Keys"
 		tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 	fi
-else 
+else
 	echo "Generating New RSA Keys"
 	tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 fi
@@ -114,12 +114,12 @@ Mode = switch
 ConnectTo = $vpn_connect_to
 EOF
 
-cat > /etc/tinc/vpn/hosts/$my_name <<EOF
+cat > "/etc/tinc/vpn/hosts/$my_name" <<EOF
 Address = $my_address
 Port = $vpn_port
 Compression = 10 #LZO
 EOF
-cat /etc/tinc/vpn/rsa_key.pub >> /etc/tinc/vpn/hosts/$my_name
+cat /etc/tinc/vpn/rsa_key.pub >> "/etc/tinc/vpn/hosts/$my_name"
 
 cat > /etc/tinc/vpn/tinc-up <<EOF
 #!/bin/bash
@@ -175,5 +175,5 @@ fi
 #Display the Host config for simple cpy-paste to another node
 echo "Run the following on the other VPN nodes:"
 echo "cat > /etc/tinc/vpn/hosts/$my_name << EOF"
-cat /etc/tinc/vpn/hosts/$my_name
+cat "/etc/tinc/vpn/hosts/$my_name"
 echo "EOF"
