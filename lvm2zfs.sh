@@ -14,10 +14,17 @@
 ################################################################################
 #
 # Assumptions: proxmox installed via OVH manager (non zfs)
-# Recommeneded partitioning scheme:
-# Raid 1 / 100GB ext4
-# 2x swap 8192mb (16384mb total)
-# Remaining for /var/lib/vz
+# Remaining for /var/lib/vz (LVM)
+#
+# Will automatically detect the required raid level and optimises.
+#
+# 1 Drive = zfs
+# 2 Drives = mirror
+# 3-5 Drives = raidz-1
+# 6-11 Drives = raidz-2
+# 11+ Drives = raidz-3
+#
+# NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz
 #
 # Usage:
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
@@ -81,10 +88,9 @@ if [ "${mddevarray[0]}" == "" ] ; then
 	echo "ERROR: no devices found for $myraid in /proc/mdstat"
 	exit 0
 fi
-
-#check there is a minimum of 2 drives detected
-if [ "${#mddevarray[@]}" -lt "2" ] ; then
-  echo "ERROR: less than 2 devices were detected"
+#check there is a minimum of 1 drives detected, not needed, but i rather have it.
+if [ "${#mddevarray[@]}" -ge "1" ] ; then
+  echo "ERROR: less than 1 devices were detected"
   exit 0
 fi
 
@@ -118,7 +124,11 @@ done
 
 # #used to make a max free space lvm
 # #lvcreate -n ZFS pve -l 100%FREE -y
-if [ "${#mddevarray[@]}" -eq "2" ] ; then
+if [ "${#mddevarray[@]}" -eq "1" ] ; then
+  echo "Creating ZFS mirror (raid1)"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool "${mddevarray[@]}"
+  ret=$?
+elif [ "${#mddevarray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
   zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${mddevarray[@]}"
   ret=$?
