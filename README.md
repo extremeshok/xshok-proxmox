@@ -62,6 +62,7 @@ Converts the storage LVM into a ZFS raid 1 (mirror)
 * 3-5 Drives = raidz-1 (raid5)
 * 6-11 Drives = raidz-2 (raid6)
 * 11+ Drives = raidz-3 (raid7)
+
 **NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
