@@ -54,7 +54,15 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinst
 ```
 
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
-Converts the storage into a ZFS raid 1 (mirror)
+Converts the storage LVM into a ZFS raid 1 (mirror)
+* Uses the LVM with the path/mount of /var/lib/vz
+* Will automatically detect the required raid level and optimise
+* 1 Drive = zfs (single)
+* 2 Drives = mirror (raid1)
+* 3-5 Drives = raidz-1 (raid5)
+* 6-11 Drives = raidz-2 (raid6)
+* 11+ Drives = raidz-3 (raid7)
+**NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
 ```
