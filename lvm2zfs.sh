@@ -4,7 +4,7 @@
 # You are free to use, modify and distribute, however you may not remove this notice.
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
-# 
+#
 # Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
 #
 # post-installation script for Proxmox
@@ -41,7 +41,7 @@ ret=$?
 if [ $ret == 0 ] ; then
  	echo "Found partition, continuing"
  	echo "$mydev" #/dev/mapper/pve-data
-else 
+else
 	echo "ERROR: $mypart not found"
 fi
 
@@ -55,23 +55,23 @@ ret=$?
 if [ $ret == 0 ] ; then
 	 echo "Found raid, continuing"
 	 echo "$myraid" #md5
-else 
+else
 	echo "ERROR: myraid not found"
 	exit 0
 fi
 
 #pve/data
-mylv=$(lvdisplay $mydev | sed -n -e 's/^.*\/dev\///p')
+mylv=$(lvdisplay "$mydev" | sed -n -e 's/^.*\/dev\///p')
 ret=$?
 if [ $ret == 0 ] ; then
 	echo "Found lv, continuing"
 	echo "$mylv" #sda1
-else 
+else
 	echo "ERROR: mylv not found"
 	exit 0
 fi
 
-IFS=' ' read -r -a array <<< "$(cat /proc/mdstat | grep "$myraid :" | cut -d ' ' -f5- | xargs)"
+IFS=' ' read -r -a array <<< "$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
 echo "${array[0]}"
 if [ "${array[0]}" == "" ] ; then
 	echo "ERROR: no devices found for $myraid in /proc/mdstat"
@@ -88,7 +88,7 @@ fi
 
 echo "Destroying LV (logical volume)"
 umount -l "$mypart"
-lvremove /dev/$mylv -y
+lvremove "/dev/$mylv" -y
 echo "Destroying MD (linux raid)"
 mdadm --stop "/dev/$myraid"
 mdadm --remove "/dev/$myraid"
@@ -123,5 +123,3 @@ grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
 #return 1
-
-
