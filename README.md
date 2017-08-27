@@ -79,7 +79,7 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh
 bash createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
