@@ -46,28 +46,28 @@ zfsdevicearray=("${@:2}")
 if [ $# -lt "2" ] ; then
   echo "ERROR: missing aguments"
   echo "Usage: $(basename "$0") poolname /list/of /dev/devices"
-  exit 0
+  exit 1
 fi
 if [[ "$poolname" =~ "/" ]] ; then
   echo "ERROR: invalid poolname: $poolname"
-  exit 0
+  exit 1
 fi
 if [ "${#zfsdevicearray[@]}" -lt "1" ] ; then
   echo "ERROR: less than 1 devices were detected"
-  exit 0
+  exit 1
 fi
 for zfsdevice in "${zfsdevicearray[@]}" ; do
   if ! [[ "${2}" =~ "/" ]] ; then
     echo "ERROR: Invalid device specified: $zfsdevice"
-    exit 0
+    exit 1
   fi
   if ! [ -e "$zfsdevice" ]; then
     echo "ERROR: Device $zfsdevice does not exist"
-    exit 0
+    exit 1
   fi
   if grep -q "$zfsdevice" "/proc/mounts" ; then
     echo "ERROR: Device is mounted $zfsdevice"
-    exit 0
+    exit 1
   fi
 done
 
@@ -96,7 +96,7 @@ fi
 
 if [ $ret != 0 ] ; then
 	echo "ERROR: creating ZFS"
-	exit 0
+	exit 1
 fi
 
 echo "Creating Secondary ZFS Pools"
@@ -123,4 +123,5 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set dedup=off "$zfspool"
 done
 
-exit
+#script Finish
+echo -e '\033[1;33m Finished....please restart the server \033[0m'

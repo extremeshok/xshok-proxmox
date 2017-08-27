@@ -161,4 +161,3 @@ EOF
 
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
-return 1

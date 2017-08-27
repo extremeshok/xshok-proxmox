@@ -27,7 +27,7 @@ Type: Filesystem: Mount Point: LVM Name: RAID: Size:
 --NEXT-->
 Hostname: server.fqdn.com
 Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
-Script return value: 1
+Script return value: 0
 SSH keys: **(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)
 --CONFIRM-->
 After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
@@ -45,7 +45,7 @@ After installation, login via ssh as root and create a password, which will be u
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 
-return value is 1
+return value is 0
 
 Or run *postinstall.sh* after installation
 

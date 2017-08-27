@@ -59,7 +59,7 @@ fi
 
 if [ "$(which zpool)" == "" ] ; then
 	echo "ERROR: ZFS not installed"
-	exit 0
+	exit 1
 fi
 
 myraid=$(pvdisplay 2> /dev/null  | sed -n -e 's/^.*\/dev\///p')
@@ -69,7 +69,7 @@ if [ $ret == 0 ] ; then
 	 echo "$myraid" #md5
 else
 	echo "ERROR: $myraid not found"
-	exit 0
+	exit 1
 fi
 
 #pve/data
@@ -80,26 +80,26 @@ if [ $ret == 0 ] ; then
 	echo "$mylv" #sda1
 else
 	echo "ERROR: $mylv not found"
-	exit 0
+	exit 1
 fi
 
 IFS=' ' read -r -a mddevarray <<< "$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
 
 if [ "${mddevarray[0]}" == "" ] ; then
 	echo "ERROR: no devices found for $myraid in /proc/mdstat"
-	exit 0
+	exit 1
 fi
 #check there is a minimum of 1 drives detected, not needed, but i rather have it.
 if [ "${#mddevarray[@]}" -lt "1" ] ; then
   echo "ERROR: less than 1 devices were detected"
-  exit 0
+  exit 1
 fi
 
 if [ "$mydev" != "" ] && [ "$myraid" != "" ] && [ "$mylv" != "" ] ; then
 	echo "All required varibles detected"
 else
 	echo "ERROR: required varible not found or the server is already converted to zfs"
-	exit 0
+	exit 1
 fi
 
 # remove [*] and /dev/ to each record
@@ -148,7 +148,7 @@ fi
 
 if [ $ret != 0 ] ; then
 	echo "ERROR: creating ZFS"
-	exit 0
+	exit 1
 fi
 
 echo "Creating Secondary ZFS Pools"
@@ -180,4 +180,3 @@ done
 
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
-#return 1
