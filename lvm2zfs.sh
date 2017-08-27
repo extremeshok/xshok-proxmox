@@ -16,7 +16,11 @@
 # Assumptions: proxmox installed via OVH manager (non zfs)
 # Remaining for /var/lib/vz (LVM)
 #
-# Will automatically detect the required raid level and optimises.
+# Creates the following storage/rpools
+# zfsbackup (rpool/backup)
+# zfsvmdata (rpool/vmdata)
+#
+# Will automatically detect the required raid level and optimise.
 #
 # 1 Drive = zfs
 # 2 Drives = mirror
@@ -37,11 +41,12 @@
 #
 ##############################################################
 
-apt-get install -y zfsutils-linux
-
-modprobe zfs
-
+# The default LVM mount which will be replaced with ZFS
 mypart="/var/lib/vz"
+
+#install zfs and enable
+apt-get install -y zfsutils-linux
+modprobe zfs
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
 ret=$?
@@ -79,10 +84,6 @@ else
 fi
 
 IFS=' ' read -r -a mddevarray <<< "$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
-#without IFS
-#mddevarray="$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
-#mddevarray=(${mddevarray//:/ })
-
 
 if [ "${mddevarray[0]}" == "" ] ; then
 	echo "ERROR: no devices found for $myraid in /proc/mdstat"
@@ -100,7 +101,6 @@ else
 	echo "ERROR: required varible not found or the server is already converted to zfs"
 	exit 0
 fi
-
 
 # remove [*] and /dev/ to each record
 echo "Creating the device array"
@@ -146,34 +146,37 @@ elif [ "${#mddevarray[@]}" -ge "11" ] ; then
   ret=$?
 fi
 
-
 if [ $ret != 0 ] ; then
 	echo "ERROR: creating ZFS"
 	exit 0
 fi
 
-echo "Setting Additional Options"
-zfs set compression=on rpool
-zfs set sync=disabled rpool
-zfs set primarycache=all rpool
-zfs set atime=off rpool
-zfs set checksum=off rpool
-zfs set dedup=off rpool
-
 echo "Creating Secondary ZFS Pools"
-zfs create rpool/vm-disks
+zfs create rpool/vmdata
 zfs create -o mountpoint=/backup rpool/backup
 zpool export rpool
+
+echo "Setting ZFS Optimisations"
+zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup")
+for zfspool in "${zfspoolarray[@]}" ; do
+  echo "Optimsing $zfspool"
+  zfs set compression=on "$zfspool"
+  zfs set compression=lz4 "$zfspool"
+  zfs set sync=disabled "$zfspool"
+  zfs set primarycache=all "$zfspool"
+  zfs set atime=off "$zfspool"
+  zfs set checksum=off "$zfspool"
+  zfs set dedup=off "$zfspool"
+done
 
 echo "Cleaning up fstab / mounts"
 #/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
 grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 
-
 echo "Adding the ZFS storage pools to Proxmox GUI"
-pvesm add zfspool zfs_backup -pool rpool/backup
-pvesm add zfspool zfs_vmdisks -pool rpool/vm-disks
-pvesm add zfspool zfs_rpool -pool rpool
+pvesm add zfspool zfsbackup -pool rpool/backup
+pvesm add zfspool zfsvmdata -pool rpool/vmdata
+#pvesm add zfspool zfsrpool -pool rpool
 
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
