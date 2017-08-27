@@ -46,6 +46,7 @@ zfsdevicearray=("${@:2}")
 if [ $# -lt "2" ] ; then
   echo "ERROR: missing aguments"
   echo "Usage: $(basename "$0") poolname /list/of /dev/devices"
+  echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
   exit 1
 fi
 if [[ "$poolname" =~ "/" ]] ; then
@@ -74,23 +75,23 @@ done
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" mirror "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "3" ] && [ "${#zfsdevicearray[@]}" -le "5" ] ; then
   echo "Creating ZFS raidz-1 (raid5)"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "6" ] && [ "${#zfsdevicearray[@]}" -lt "11" ] ; then
   echo "Creating ZFS raidz-2 (raid6)"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz2 "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz2 "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "11" ] ; then
   echo "Creating ZFS raidz-3 (raid7)"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz3 "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz3 "${zfsdevicearray[@]}"
   ret=$?
 fi
 
@@ -100,18 +101,18 @@ if [ $ret != 0 ] ; then
 fi
 
 echo "Creating Secondary ZFS Pools"
-zfs create "$poolname/vmdata"
-zfs create -o mountpoint="/backup_$poolname" "$poolname/backup"
-zpool export "$poolname"
+zfs create "$poolname""pool/vmdata"
+zfs create -o mountpoint="/backup_""$poolname" "$poolname""pool/backup"
+zpool export "$poolname""pool"
 
 if type "pvesm" > /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add zfspool hddbackup -pool "$poolname/backup"
-  pvesm add zfspool hddvmdata -pool "$poolname/vmdata"
+  pvesm add zfspool hddbackup -pool "$poolname""pool/backup"
+  pvesm add zfspool hddvmdata -pool "$poolname""pool/vmdata"
 fi
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname" "$poolname/vmdata" "$poolname/backup")
+zfspoolarray=("$poolname""pool" "$poolname""pool/vmdata" "$poolname""pool/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
