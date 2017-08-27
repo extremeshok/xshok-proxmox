@@ -156,10 +156,12 @@ zfs create rpool/vmdata
 zfs create -o mountpoint=/backup rpool/backup
 zpool export rpool
 
+sleep 5
+
 echo "Setting ZFS Optimisations"
 zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
-  echo "Optimsing $zfspool"
+  echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
   zfs set compression=lz4 "$zfspool"
   zfs set sync=disabled "$zfspool"
