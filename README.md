@@ -30,7 +30,7 @@ Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-p
 Script return value: 1
 SSH keys: **(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)
 --CONFIRM-->
-After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication 
+After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
 ````
 # Post Install Script (postinstall.sh) *run once*
 * Disables the enterprise repo, enables the public repo
@@ -66,6 +66,21 @@ Converts the storage LVM into a ZFS raid 1 (mirror)
 **NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+```
+
+# Create ZFS from devices (createzfs.sh) *optional*
+Creates a zfs pool from specified devices
+* Will automatically detect the required raid level and optimise
+* 1 Drive = zfs (single)
+* 2 Drives = mirror (raid1)
+* 3-5 Drives = raidz-1 (raid5)
+* 6-11 Drives = raidz-2 (raid6)
+* 11+ Drives = raidz-3 (raid7)
+
+**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh
+bash createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
 # Create Private mesh vpn/network (tincvpn.sh)
