@@ -71,7 +71,7 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
     exit 1
   fi
 done
-
+$poolname
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
@@ -107,8 +107,8 @@ zpool export "$poolname""pool"
 
 if type "pvesm" > /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add zfspool hddbackup -pool "$poolname""pool/backup"
-  pvesm add zfspool hddvmdata -pool "$poolname""pool/vmdata"
+  pvesm add dir "$poolname""backup" "/backup_""$poolname"
+  pvesm add zfspool "$poolname""vmdata" -pool "$poolname""pool/vmdata" -sparse true
 fi
 
 echo "Setting ZFS Optimisations"

@@ -161,8 +161,9 @@ echo "Cleaning up fstab / mounts"
 grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 
 echo "Adding the ZFS storage pools to Proxmox GUI"
-pvesm add zfspool zfsbackup -pool rpool/backup
+pvesm add dir backup -pool rpool/backup
 pvesm add zfspool zfsvmdata -pool rpool/vmdata
+
 #pvesm add zfspool zfsrpool -pool rpool
 
 echo "Setting ZFS Optimisations"
