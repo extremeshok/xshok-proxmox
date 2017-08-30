@@ -50,21 +50,25 @@ if ! [[ $networkip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
 fi
 if ! [ "$cidr" -eq "$cidr" ] 2> /dev/null ; then
     echo "Error: Invalid CIDR must be an integer $cidr"
-		exit 1echo "MaximumIP $maxip"
+		exit 1echo "MaximumIP $totalip"
 
 fi
 if [ "$cidr" -lt "1" ] || [ "$cidr" -gt "32" ] ; then
 	echo "ERROR: Invalid CIDR $cidr"
 	exit 1
 else
-	maxip=$((2**(32-cidr) )) # y = 2^(32-x), x = CIDR class
+	totalip=$((2**(32-cidr) )) # y = 2^(32-x), x = CIDR class
 fi
 if [ "$2" != "" ] ; then
 	gatewaydev="$2"
 else
 	gatewaydev="$(route -4 | grep default | awk '{ print $NF }')"
 fi
-
+usableip=$((totalip - 2))
+if [ "$usableip" -eq "0" ] ; then
+	echo "ERROR: No usable IP ($totalip - 2 = $usableip)"
+	exit 1
+fi
 ## Not used because this is slower than the if/else block
 #cdr2mask () {
 #   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
@@ -72,18 +76,18 @@ fi
 #}
 #netmask="$(cdr2mask ""$cidr")"
 # get the netmask
-if ! [ "$((maxip/256**0))" -gt "256" ]; then		# y
-	netmask="255.255.255.$((256-(maxip/256**0) ))"	# 256-(maxip)
-elif ! [ "$((maxip/256**1))" -gt "256" ]; then		# maxip/256
-	netmask="255.255.$((256-(maxip/256**1) )).0"	# 256-(maxip/256)
-elif ! [ "$((maxip/256**2))" -gt "256" ]; then		# maxip/256/256
-	netmask="255.$((256-(maxip/256**2) )).0.0"		# 256-(maxip/256/256)
-elif ! [ "$((maxip/256**3))" -gt "256" ]; then		# maxip/256/256/256
-	netmask="$((256-(maxip/256**3) )).0.0.0"		# 256-(maxip/256/256/256)
+if ! [ "$((totalip/256**0))" -gt "256" ]; then		# y
+	netmask="255.255.255.$((256-(totalip/256**0) ))"	# 256-(totalip)
+elif ! [ "$((totalip/256**1))" -gt "256" ]; then		# totalip/256
+	netmask="255.255.$((256-(totalip/256**1) )).0"	# 256-(totalip/256)
+elif ! [ "$((totalip/256**2))" -gt "256" ]; then		# totalip/256/256
+	netmask="255.$((256-(totalip/256**2) )).0.0"		# 256-(totalip/256/256)
+elif ! [ "$((totalip/256**3))" -gt "256" ]; then		# totalip/256/256/256
+	netmask="$((256-(totalip/256**3) )).0.0.0"		# 256-(totalip/256/256/256)
 fi
 
 #information
-echo "MaximumIP $maxip | Netmask $netmask | cidr $cidr | networkip $networkip | gatewaydev $gatewaydev"
+echo "UsableIP $usableip | TotalIP $totalip | Netmask $netmask | CIDR $cidr | NetworkIP $networkip | GatewayDev $gatewaydev"
 
 # Check if the route is currently in use, otherwise add it.
 res="$(route | grep "$networkip" | grep "$netmask" | grep "$gatewaydev")"
