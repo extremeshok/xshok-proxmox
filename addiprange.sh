@@ -103,7 +103,7 @@ echo "gatewaydev $gatewaydev"
 echo "Activating the route until restart"
 echo "route add -net $networkip netmask $netmask dev $gatewaydev"
 
-if ! [ -f "/etc/network/interfaces" ] ; then
+if [ -f "/etc/network/interfaces" ] ; then
 	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" /etc/network/interfaces ; then
 		echo "Permantly adding the route"
 		echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
