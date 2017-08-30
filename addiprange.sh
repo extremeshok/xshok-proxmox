@@ -91,10 +91,10 @@ echo "gatewaydev $gatewaydev"
 #add the route, so we do not need to restart
 echo "Activating the route until restart"
 myroute="$(which route)"
-"$myroute add -net $networkip netmask $netmask dev $gatewaydev"
+$myroute add -net "$networkip" netmask "$netmask" dev "$gatewaydev"
 
 if [ -f "/etc/network/interfaces" ] ; then
-	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" /etc/network/interfaces ; then
+	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
 		echo "Permantly added the route"
 		echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
 	else
