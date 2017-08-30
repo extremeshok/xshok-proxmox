@@ -90,6 +90,8 @@ if [ "$res" == "" ] ; then
 	echo "Activating the route until restart"
 	myroute="$(which route)"
 	$myroute add -net "$networkip" netmask "$netmask" dev "$gatewaydev"
+else
+	echo "Route is already active"
 fi
 
 #add the route, so we do not need to restart
