@@ -50,7 +50,8 @@ if ! [[ $networkip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
 fi
 if ! [ "$cidr" -eq "$cidr" ] 2> /dev/null ; then
     echo "Error: Invalid CIDR must be an integer $cidr"
-		exit 1
+		exit 1echo "MaximumIP $maxip"
+
 fi
 if [ "$cidr" -lt "1" ] || [ "$cidr" -gt "32" ] ; then
 	echo "ERROR: Invalid CIDR $cidr"
