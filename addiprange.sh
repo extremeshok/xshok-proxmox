@@ -82,17 +82,17 @@ elif ! [ "$((maxip/256**3))" -gt "256" ]; then		# maxip/256/256/256
 fi
 
 #information
-echo "MaximumIP $maxip"
-echo "Netmask $netmask"
-echo "cidr $cidr"
-echo "networkip $networkip"
-echo "gatewaydev $gatewaydev"
+echo "MaximumIP $maxip | Netmask $netmask | cidr $cidr | networkip $networkip | gatewaydev $gatewaydev"
+
+# Check if the route is currently in use, otherwise add it.
+res="$(route | grep "$networkip" | grep "$netmask" | grep "$gatewaydev")"
+if [ "$res" == "" ] ; then
+	echo "Activating the route until restart"
+	myroute="$(which route)"
+	$myroute add -net "$networkip" netmask "$netmask" dev "$gatewaydev"
+fi
 
 #add the route, so we do not need to restart
-echo "Activating the route until restart"
-myroute="$(which route)"
-$myroute add -net "$networkip" netmask "$netmask" dev "$gatewaydev"
-
 if [ -f "/etc/network/interfaces" ] ; then
 	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
 		echo "Permantly added the route"
