@@ -96,7 +96,7 @@ else
 fi
 
 #add the route, so we do not need to restart
-if [ -f "/etc/network/interfaces" ] ; then
+if [ -w "/etc/network/interfaces" ] ; then
 	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
 		echo "Permantly added the route"
 		echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
