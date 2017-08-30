@@ -7,8 +7,6 @@
 #
 # Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
 #
-# Will create a ZFS pool from the devices specified with the correct raid level
-#
 # License: BSD (Berkeley Software Distribution)
 #
 ################################################################################

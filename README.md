@@ -83,6 +83,13 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzf
 bash createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
+#  Creates default routes to allow for extra ip ranges to be used (addiprange.sh) *optional*
+If no interface is specified the default gateway interface will be detected and used.
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/addiprange.sh -c -O addiprange.sh
+bash addiprange.sh ip.xx.xx.xx/cidr interface_optional
+```
+
 # Create Private mesh vpn/network (tincvpn.sh)
 tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
 ```
