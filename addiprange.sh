@@ -105,102 +105,12 @@ echo "route add -net $networkip netmask $netmask dev $gatewaydev"
 
 if [ -f "/etc/network/interfaces" ] ; then
 	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" /etc/network/interfaces ; then
-		echo "Permantly adding the route"
+		echo "Permantly added the route"
 		echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
+	else
+		echo "Route is already permantly added"
 	fi
 fi
 
-
-#permantly add the route
-#check the route is not added
-
-
-
-exit
-
-#ipwithcidr="${1}"
-#cidr=$
-
-ip="$(grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' < "$ip")"
-echo "IP: $ip"
-#networkdevice="${2}"
-
-
-if [ "${#networkdevice}" -lt "3" ] ; then
-  echo "ERROR: Network device is too short : $networkdevice"
-  exit 1
-fi
-
-
-exit
-
-
-for zfsdevice in "${zfsdevicearray[@]}" ; do
-  if ! [[ "${2}" =~ "/" ]] ; then
-    echo "ERROR: Invalid device specified: $zfsdevice"
-    exit 1
-  fi
-  if ! [ -e "$zfsdevice" ]; then
-    echo "ERROR: Device $zfsdevice does not exist"
-    exit 1
-  fi
-  if grep -q "$zfsdevice" "/proc/mounts" ; then
-    echo "ERROR: Device is mounted $zfsdevice"
-    exit 1
-  fi
-done
-$poolname
-echo "Creating the array"
-if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
-  echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" "${zfsdevicearray[@]}"
-  ret=$?
-elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
-  echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" mirror "${zfsdevicearray[@]}"
-  ret=$?
-elif [ "${#zfsdevicearray[@]}" -ge "3" ] && [ "${#zfsdevicearray[@]}" -le "5" ] ; then
-  echo "Creating ZFS raidz-1 (raid5)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz "${zfsdevicearray[@]}"
-  ret=$?
-elif [ "${#zfsdevicearray[@]}" -ge "6" ] && [ "${#zfsdevicearray[@]}" -lt "11" ] ; then
-  echo "Creating ZFS raidz-2 (raid6)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz2 "${zfsdevicearray[@]}"
-  ret=$?
-elif [ "${#zfsdevicearray[@]}" -ge "11" ] ; then
-  echo "Creating ZFS raidz-3 (raid7)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz3 "${zfsdevicearray[@]}"
-  ret=$?
-fi
-
-if [ $ret != 0 ] ; then
-	echo "ERROR: creating ZFS"
-	exit 1
-fi
-
-echo "Creating Secondary ZFS Pools"
-zfs create "$poolname""pool/vmdata"
-zfs create -o mountpoint="/backup_""$poolname" "$poolname""pool/backup"
-zpool export "$poolname""pool"
-
-if type "pvesm" > /dev/null; then
-  echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add dir "$poolname""backup" "/backup_""$poolname"
-  pvesm add zfspool "$poolname""vmdata" -pool "$poolname""pool/vmdata" -sparse true
-fi
-
-echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname""pool" "$poolname""pool/vmdata" "$poolname""pool/backup")
-for zfspool in "${zfspoolarray[@]}" ; do
-  echo "Optimising $zfspool"
-  zfs set compression=on "$zfspool"
-  zfs set compression=lz4 "$zfspool"
-  zfs set sync=disabled "$zfspool"
-  zfs set primarycache=all "$zfspool"
-  zfs set atime=off "$zfspool"
-  zfs set checksum=off "$zfspool"
-  zfs set dedup=off "$zfspool"
-done
-
 #script Finish
-echo -e '\033[1;33m Finished....please restart the server \033[0m'
+echo -e '\033[1;33m Finished \033[0m'
