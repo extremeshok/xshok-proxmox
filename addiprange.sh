@@ -29,15 +29,6 @@
 #
 ##############################################################
 
-
-### Functions
-#!/bin/bash
-# CIDR Netmask Calculator
-
-
-#printf "$1\t" # x
-#printf "$y\t" # y
-
 #assign and check arguments
 if [ $# -lt "1" ] ; then
   echo "ERROR: missing aguments"
