@@ -117,7 +117,7 @@ systemctl restart fail2ban
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
 ## Increase vzdump backup speed
-sed -i "s/#bwlimit: KBPS/bwlimit: 102400/" /etc/vzdump.conf
+sed -i "s/#bwlimit: KBPS/bwlimit: 1024000/" /etc/vzdump.conf
 
 ## Remove subscription banner
 sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
