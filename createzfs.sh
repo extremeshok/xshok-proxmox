@@ -103,9 +103,15 @@ if [ $ret != 0 ] ; then
 	exit 1
 fi
 
+if [ zpool list | grep -q "$poolname" ] ; then
+	echo "ERROR: $poolname pool not found"
+	zpool list
+	exit 1
+fi
+
 echo "Creating Secondary ZFS Pools"
-zfs create "$poolname""/vmdata"
-zfs create -o mountpoint="/backup_""$poolname" "$poolname""/backup"
+zfs create -o mountpoint="/vmdata_""$poolprefix" "$poolname""/vmdata"
+zfs create -o mountpoint="/backup_""$poolprefix" "$poolname""/backup"
 zpool export "$poolname"
 
 if type "pvesm" 2> /dev/null; then
