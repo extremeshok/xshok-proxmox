@@ -83,6 +83,7 @@ done
 echo "Enabling ZFS"
 systemctl enable zfs.target
 systemctl start zfs.target
+modprobe zfs
 
 if [ "$(zpool import | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
 	echo "ERROR: $poolname already exists as an exported pool"
