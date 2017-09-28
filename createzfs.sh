@@ -71,7 +71,7 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
     exit 1
   fi
 done
-$poolname
+
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
@@ -128,8 +128,22 @@ for zfspool in "${zfspoolarray[@]}" ; do
     echo '#!/bin/bash' > "/etc/cron.monthly/$poolname"
   fi  
   echo "zpool scrub $zfspool" >> "/etc/cron.monthly/$poolname"
-  
 done
+
+### Work in progress , create specialised pools ###
+# echo "ZFS 8GB swap partition"
+# zfs create -V 8G -b $(getconf PAGESIZE) -o logbias=throughput -o sync=always -o primarycache=metadata -o com.sun:auto-snapshot=false "$poolname"/swap
+# mkswap -f /dev/zvol/"$poolname"/swap
+# swapon /dev/zvol/"$poolname"/swap
+# /dev/zvol/"$poolname"/swap none swap discard 0 0
+#
+# echo "ZFS tmp partition"
+# zfs create -o setuid=off -o devices=off -o sync=disabled -o mountpoint=/tmp -o atime=off "$poolname"/tmp
+## note: if you want /tmp on ZFS, mask (disable) systemd's automatic tmpfs-backed /tmp
+# systemctl mask tmp.mount
+#
+# echo "RDBMS partition (MySQL/PostgreSQL/Oracle)"
+# zfs create -o recordsize=8K -o primarycache=metadata -o mountpoint=/rdbms -o logbias=throughput "$poolname"/rdbms
 
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
