@@ -103,7 +103,7 @@ if [ $ret != 0 ] ; then
 	exit 1
 fi
 
-if [ zpool list | grep -q "$poolname" ] ; then
+if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; then
 	echo "ERROR: $poolname pool not found"
 	zpool list
 	exit 1
