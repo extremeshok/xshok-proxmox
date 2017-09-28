@@ -122,6 +122,13 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set atime=off "$zfspool"
   zfs set checksum=off "$zfspool"
   zfs set dedup=off "$zfspool"
+  
+  echo "Adding weekly pool scrub for $zfspool"
+  if [ ! -f "/etc/cron.monthly/$poolname" ] ; then
+    echo '#!/bin/bash' > "/etc/cron.monthly/$poolname"
+  fi  
+  echo "zpool scrub $zfspool" >> "/etc/cron.monthly/$poolname"
+  
 done
 
 #script Finish
