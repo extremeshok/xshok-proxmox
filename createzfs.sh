@@ -41,6 +41,11 @@
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
+if ! type "zpool" 2> /dev/null; then
+  echo "zfs is not avilable"
+  exit 1
+fi
+
 #check arguments
 if [ $# -lt "2" ] ; then
   echo "ERROR: missing aguments"
