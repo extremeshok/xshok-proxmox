@@ -75,6 +75,10 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   fi
 done
 
+echo "Enabling ZFS"
+systemctl enable zfs.target
+systemctl start zfs.target
+
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
