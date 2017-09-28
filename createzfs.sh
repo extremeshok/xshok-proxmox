@@ -38,7 +38,6 @@
 #
 ##############################################################
 
-
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
@@ -52,6 +51,10 @@ fi
 if [[ "$poolname" =~ "/" ]] ; then
   echo "ERROR: invalid poolname: $poolname"
   exit 1
+else
+  #add the suffix pool to the poolname, prevent namepoolpool
+  poolprefix=${poolname#pool}
+  poolname="$poolprefix""pool"  
 fi
 if [ "${#zfsdevicearray[@]}" -lt "1" ] ; then
   echo "ERROR: less than 1 devices were detected"
@@ -75,23 +78,23 @@ done
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" mirror "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" mirror "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "3" ] && [ "${#zfsdevicearray[@]}" -le "5" ] ; then
   echo "Creating ZFS raidz-1 (raid5)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "6" ] && [ "${#zfsdevicearray[@]}" -lt "11" ] ; then
   echo "Creating ZFS raidz-2 (raid6)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz2 "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz2 "${zfsdevicearray[@]}"
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "11" ] ; then
   echo "Creating ZFS raidz-3 (raid7)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname""pool" raidz3 "${zfsdevicearray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz3 "${zfsdevicearray[@]}"
   ret=$?
 fi
 
@@ -101,18 +104,18 @@ if [ $ret != 0 ] ; then
 fi
 
 echo "Creating Secondary ZFS Pools"
-zfs create "$poolname""pool/vmdata"
-zfs create -o mountpoint="/backup_""$poolname" "$poolname""pool/backup"
-zpool export "$poolname""pool"
+zfs create "$poolname""/vmdata"
+zfs create -o mountpoint="/backup_""$poolname" "/backup"
+zpool export "$poolname"
 
-if type "pvesm" > /dev/null; then
+if type "pvesm" 2> /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add dir "$poolname""backup" "/backup_""$poolname"
-  pvesm add zfspool "$poolname""vmdata" -pool "$poolname""pool/vmdata" -sparse true
+  pvesm add dir "$poolname""backup" "/backup_""$poolprefix"
+  pvesm add zfspool "$poolname""vmdata" -pool "$poolname""/vmdata" -sparse true
 fi
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname""pool" "$poolname""pool/vmdata" "$poolname""pool/backup")
+zfspoolarray=("$poolname" "$poolname""/vmdata" "$poolname""/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
@@ -124,10 +127,10 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set dedup=off "$zfspool"
   
   echo "Adding weekly pool scrub for $zfspool"
-  if [ ! -f "/etc/cron.monthly/$poolname" ] ; then
-    echo '#!/bin/bash' > "/etc/cron.monthly/$poolname"
+  if [ ! -f "/etc/cron.weekly/$poolname" ] ; then
+    echo '#!/bin/bash' > "/etc/cron.weekly/$poolname"
   fi  
-  echo "zpool scrub $zfspool" >> "/etc/cron.monthly/$poolname"
+  echo "zpool scrub $zfspool" >> "/etc/cron.weekly/$poolname"
 done
 
 ### Work in progress , create specialised pools ###
