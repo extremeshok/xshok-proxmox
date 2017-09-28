@@ -84,12 +84,12 @@ systemctl enable zfs.target
 systemctl start zfs.target
 modprobe zfs
 
-if [ "$(zpool import | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
+if [ "$(zpool import 2> /dev/null | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
 	echo "ERROR: $poolname already exists as an exported pool"
 	zpool import
 	exit 1
 fi
-if [ "$(zpool list | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
+if [ "$(zpool list 2> /dev/null | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
 	echo "ERROR: $poolname already exists as a listed pool"
 	zpool list
 	exit 1
