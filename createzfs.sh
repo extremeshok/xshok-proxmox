@@ -79,8 +79,12 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   fi
 done
 
-echo "Enabling ZFS"
+echo "Enable ZFS to autostart and mount"
 systemctl enable zfs.target
+systemctl enable zfs-mount
+systemctl enable zfs-import-cache
+
+echo "Ensure ZFS is started"
 systemctl start zfs.target
 modprobe zfs
 
