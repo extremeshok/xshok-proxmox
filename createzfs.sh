@@ -41,14 +41,13 @@
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
-if ! type "zpool" 2> /dev/null; then
+if ! type "zpool" >& /dev/null; then
   echo "zfs is not avilable"
   exit 1
 fi
 
 #check arguments
 if [ $# -lt "2" ] ; then
-  echo "ERROR: missing aguments"
   echo "Usage: $(basename "$0") poolname /list/of /dev/devices"
   echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
   exit 1
@@ -134,7 +133,7 @@ echo "Creating Secondary ZFS Pools"
 zfs create -o mountpoint="/vmdata_""$poolprefix" "$poolname""/vmdata"
 zfs create -o mountpoint="/backup_""$poolprefix" "$poolname""/backup"
 
-if type "pvesm" 2> /dev/null; then
+if type "pvesm" >& /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
   pvesm add dir "$poolname""backup" "/backup_""$poolprefix"
   pvesm add zfspool "$poolname""vmdata" -pool "$poolname""/vmdata" -sparse true
