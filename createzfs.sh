@@ -79,6 +79,17 @@ echo "Enabling ZFS"
 systemctl enable zfs.target
 systemctl start zfs.target
 
+if [ "$(zpool import | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
+	echo "ERROR: $poolname already exists as an exported pool"
+	zpool import
+	exit 1
+fi
+if [ "$(zpool list | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
+	echo "ERROR: $poolname already exists as a listed pool"
+	zpool list
+	exit 1
+fi
+
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
@@ -116,7 +127,6 @@ fi
 echo "Creating Secondary ZFS Pools"
 zfs create -o mountpoint="/vmdata_""$poolprefix" "$poolname""/vmdata"
 zfs create -o mountpoint="/backup_""$poolprefix" "$poolname""/backup"
-zpool export "$poolname"
 
 if type "pvesm" 2> /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
