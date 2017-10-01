@@ -49,8 +49,9 @@ fi
 #check arguments
 if [ $# -lt "2" ] ; then
   echo "Usage: $(basename "$0") poolname /list/of /dev/devices"
-  echo "Recommended is to use device names, for the list use \"ls /dev/disk/by-id\""
   echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
+  echo "Recommended: use device names, /dev/disk/by-id"
+  ls /dev/disk/by-id/ | grep -v "\-part*" | grep -v "wwn\-*"
   exit 1
 fi
 if [[ "$poolname" =~ "/" ]] ; then
