@@ -48,7 +48,7 @@ fi
 
 #check arguments
 if [ $# -lt "2" ] ; then
-  echo "Usage: $(basename "$0") poolname /list/of /dev/devices"
+  echo "Usage: $(basename "$0") poolname /list/of /dev/device1 /dev/device2"
   echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
   echo "Recommended: use device names, /dev/disk/by-id"
   ls /dev/disk/by-id/ | grep -v "\-part*" | grep -v "wwn\-*"
@@ -75,14 +75,12 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   fi
   if ! [ -e "$zfsdevice" ]; then
     if ! [ -e "/dev/disk/by-id/$zfsdevice" ]; then
-      echo "ERROR: Device $zfsdevice does not exist"
-      exit 1
+      if ! [ -e "/ls /dev/disk/by-uuid/$zfsdevice" ]; then
+        echo "ERROR: Device $zfsdevice does not exist"
+        exit 1
+      fi
     fi 
-  fi  
-  if ! [ -e "/dev/disk/by-id/$zfsdevice" ]; then
-    echo "ERROR: Device $zfsdevice does not exist"
-    exit 1
-  fi  
+  fi   
   if grep -q "$zfsdevice" "/proc/mounts" ; then
     echo "ERROR: Device is mounted $zfsdevice"
     exit 1
