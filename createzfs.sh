@@ -66,8 +66,8 @@ if [ "${#zfsdevicearray[@]}" -lt "1" ] ; then
   exit 1
 fi
 for zfsdevice in "${zfsdevicearray[@]}" ; do
-  if ! [[ "${2}" =~ "/" ]] ; then
-    if ! [[ "${2}" =~ "-" ]] ; then 
+  if ! [[ "$zfsdevice" =~ "/" ]] ; then
+    if ! [[ "$zfsdevice" =~ "-" ]] ; then 
       echo "ERROR: Invalid device specified: $zfsdevice"
       exit 1
     fi
