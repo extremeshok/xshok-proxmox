@@ -28,9 +28,7 @@
 
 container_id="$1"
 
-#container_config="/etc/pve/lxc/$container_id.conf"
-container_config="/tmp/$container_id.conf"
-
+container_config="/etc/pve/lxc/$container_id.conf"
 
 function addlineifnotfound { #$file #$line
   if [ "$1" == "" ] || [ "$2" == "" ] ; then
