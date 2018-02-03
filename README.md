@@ -42,6 +42,7 @@ After installation, login via ssh as root and create a password, which will be u
 * Protects the webinterface with fail2ban
 * Increase vzdump backup speed
 * Increase max File Discriptor Limits
+* Increase max Key limits
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 
@@ -52,6 +53,14 @@ Or run *postinstall.sh* after installation
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
 ```
+
+# Enable Docker support for an LXC container (pve-enable-lxc-docker.sh) *optional*
+There can be security implications as the LXC container is running in a higher privileged mode.
+```
+curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
+ pve-enable-lxc-docker container_id
+```
+
 
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
 Converts the storage LVM into a ZFS raid 1 (mirror)
