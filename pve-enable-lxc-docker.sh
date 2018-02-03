@@ -63,8 +63,8 @@ if [ -f "$container_config" ]; then
   #lxc restart "$container_id"
 
   #pve lxc container restart
-  lxc stop --name "$container_id"
-  lxc start --name "$container_id"
+  lxc-stop --name "$container_id"
+  lxc-start --name "$container_id"
 
   echo "Docker support added to $container_id"
 
