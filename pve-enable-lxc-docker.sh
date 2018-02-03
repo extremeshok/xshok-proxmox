@@ -26,24 +26,28 @@
 #
 ##############################################################
 
-container_id="$0"
+container_id="$1"
 
-container_config="/etc/pve/lxc/$container_id.conf"
+#container_config="/etc/pve/lxc/$container_id.conf"
+container_config="/tmp/$container_id.conf"
 
 
 function addlineifnotfound { #$file #$line
-  if [ "$0" == "" ] || [ "$1" == "" ] ; then
+  if [ "$1" == "" ] || [ "$2" == "" ] ; then
     echo "Error missing parameters"
     exit 1
   else
-    filename="$0"
-    linecontent="$1"
+    filename="$1"
+    linecontent="$2"
   fi
   if [ ! -f "$filename" ] ; then
     echo "Error $filename not found"
     exit 1
   fi
-  echo " ---> $linecontent"
+  if ! grep -Fxq "$linecontent" "$filename" ; then
+    #echo "\"$linecontent\" ---> $filename"
+    echo "$linecontent" >> "$filename"
+  fi
 }
 
 if [ -f "$container_config" ]; then
@@ -52,11 +56,21 @@ if [ -f "$container_config" ]; then
   addlineifnotfound "$container_config" "lxc.apparmor.profile: unconfined"
   addlineifnotfound "$container_config" "lxc.cgroup.devices.allow: a"
   addlineifnotfound "$container_config" "lxc.cap.drop:"
-  addlineifnotfound "$container_config" "linux.kernel_modules: aufs"
+  addlineifnotfound "$container_config" "linux.kernel_modules: aufs ip_tables"
   addlineifnotfound "$container_config" "lxc.mount.auto: proc:rw sys:rw"
 
-  echo lxc config set "$container_id" security.nesting true
-  echo lxc config set "$container_id" security.privileged true
-  echo lxc restart "$container_id"
+  #pve is missing the lxc binary
+  #lxc config set "$container_id" security.nesting true
+  #lxc config set "$container_id" security.privileged true
+  #lxc restart "$container_id"
 
+  #pve lxc container restart
+  lxc stop --name "$container_id"
+  lxc start --name "$container_id"
+
+  echo "Docker support added to $container_id"
+
+else
+  echo "Error: Config $container_config could not be found"
+  exit 1
 fi
