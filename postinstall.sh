@@ -163,5 +163,11 @@ root soft     nofile         131072
 root hard     nofile         131072
 EOF
 
+## Increase kernel max Key limit
+cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
+kernel.keys.root_maxkeys=1000000
+kernel.keys.maxkeys=1000000
+EOF
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
