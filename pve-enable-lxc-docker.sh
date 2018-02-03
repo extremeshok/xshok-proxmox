@@ -17,21 +17,21 @@
 # There can be security implications as the LXC container is running in a higher privileged mode.
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
+# curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
 # pve-enable-lxc-docker container_id
 #
 ################################################################################
 #
-#    THERE ARE  USER CONFIGURABLE OPTIONS IN THIS SCRIPT
-#   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
+#    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
+#
 ##############################################################
 
 container_id="$0"
 
-container_config="/etc/pve/lxc/${container_id}.conf
+container_config="/etc/pve/lxc/$container_id.conf"
 
 
-function addlineifnotfound ( #$file #$line
+function addlineifnotfound { #$file #$line
   if [ "$0" == "" ] || [ "$1" == "" ] ; then
     echo "Error missing parameters"
     exit 1
@@ -44,7 +44,7 @@ function addlineifnotfound ( #$file #$line
     exit 1
   fi
   echo " ---> $linecontent"
-)
+}
 
 if [ -f "$container_config" ]; then
 
