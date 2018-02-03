@@ -48,6 +48,11 @@ function addlineifnotfound { #$file #$line
   fi
 }
 
+#add cgroups support
+if [ "$(which cgroupfs-mount)" == "" ] ; then
+  apt-get install -y cgroupfs-mount
+fi
+
 if [ -f "$container_config" ]; then
 
   addlineifnotfound "$container_config" "lxc.aa_profile: unconfined"
