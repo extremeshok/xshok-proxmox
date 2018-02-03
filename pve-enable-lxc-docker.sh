@@ -48,12 +48,12 @@ function addlineifnotfound ( #$file #$line
 
 if [ -f "$container_config" ]; then
 
-  addlineifnotfound "lxc.aa_profile: unconfined"
-  addlineifnotfound "lxc.apparmor.profile: unconfined"
-  addlineifnotfound "lxc.cgroup.devices.allow: a"
-  addlineifnotfound "lxc.cap.drop:"
-  addlineifnotfound "linux.kernel_modules: aufs"
-  addlineifnotfound "lxc.mount.auto: proc:rw sys:rw"
+  addlineifnotfound "$container_config" "lxc.aa_profile: unconfined"
+  addlineifnotfound "$container_config" "lxc.apparmor.profile: unconfined"
+  addlineifnotfound "$container_config" "lxc.cgroup.devices.allow: a"
+  addlineifnotfound "$container_config" "lxc.cap.drop:"
+  addlineifnotfound "$container_config" "linux.kernel_modules: aufs"
+  addlineifnotfound "$container_config" "lxc.mount.auto: proc:rw sys:rw"
 
   echo lxc config set "$container_id" security.nesting true
   echo lxc config set "$container_id" security.privileged true
