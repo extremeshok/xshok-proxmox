@@ -55,7 +55,6 @@ fi
 
 if [ -f "$container_config" ]; then
 
-  addlineifnotfound "$container_config" "lxc.aa_profile: unconfined"
   addlineifnotfound "$container_config" "lxc.apparmor.profile: unconfined"
   addlineifnotfound "$container_config" "lxc.cgroup.devices.allow: a"
   addlineifnotfound "$container_config" "lxc.cap.drop:"
