@@ -119,14 +119,18 @@ systemctl restart fail2ban
 ## Increase vzdump backup speed
 sed -i "s/#bwlimit: KBPS/bwlimit: 1024000/" /etc/vzdump.conf
 
+## Bugfix: pve 5.1 high swap usage with low memory usage
+ echo "vm.swapiness=10" >> /etc/sysctl.conf
+ sysctl -p
+
 ## Remove subscription banner
-sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
+#sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
 # create a daily cron to make sure the banner does not re-appear
-cat > /etc/cron.daily/proxmox-nosub <<EOF
-#!/bin/sh
-sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
-EOF
-chmod 755 /etc/cron.daily/proxmox-nosub
+#cat > /etc/cron.daily/proxmox-nosub <<EOF
+##!/bin/sh
+#sed -i "s|if (data.status !== 'Active')|if (data.status == 'Active')|g" /usr/share/pve-manager/js/pvemanagerlib.js
+#EOF
+#chmod 755 /etc/cron.daily/proxmox-nosub
 
 ## Pretty MOTD
 if ! grep -q https "/etc/motd" ; then
