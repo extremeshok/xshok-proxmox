@@ -64,7 +64,7 @@ if [ "${#zfsdevicearray[@]}" -lt "1" ] ; then
 fi
 
 #add the suffix pool to the poolname, prevent namepoolpool
-poolprefix=${poolname#pool}
+poolprefix=${poolname/pool/}
 poolname="${poolprefix}pool"  
 
 for zfsdevice in "${zfsdevicearray[@]}" ; do
