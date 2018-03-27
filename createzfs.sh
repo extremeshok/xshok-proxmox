@@ -57,15 +57,16 @@ fi
 if [[ "$poolname" =~ "/" ]] ; then
   echo "ERROR: invalid poolname: $poolname"
   exit 1
-else
-  #add the suffix pool to the poolname, prevent namepoolpool
-  poolprefix=${poolname#pool}
-  poolname="$poolprefix""pool"  
 fi
 if [ "${#zfsdevicearray[@]}" -lt "1" ] ; then
   echo "ERROR: less than 1 devices were detected"
   exit 1
 fi
+
+#add the suffix pool to the poolname, prevent namepoolpool
+poolprefix=${poolname#pool}
+poolname="${poolprefix}pool"  
+
 for zfsdevice in "${zfsdevicearray[@]}" ; do
   if ! [[ "$zfsdevice" =~ "/" ]] ; then
     if ! [[ "$zfsdevice" =~ "-" ]] ; then 
@@ -85,6 +86,10 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
     echo "ERROR: Device is mounted $zfsdevice"
     exit 1
   fi
+  echo "Clearing partitions: ${zfsdevice}"
+  for v_partition in $(parted -s ${zfsdevice} print|awk '/^ / {print $1}') ; do
+   parted -s "${zfsdevice}" rm ${v_partition}
+  done
 done
 
 echo "Enable ZFS to autostart and mount"
@@ -142,17 +147,17 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
 fi
 
 echo "Creating Secondary ZFS Pools"
-zfs create -o mountpoint="/vmdata_""$poolprefix" "$poolname""/vmdata"
-zfs create -o mountpoint="/backup_""$poolprefix" "$poolname""/backup"
+zfs create -o mountpoint="/vmdata_${poolprefix}" "${poolname}/vmdata"
+zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 
 if type "pvesm" >& /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add dir "$poolname""backup" "/backup_""$poolprefix"
-  pvesm add zfspool "$poolname""vmdata" -pool "$poolname""/vmdata" -sparse true
+  pvesm add dir "${poolname}backup" "/backup_${poolprefix}"
+  pvesm add zfspool "${poolname}vmdata" -pool "${poolname}/vmdata" -sparse true
 fi
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname" "$poolname""/vmdata" "$poolname""/backup")
+zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
@@ -164,10 +169,10 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set dedup=off "$zfspool"
   
   echo "Adding weekly pool scrub for $zfspool"
-  if [ ! -f "/etc/cron.weekly/$poolname" ] ; then
-    echo '#!/bin/bash' > "/etc/cron.weekly/$poolname"
+  if [ ! -f "/etc/cron.weekly/${poolname}" ] ; then
+    echo '#!/bin/bash' > "/etc/cron.weekly/${poolname}"
   fi  
-  echo "zpool scrub $zfspool" >> "/etc/cron.weekly/$poolname"
+  echo "zpool scrub $zfspool" >> "/etc/cron.weekly/${poolname}"
 done
 
 ### Work in progress , create specialised pools ###
