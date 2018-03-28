@@ -71,28 +71,30 @@ apt-get install -y openvswitch-switch
 apt-get install -y zfsutils
 
 ## Install ceph support
-pveceph install -y
+pveceph install
 
 ## Install common system utilities
-apt-get install -y omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y whois omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 ## Set pigz to replace gzip, 2x faster gzip compression
-cpu_count="$(echo "$(grep -c "processor" /proc/cpuinfo) / $(grep "physical id" /proc/cpuinfo |sort -u |wc -l)" | bc)"
 cat > /bin/pigzwrapper <<EOF
 #!/bin/sh
 PATH=/bin:\$PATH
 GZIP="-1"
-exec /usr/bin/pigz -p $cpu_count  "\$@"
+exec /usr/bin/pigz "\$@"
 EOF
 mv -f /bin/gzip /bin/gzip.original
 cp -f /bin/pigzwrapper /bin/gzip
 chmod +x /bin/pigzwrapper
 chmod +x /bin/gzip
 
-## Install OVH RTM (real time monitoring)
-#http://help.ovh.co.uk/RealTimeMonitoring
-wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+## Detect if this is an OVH server by getting the global IP and checking the ASN
+if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
+	echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
+	#http://help.ovh.co.uk/RealTimeMonitoring
+	wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+fi
 
 ## Protect the web interface with fail2ban
 apt-get install -y fail2ban
