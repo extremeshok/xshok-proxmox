@@ -147,7 +147,7 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
 fi
 
 echo "Creating Secondary ZFS Pools"
-zfs create -o mountpoint="/vmdata_${poolprefix}" "${poolname}/vmdata"
+zfs create -o mountpoint="/${poolname}/vmdata" "${poolname}/vmdata"
 zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 
 if type "pvesm" >& /dev/null; then
