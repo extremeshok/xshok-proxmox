@@ -72,7 +72,7 @@ curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-i
 #Customising post install file
 echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh" >> /post-install
 
-if grep -q '#!/bin/bash' "/install-proxmox"; then
+if grep -q '#!/bin/bash' "/post-install"; then
   echo "Starting Installer"
   if [ "$USE_LVM" == "TRUE" ]; then
     installimage -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d sda,sdb -r yes -l 1 -p "/:ext4:40G,swap:swap:${MY_SWAP}G,lvm:vg0:all" -v "vg0:data:/var/lib/vz:ext4:all"
@@ -81,6 +81,6 @@ if grep -q '#!/bin/bash' "/install-proxmox"; then
   fi
   
 else
-  echo "Failed to fetch post-install-proxmox5"
+  echo "Failed to fetch post-install"
   exit 1
 fi
