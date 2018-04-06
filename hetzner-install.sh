@@ -74,6 +74,7 @@ curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-i
 echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
+  chmod 777 /post-install
   echo "Starting Installer"
   if [ "$USE_LVM" == "TRUE" ]; then
     $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d sda,sdb -r yes -l 1 -p "/:ext4:40G,swap:swap:${MY_SWAP}G,lvm:vg0:all" -v "vg0:data:/var/lib/vz:ext4:all"
