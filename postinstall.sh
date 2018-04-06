@@ -31,7 +31,7 @@ if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
 	echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
-if [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
+if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
 	echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
@@ -51,18 +51,18 @@ fi
 apt-get update
 
 ## Fix no public key error for debian repo
-apt-get -y install debian-archive-keyring
+apt-get install -y debian-archive-keyring
 
 ## Update proxmox and install various system utils
 apt-get -y dist-upgrade --force-yes
 pveam update
 
 ## Fix no public key error for debian repo
-apt-get -y install debian-archive-keyring
+apt-get install -y debian-archive-keyring
 
 ## Remove no longer required packages and purge old cached updates
-apt-get -y autoremove
-apt-get -y autoclean
+apt-get autoremove -y
+apt-get autoclean -y
 
 ## Install openvswitch for a virtual internal network
 apt-get install -y openvswitch-switch
@@ -71,7 +71,7 @@ apt-get install -y openvswitch-switch
 apt-get install -y zfsutils
 
 ## Install ceph support
-pveceph install
+echo "Y" | pveceph install
 
 ## Install common system utilities
 apt-get install -y whois omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
@@ -119,18 +119,18 @@ systemctl restart fail2ban
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
 ## Increase vzdump backup speed
-sed -i "s/#bwlimit: KBPS/bwlimit: 1024000/" /etc/vzdump.conf
+sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
  echo "vm.swapiness=10" >> /etc/sysctl.conf
  sysctl -p
 
 ## Remove subscription banner
-sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/pve-manager/js/pvemanagerlib.js
+sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 # create a daily cron to make sure the banner does not re-appear
 cat > /etc/cron.daily/proxmox-nosub <<EOF
 ##!/bin/sh
-sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/pve-manager/js/pvemanagerlib.js
+sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
 chmod 755 /etc/cron.daily/proxmox-nosub
 
