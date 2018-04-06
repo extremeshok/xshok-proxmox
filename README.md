@@ -1,9 +1,11 @@
 # xshok-proxmox :: proxmox post installation scripts
 
-## Install Proxmox
+## Install Proxmox Recommendations
 Recommeneded partitioning scheme:
-* Raid 1 (mirror) 20 000MB ext4 /
-* 2x swap 8192mb (16GB total)
+* Raid 1 (mirror) 40 000MB ext4 /
+* HDD less than 130gb = 16GB swap
+* RAM less or equal to 64GB = 32GB swap
+* RAM more than 64GB = 64GB swap
 * Remaining for lv	ext4	/var/lib/vz (LVM)
 
 # Hetznet Installation Guide #
@@ -15,14 +17,12 @@ Operating system=Linux, Architecture=64 bit, Public key=*optional*
 Select the Reset tab for the specific server,
 Check: Execute an automatic hardware reset
 --> Send
-Wait a few mins and connect via ssh/terminal to the rescue system running on the server
-````
+Wait a few mins and connect via ssh/terminal to the rescue system running on the server and run the following
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && bash hetzner-install.sh 
 ````
 
-
-# OVH Proxmox Installation Guide #
+# OVH Installation Guide #
 ````
 Select install for the specific server, via the ovh manager
 --INSTALL-->
@@ -38,7 +38,7 @@ Disks used for this installation: **(All of them)
 (Remove all the partitions and do the following)
 Type: Filesystem: Mount Point: LVM Name: RAID: Size:
  1	primary	Ext4	/	 -	1	20.0 GB
- 2	primary	Swap	swap -	-	2 x 8.0 GB	**(minimum 16GB total, recommended 50% ram)
+ 2	primary	Swap	swap -	-	2 x 8.0 GB	**(minimum 16GB total, set recommended swap size)
  3	LV	Ext4	/var/lib/vz	data	1	REMAINING GB **(use all the remaining space)
 --NEXT-->
 Hostname: server.fqdn.com
@@ -48,6 +48,9 @@ SSH keys: **(always suggested, however if this value is used a webinterface logi
 --CONFIRM-->
 After installation, login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
 ````
+
+# ------- SCRIPTS ------
+
 # Post Install Script (postinstall.sh) *run once*
 * Disables the enterprise repo, enables the public repo
 * Adds non-free sources
@@ -76,7 +79,6 @@ There can be security implications as the LXC container is running in a higher p
 curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
  pve-enable-lxc-docker container_id
 ```
-
 
 # Convert from LVM to ZFS (lvm2zfs.sh) *run once*
 Converts the storage LVM into a ZFS raid 1 (mirror)
