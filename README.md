@@ -3,9 +3,10 @@
 ## Install Proxmox Recommendations
 Recommeneded partitioning scheme:
 * Raid 1 (mirror) 40 000MB ext4 /
-* HDD less than 130gb = 16GB swap
-* RAM less or equal to 64GB = 32GB swap
-* RAM more than 64GB = 64GB swap
+* SWAP
+* * HDD less than 130gb = 16GB swap
+* * HDD more than 130GB and RAM less or equal to 64GB = 32GB swap
+* * HDD more than 130GB and RAM more than 64GB = 32GB swap
 * Remaining for lv	ext4	/var/lib/vz (LVM)
 
 # Hetznet Installation Guide #
