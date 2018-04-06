@@ -17,7 +17,8 @@ Operating system=Linux, Architecture=64 bit, Public key=*optional*
 Select the Reset tab for the specific server,
 Check: Execute an automatic hardware reset
 --> Send
-Wait a few mins and connect via ssh/terminal to the rescue system running on the server and run the following
+Wait a few mins
+Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && bash hetzner-install.sh 
@@ -63,6 +64,7 @@ After installation, login via ssh as root and create a password, which will be u
 * Increase vzdump backup speed
 * Increase max File Discriptor Limits
 * Increase max Key limits
+* Detect AMD EPYC CPU and install kernel 4.15
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
 
