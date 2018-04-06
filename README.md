@@ -4,7 +4,23 @@
 Recommeneded partitioning scheme:
 * Raid 1 (mirror) 20 000MB ext4 /
 * 2x swap 8192mb (16GB total)
-* Remaining for lv	ext3	/var/lib/vz (LVM)
+* Remaining for lv	ext4	/var/lib/vz (LVM)
+
+# Hetznet Installation Guide #
+* Includes and runs the  (postinstall.sh) *
+````
+Select the Rescue tab for the specific server, via the hetzner robot manager
+Operating system=Linux, Architecture=64 bit, Public key=*optional*
+--> Activate rescue system
+Select the Reset tab for the specific server,
+Check: Execute an automatic hardware reset
+--> Send
+Wait a few mins and connect via ssh/terminal to the rescue system running on the server
+````
+````
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && bash hetzner-install.sh 
+````
+
 
 # OVH Proxmox Installation Guide #
 ````
