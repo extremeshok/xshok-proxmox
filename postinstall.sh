@@ -14,17 +14,12 @@
 ################################################################################
 #
 # Assumptions: proxmox installed
-# Recommeneded partitioning scheme:
-# Raid 1 / 100GB ext4
-# 2x swap 8192mb (16384mb total)
-# Remaining unpartitioned
 #
 ################################################################################
 #
-#    THERE ARE  USER CONFIGURABLE OPTIONS IN THIS SCRIPT
-#   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
+#    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
 #
-##############################################################
+################################################################################
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
@@ -60,10 +55,6 @@ pveam update
 ## Fix no public key error for debian repo
 apt-get install -y debian-archive-keyring
 
-## Remove no longer required packages and purge old cached updates
-apt-get autoremove -y
-apt-get autoclean -y
-
 ## Install openvswitch for a virtual internal network
 apt-get install -y openvswitch-switch
 
@@ -76,6 +67,16 @@ echo "Y" | pveceph install
 ## Install common system utilities
 apt-get install -y whois omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
+
+## Detect AMD EPYC CPU and install kernel 4.15
+if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
+	echo "AMD EPYC detected, installing kernel 4.15"
+	apt-get install -y pve-kernel-4.15
+fi
+
+## Remove no longer required packages and purge old cached updates
+apt-get autoremove -y
+apt-get autoclean -y
 
 ## Set pigz to replace gzip, 2x faster gzip compression
 cat > /bin/pigzwrapper <<EOF
@@ -114,7 +115,6 @@ maxretry = 3
 bantime = 3600
 EOF
 systemctl enable fail2ban
-systemctl restart fail2ban
 ##testing
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
