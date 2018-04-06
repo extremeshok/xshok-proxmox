@@ -19,6 +19,7 @@ Check: Execute an automatic hardware reset
 --> Send
 Wait a few mins and connect via ssh/terminal to the rescue system running on the server and run the following
 ````
+````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && bash hetzner-install.sh 
 ````
 
