@@ -137,7 +137,7 @@ chmod 755 /etc/cron.daily/proxmox-nosub
 ## Pretty MOTD
 if ! grep -q https "/etc/motd" ; then
 cat > /etc/motd.new <<'EOF'
-   This system is managed by:            https://eXtremeSHOK.com
+   This system is optimised by:            https://eXtremeSHOK.com
      __   ___                            _____ _    _  ____  _  __
      \ \ / / |                          / ____| |  | |/ __ \| |/ /
   ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
