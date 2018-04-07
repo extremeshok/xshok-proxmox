@@ -74,6 +74,28 @@ if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]
 	apt-get install -y pve-kernel-4.15
 fi
 
+## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
+# use command 'reboot-quick'
+echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
+apt-get install -y kexec-tools
+
+cat > /etc/systemd/system/kexec-pve.service <<EOF
+[Unit]
+Description=boot into into the latest pve kernel set as primary in the boot-loader
+Documentation=man:kexec(8)
+DefaultDependencies=no
+Before=shutdown.target umount.target final.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/kexec -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
+
+[Install]
+WantedBy=kexec.target
+EOF
+systemctl enable kexec-pve.service
+echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
+
 ## Remove no longer required packages and purge old cached updates
 apt-get autoremove -y
 apt-get autoclean -y
@@ -176,4 +198,4 @@ kernel.keys.maxkeys=1000000
 EOF
 
 ## Script Finish
-echo -e '\033[1;33m Finished....please restart the server \033[0m'
+echo -e '\033[1;33m Finished....please restart the system \033[0m'
