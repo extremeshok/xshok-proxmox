@@ -184,11 +184,12 @@ if [ -f "/etc/vzdump.conf" ]; then
 fi
 
 if type "pvesm" >& /dev/null; then
+  # https://pve.proxmox.com/pve-docs/pvesm.1.html
   echo "Adding the ZFS storage pools to Proxmox GUI"
   echo "-- rpool-vmdata"
-  pvesm add zfspool rpool-vmdata -pool rpool/vmdata
+  pvesm add zfspool rpool-vmdata --pool rpool/vmdata --sparse 1
   echo "-- rpool-backup"
-  pvesm add dir rpool-backup /backup_rpool
+  pvesm add dir rpool-backup --path /backup_rpool
 fi
 
 #script Finish
