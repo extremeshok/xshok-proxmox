@@ -23,6 +23,12 @@ Connect via ssh/terminal to the rescue system running on your server and run the
 ````
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && chmod 777 hetzner-install.sh && ./hetzner-install.sh 
+reboot
+````
+Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+````
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+reboot
 ````
 
 # OVH Proxmox Installation Guide #
