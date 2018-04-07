@@ -159,6 +159,10 @@ echo "-- rpool/backup (/backup_rpool)"
 zfs create -o mountpoint=/backup_rpool rpool/backup
 echo "-- rpool/tmp (/tmp_rpool)"
 zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+
+#export the pool
+zpool export rpool
+sleep 10
 zpool export rpool
 
 echo "Cleaning up fstab / mounts"
