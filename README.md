@@ -9,7 +9,7 @@ Recommeneded partitioning scheme:
 * * HDD more than 130GB and RAM more than 64GB = 32GB swap
 * Remaining for lv	ext4	/var/lib/vz (LVM)
 
-# Hetznet Installation Guide #
+# Hetzner Proxmox Installation Guide #
 * Includes and runs the  (postinstall.sh) *
 ````
 Select the Rescue tab for the specific server, via the hetzner robot manager
@@ -25,7 +25,7 @@ Connect via ssh/terminal to the rescue system running on your server and run the
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && chmod 777 hetzner-install.sh && ./hetzner-install.sh 
 ````
 
-# OVH Installation Guide #
+# OVH Proxmox Installation Guide #
 ````
 Select install for the specific server, via the ovh manager
 --INSTALL-->
