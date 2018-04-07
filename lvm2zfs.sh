@@ -36,10 +36,9 @@
 #
 ################################################################################
 #
-#    THERE ARE  USER CONFIGURABLE OPTIONS IN THIS SCRIPT
-#   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
+#    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
 #
-##############################################################
+################################################################################
 
 # The default LVM mount which will be replaced with ZFS
 mypart="/var/lib/vz"
@@ -154,26 +153,20 @@ if [ $ret != 0 ] ; then
 fi
 
 echo "Creating Secondary ZFS Pools"
+echo " -- rpool/vmdata"
 zfs create rpool/vmdata
+echo "-- rpool/backup (/backup_rpool)"
 zfs create -o mountpoint=/backup_rpool rpool/backup
+echo "-- rpool/tmp (/tmp_rpool)"
+zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 zpool export rpool
-
-## set vzdump temp dir to use the /backup/tmp
-mkdir -p /backup_rpool/tmp
-sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /backup_rpool/tmp|" /etc/vzdump.conf
 
 echo "Cleaning up fstab / mounts"
 #/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
 grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 
-echo "Adding the ZFS storage pools to Proxmox GUI"
-pvesm add dir backup -pool rpool/backup
-pvesm add zfspool zfsvmdata -pool rpool/vmdata
-
-#pvesm add zfspool zfsrpool -pool rpool
-
 echo "Setting ZFS Optimisations"
-zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup")
+zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup" "rpool/tmp")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
@@ -184,6 +177,19 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set checksum=off "$zfspool"
   zfs set dedup=off "$zfspool"
 done
+
+if [ -f "/etc/vzdump.conf" ]; then
+  echo "set vzdump temp dir to use the /tmp_rpool"
+  sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /tmp_rpool|" /etc/vzdump.conf
+fi
+
+if type "pvesm" >& /dev/null; then
+  echo "Adding the ZFS storage pools to Proxmox GUI"
+  echo "-- rpool-vmdata"
+  pvesm add zfspool rpool-vmdata -pool rpool/vmdata
+  echo "-- rpool-backup"
+  pvesm add dir rpool-backup /backup_rpool
+fi
 
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'
