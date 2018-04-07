@@ -41,9 +41,13 @@
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
+#Detect and install dependencies
 if ! type "zpool" >& /dev/null; then
-  echo "zfs is not avilable"
-  exit 1
+  apt-get install -y zfsutils-linux
+  modprobe zfs
+fi
+if ! type "parted" >& /dev/null; then
+  apt-get install -y parted
 fi
 
 #check arguments
@@ -153,7 +157,7 @@ zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 if type "pvesm" >& /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
   pvesm add dir "${poolname}backup" "/backup_${poolprefix}"
-  pvesm add zfspool "${poolname}vmdata" -pool "${poolname}/vmdata" -sparse true
+  pvesm add zfspool "${poolname}vmdata" -pool "${poolname}/vmdata"
 fi
 
 echo "Setting ZFS Optimisations"
