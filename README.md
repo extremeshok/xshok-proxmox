@@ -56,6 +56,7 @@ After installation, login via ssh as root and create a password, which will be u
 
 # Post Install Script (postinstall.sh) *run once*
 *not required if server setup with hetzner-install.sh*
+* Added: 'reboot-quick' command with uses kexec to boot the latest kernel set in the boot loader
 * Disables the enterprise repo, enables the public repo
 * Adds non-free sources
 * Adds the latest ceph
