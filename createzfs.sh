@@ -164,7 +164,8 @@ zfs create -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${p
 #export the pool
 zpool export "${poolname}"
 sleep 10
-zpool export "${poolname}"
+zpool import "${poolname}"
+sleep 5
 
 echo "Setting ZFS Optimisations"
 zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
