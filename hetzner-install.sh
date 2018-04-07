@@ -22,17 +22,16 @@
 #
 ################################################################################
 #
-#
 #   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
 #
-##############################################################
+################################################################################
 
 #set size of swap file or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes
 MY_SWAP=""
 #comment out to disable LVM and use a very simple partition setup of / and swap
 USE_LVM="TRUE"
 
-##############################################################
+################################################################################
 
 installimage_bin="/root/.oldroot/nfs/install/installimage"
 
