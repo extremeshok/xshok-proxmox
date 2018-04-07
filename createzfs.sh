@@ -9,6 +9,9 @@
 #
 # Will create a ZFS pool from the devices specified with the correct raid level
 #
+# Note: compatible with all debian based distributions
+# If proxmox is detected, it will add the pools to the storage system
+#
 # License: BSD (Berkeley Software Distribution)
 #
 ################################################################################
@@ -154,6 +157,7 @@ echo "Creating Secondary ZFS Pools"
 zfs create -o mountpoint="/${poolname}/vmdata" "${poolname}/vmdata"
 zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 
+# pvesm (proxmox) is optional
 if type "pvesm" >& /dev/null; then
   echo "Adding the ZFS storage pools to Proxmox GUI"
   pvesm add dir "${poolname}backup" "/backup_${poolprefix}"
