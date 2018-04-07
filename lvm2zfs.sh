@@ -44,9 +44,11 @@
 # The default LVM mount which will be replaced with ZFS
 mypart="/var/lib/vz"
 
-#install zfs and enable
-apt-get install -y zfsutils-linux
-modprobe zfs
+#Detect and install dependencies
+if ! type "zpool" >& /dev/null; then
+  apt-get install -y zfsutils-linux
+  modprobe zfs
+fi
 
 mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
 ret=$?
@@ -153,12 +155,12 @@ fi
 
 echo "Creating Secondary ZFS Pools"
 zfs create rpool/vmdata
-zfs create -o mountpoint=/backup rpool/backup
+zfs create -o mountpoint=/backup_rpool rpool/backup
 zpool export rpool
 
 ## set vzdump temp dir to use the /backup/tmp
-mkdir -p /backup/tmp
-sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /backup/tmp|" /etc/vzdump.conf
+mkdir -p /backup_rpool/tmp
+sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /backup_rpool/tmp|" /etc/vzdump.conf
 
 echo "Cleaning up fstab / mounts"
 #/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
