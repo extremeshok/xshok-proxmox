@@ -154,17 +154,17 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
 fi
 
 echo "Creating Secondary ZFS Pools"
-echo " -- rpool/vmdata"
+echo "-- ${poolname}/vmdata"
 zfs create "${poolname}/vmdata"
-echo "-- rpool/backup (/backup_rpool)"
+echo "-- ${poolname}/backup (/backup_${poolprefix})"
 zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
-echo "-- rpool/tmp (/tmp_rpool)"
+echo "-- ${poolname}/tmp (/tmp_${poolprefix})"
 zfs create -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
 
 #export the pool
-zpool export rpool
+zpool export "${poolname}"
 sleep 10
-zpool export rpool
+zpool export "${poolname}"
 
 echo "Setting ZFS Optimisations"
 zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
