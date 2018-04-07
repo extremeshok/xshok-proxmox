@@ -153,7 +153,7 @@ if [ $ret != 0 ] ; then
 fi
 
 echo "Creating Secondary ZFS Pools"
-echo " -- rpool/vmdata"
+echo "-- rpool/vmdata"
 zfs create rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
 zfs create -o mountpoint=/backup_rpool rpool/backup
@@ -162,8 +162,9 @@ zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 
 #export the pool
 zpool export rpool
-sleep 10
-zpool export rpool
+sleep 5
+zpool import rpool
+sleep 5
 
 echo "Cleaning up fstab / mounts"
 #/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
