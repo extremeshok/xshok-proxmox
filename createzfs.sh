@@ -154,18 +154,20 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
 fi
 
 echo "Creating Secondary ZFS Pools"
-zfs create -o mountpoint="/${poolname}/vmdata" "${poolname}/vmdata"
+echo " -- rpool/vmdata"
+zfs create "${poolname}/vmdata"
+echo "-- rpool/backup (/backup_rpool)"
 zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
+echo "-- rpool/tmp (/tmp_rpool)"
+zfs create -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
 
-# pvesm (proxmox) is optional
-if type "pvesm" >& /dev/null; then
-  echo "Adding the ZFS storage pools to Proxmox GUI"
-  pvesm add dir "${poolname}backup" "/backup_${poolprefix}"
-  pvesm add zfspool "${poolname}vmdata" -pool "${poolname}/vmdata"
-fi
+#export the pool
+zpool export rpool
+sleep 10
+zpool export rpool
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup")
+zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
@@ -182,6 +184,16 @@ for zfspool in "${zfspoolarray[@]}" ; do
   fi  
   echo "zpool scrub $zfspool" >> "/etc/cron.weekly/${poolname}"
 done
+
+# pvesm (proxmox) is optional
+if type "pvesm" >& /dev/null; then
+  # https://pve.proxmox.com/pve-docs/pvesm.1.html
+  echo "Adding the ZFS storage pools to Proxmox GUI"
+  echo "-- ${poolname}-vmdata"
+  pvesm add zfspool ${poolname}-vmdata --pool "${poolname}/vmdata" --sparse 1
+  echo "-- ${poolname}-backup"
+  pvesm add dir ${poolname}-backup --path /backup_${poolprefix} 
+fi
 
 ### Work in progress , create specialised pools ###
 # echo "ZFS 8GB swap partition"
