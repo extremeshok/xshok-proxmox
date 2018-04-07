@@ -22,7 +22,7 @@ Wait a few mins
 Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && bash hetzner-install.sh 
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && chmod 777 hetzner-install.sh && ./hetzner-install.sh 
 ````
 
 # OVH Installation Guide #
@@ -55,6 +55,7 @@ After installation, login via ssh as root and create a password, which will be u
 # ------- SCRIPTS ------
 
 # Post Install Script (postinstall.sh) *run once*
+*not required if server setup with hetzner-install.sh*
 * Disables the enterprise repo, enables the public repo
 * Adds non-free sources
 * Adds the latest ceph
