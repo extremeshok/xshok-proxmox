@@ -11,55 +11,57 @@ Recommeneded partitioning scheme:
 
 # Hetzner Proxmox Installation Guide #
 *includes and runs the  (postinstall.sh) script*
-Select the Rescue tab for the specific server, via the hetzner robot manager
-Operating system=Linux, Architecture=64 bit, Public key=*optional*
---> Activate rescue system
-Select the Reset tab for the specific server,
-Check: Execute an automatic hardware reset
---> Send
-Wait a few mins
-Connect via ssh/terminal to the rescue system running on your server and run the following
+* Select the Rescue tab for the specific server, via the hetzner robot manager
+* * Operating system=Linux
+* * Architecture=64 bit
+* * Public key=*optional*
+* --> Activate rescue system
+* Select the Reset tab for the specific server,
+* Check: Execute an automatic hardware reset
+* --> Send
+* Wait a few mins
+* Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && chmod 777 hetzner-install.sh && ./hetzner-install.sh 
-reboot
 ````
-Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+* Reboot
+* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
-reboot
 ````
-Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
+* Reboot
+* Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
 
 
 # OVH Proxmox Installation Guide #
 Select install for the specific server, via the ovh manager
---INSTALL-->
-Install from an OVH template
---NEXT-->
-Type of OS: Ready-to-go (graphical user interface)
-VPS Proxmox VE *(pick the latest non zfs version)*
-Language: EN
-Target disk arrray: *(always select the SSD array if you have ssd and hdd arrays)*
-Enable/Tick: Customise the partition configuration
---NEXT-->
-Disks used for this installation: *(All of them)*
-(Remove all the partitions and do the following)
-Type: Filesystem: Mount Point: LVM Name: RAID: Size:
- 1	primary	Ext4	/	 -	1	20.0 GB
- 2	primary	Swap	swap -	-	2 x 8.0 GB	*(minimum 16GB total, set recommended swap size)*
- 3	LV	Ext4	/var/lib/vz	data	1	REMAINING GB *(use all the remaining space)*
---NEXT-->
-Hostname: server.fqdn.com
-Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
-Script return value: 0
-SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
---CONFIRM-->
+* --INSTALL-->
+* Install from an OVH template
+* --NEXT-->
+* Type of OS: Ready-to-go (graphical user interface)
+* VPS Proxmox VE *(pick the latest non zfs version)*
+* Language: EN
+* Target disk arrray: *(always select the SSD array if you have ssd and hdd arrays)*
+* Enable/Tick: Customise the partition configuration
+* --NEXT-->
+* Disks used for this installation: *(All of them)*
+* (Remove all the partitions and do the following)
+* Type: Filesystem: Mount Point: LVM Name: RAID: Size:
+* * 1	primary	Ext4	/	 -	1	20.0 GB
+* * 2	primary	Swap	swap -	-	2 x 8.0 GB	*(minimum 16GB total, set recommended swap size)*
+* * 3	LV	Ext4	/var/lib/vz	data	1	REMAINING GB *(use all the remaining space)*
+* --NEXT-->
+* Hostname: server.fqdn.com
+* Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+* Script return value: 0
+* SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
+* --CONFIRM-->
 After installation, Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
-reboot
 ````
-Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
+* Reboot
+* Post Install: login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
 
 
 # ------- SCRIPTS ------
