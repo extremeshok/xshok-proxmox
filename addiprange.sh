@@ -98,7 +98,7 @@ else
 	echo "Route is already active"
 fi
 
-if ! grep -q "source /etc/network/interfaces.d/*" ; then
+if ! grep -q "source /etc/network/interfaces.d/*" /etc/network/interfaces ; then
 	echo "Permantly added the route (/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev})"
 	echo "up route add -net $networkip netmask $netmask dev $gatewaydev" > "/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev}"
 else
