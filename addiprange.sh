@@ -102,15 +102,14 @@ if ! grep -q "source /etc/network/interfaces.d/*" ; then
 	echo "Permantly added the route (/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev})"
 	echo "up route add -net $networkip netmask $netmask dev $gatewaydev" > "/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev}"
 else
-#add the route, so we do not need to restart
-if [ -w "/etc/network/interfaces" ] ; then
-	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
-		echo "Permantly added the route"
-		echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
-	else
-		echo "Route is already permantly added"
+	if [ -w "/etc/network/interfaces" ] ; then
+		if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
+			echo "Permantly added the route"
+			echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/interfaces"
+		else
+			echo "Route is already permantly added"
+		fi
 	fi
 fi
-
 #script Finish
 echo -e '\033[1;33m Finished \033[0m'
