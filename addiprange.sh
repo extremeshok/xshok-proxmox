@@ -24,8 +24,7 @@
 #
 ################################################################################
 #
-#    THERE ARE  USER CONFIGURABLE OPTIONS IN THIS SCRIPT
-#   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
+#    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
 #
 ##############################################################
 
@@ -38,8 +37,8 @@ else
 	ipwithcidr=$1
 fi
 if ! [[ "$ipwithcidr" =~ "/" ]] ; then
-  echo "ERROR: IP missing cidr, use xxx.xxx.xxx.xxx/xx format: $ipwithcidr"
-  exit 1
+  echo "Info: IP missing cidr, assigning default: 32"
+  cidr="32"
 else
 	networkip=${ipwithcidr%/*}
 	cidr=${ipwithcidr##*/}
@@ -99,6 +98,10 @@ else
 	echo "Route is already active"
 fi
 
+if ! grep -q "source /etc/network/interfaces.d/*" ; then
+	echo "Permantly added the route (/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev})"
+	echo "up route add -net $networkip netmask $netmask dev $gatewaydev" > "/etc/network/interfaces.d/${networkip}_${cidr}_${gatewaydev}"
+else
 #add the route, so we do not need to restart
 if [ -w "/etc/network/interfaces" ] ; then
 	if ! grep -q "up route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/interfaces" ; then
