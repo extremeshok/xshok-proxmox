@@ -36,11 +36,11 @@
 
 network_interfaces_file="/etc/network/interfaces"
 
-if ! [ -f "addiprage.sh" ]; then
+if ! [ -f "network-addiprange.sh" ]; then
   curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 fi
-if ! grep -q '#!/bin/bash' "addiprange.sh"; then
-  echo "ERROR: addiprange.sh invalid"
+if ! grep -q '#!/bin/bash' "network-addiprange.sh"; then
+  echo "ERROR: network-addiprange.sh invalid"
 fi
 
 if ! [ -f "/etc/sysctl.d/99-networking.conf" ]; then
