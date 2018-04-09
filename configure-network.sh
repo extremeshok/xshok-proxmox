@@ -66,7 +66,7 @@ default_v4gateway="$(ip route | awk '/default/ { print $3 }')"
 default_v4="$(ip -4 addr show dev "$default_interface" | awk '/inet/ { print $2 }' )"
 default_v4ip=${default_v4%/*}
 default_v4mask=${default_v4#*/}
-if [ "$default_v4mask" == "" ] ;then
+if [ "$default_v4mask" == "$default_v4ip" ] ;then
   default_v4netmask="$(ifconfig vmbr0 | awk '/netmask/ { print $4 }')"
 else
   if [ "$default_v4mask" -lt "1" ] || [ "$default_v4mask" -gt "32" ] ; then
