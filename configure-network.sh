@@ -146,6 +146,7 @@ iface vmbr1 inet static
   bridge_fd 0
   post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
   post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
+
 EOF
 
 cat >> "$network_interfaces_file"  << EOF
