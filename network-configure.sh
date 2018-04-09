@@ -37,10 +37,11 @@
 network_interfaces_file="/etc/network/interfaces"
 
 if ! [ -f "network-addiprange.sh" ]; then
+  echo "Downloading network-addiprange.sh script"
   curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 fi
 if ! grep -q '#!/bin/bash' "network-addiprange.sh"; then
-  echo "ERROR: network-addiprange.sh invalid"
+  echo "ERROR: network-addiprange.sh is invalid"
 fi
 
 if ! [ -f "/etc/sysctl.d/99-networking.conf" ]; then
@@ -52,7 +53,8 @@ net.ipv6.conf.all.forwarding=1
 EOF
 fi
 
-# Auto detect the existing network settings... this is all for ipv4... eeek
+# Auto detect the existing network settings... this is all for ipv4
+echo "Auto detecting existing network settings"
 default_interface="$(ip route | awk '/default/ { print $5 }' | grep -v "vmbr")"
 if [ "$default_interface" == "" ]; then
   #filter the interfaces to get the default interface and which is not down and not a virtual bridge
@@ -163,3 +165,6 @@ cat >> "$network_interfaces_file"  << EOF
 # up route add -net 176.9.123.158 netmask 255.255.255.255 gw ${default_v4gateway} dev ${default_interface}
 
 EOF
+
+## Script Finish
+echo -e '\033[1;33m Finished....please restart the system \033[0m'
