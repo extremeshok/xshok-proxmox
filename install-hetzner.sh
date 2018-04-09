@@ -70,7 +70,7 @@ echo "Set swap size to ${MY_SWAP} GBytes"
 curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox5" --output /post-install
 
 #Customising post install file
-echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh" >> /post-install
+echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
