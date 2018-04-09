@@ -11,10 +11,19 @@
 #
 ################################################################################
 #
-## CREATES A ROUTED NETWORK CONFIGURATION for Proxmox, autodetecting the correct settings
-# All traffic is routed via the main IP address and uses the MAC address of the physical interface.
-# VM's can have multiple IP addresses and they do not require a MAC to be set for the IP via service providersIP management panel
+## CREATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX
+# Autodetects the correct settings (interface, gatewat, netmask, etc)
+# Supports IPv4 and IPv6, Private Network uses 10.10.10.1/24
+# ROUTED (vmbr0):
+#   All traffic is routed via the main IP address and uses the MAC address of the physical interface.
+#   VM's can have multiple IP addresses and they do NOT require a MAC to be set for the IP via service provider
+#
+# NAT (vmbr1):
+#   Allows a VM to have internet connectivity without requiring its own IP address
+#
 # Tested on OVH and Hetzner based servers
+#
+# ALSO CREATES A NAT Private Network as vmbr1
 #
 # NOTE: WILL OVERWRITE /etc/network/interfaces
 # A backup will be created as /etc/network/interfaces.timestamp
@@ -78,7 +87,8 @@ cp "$network_interfaces_file" "${network_interfaces_file}.$(date +"%Y-%m-%d_%H-%
 cat > "$network_interfaces_file" <<EOF
 ###### eXtremeSHOK.com
 
-# source /etc/network/interfaces.d/*
+# Load extra files, ie for extra gateways
+source /etc/network/interfaces.d/*
 
 auto lo
 iface lo inet loopback
@@ -124,6 +134,19 @@ iface vmbr0 inet6 static
 
 EOF
 fi
+
+cat >> "$network_interfaces_file"  << EOF
+### Private NAT network
+auto vmbr1
+iface vmbr1 inet static
+  address  10.10.10.1
+  netmask  255.255.255.0
+  bridge_ports none
+  bridge_stp off
+  bridge_fd 0
+  post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
+  post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
+EOF
 
 cat >> "$network_interfaces_file"  << EOF
 ### Extra IP/IP Ranges ###
