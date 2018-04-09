@@ -66,15 +66,19 @@ default_v4gateway="$(ip route | awk '/default/ { print $3 }')"
 default_v4="$(ip -4 addr show dev "$default_interface" | awk '/inet/ { print $2 }' )"
 default_v4ip=${default_v4%/*}
 default_v4mask=${default_v4#*/}
-if [ "$default_v4mask" -lt "1" ] || [ "$default_v4mask" -gt "32" ] ; then
-	echo "ERROR: Invalid CIDR $default_v4mask"
-	exit 1
+if [ "$default_v4mask" == "" ] ;then
+  default_v4netmask="$(ifconfig vmbr0 | awk '/netmask/ { print $4 }')"
+else
+  if [ "$default_v4mask" -lt "1" ] || [ "$default_v4mask" -gt "32" ] ; then
+    echo "ERROR: Invalid CIDR $default_v4mask"
+    exit 1
+  fi
+  cdr2mask () {
+    set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
+    if [[ "$1" -gt 1 ]] ; then shift "$1" ; else shift ; fi ;  echo "${1-0}.${2-0}.${3-0}.${4-0}"
+  }
+  default_v4netmask="$(cdr2mask "$default_v4mask")"
 fi
-cdr2mask () {
-  set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
-  if [[ "$1" -gt 1 ]] ; then shift "$1" ; else shift ; fi ;  echo "${1-0}.${2-0}.${3-0}.${4-0}"
-}
-default_v4netmask="$(cdr2mask "$default_v4mask")"
 
 if [ "$default_v4ip" == "" ] || [ "$default_v4netmask" == "" ] || [ "$default_v4gateway" == "" ]; then
   echo "ERROR: Could not detect all IPv4 varibles"
