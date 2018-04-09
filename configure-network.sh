@@ -25,7 +25,7 @@
 #
 ################################################################################
 
-network_interfaces_file="/etc/networking/interfaces"
+network_interfaces_file="/etc/network/interfaces"
 
 if ! [ -f "addiprage.sh" ]; then
   curl "https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/addiprange.sh" --output addiprange.sh
