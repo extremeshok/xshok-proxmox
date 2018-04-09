@@ -37,7 +37,7 @@
 network_interfaces_file="/etc/network/interfaces"
 
 if ! [ -f "addiprage.sh" ]; then
-  curl "https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/addiprange.sh" --output addiprange.sh
+  curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 fi
 if ! grep -q '#!/bin/bash' "addiprange.sh"; then
   echo "ERROR: addiprange.sh invalid"
@@ -155,7 +155,7 @@ EOF
 
 cat >> "$network_interfaces_file"  << EOF
 ### Extra IP/IP Ranges ###
-# Use addiprange.sh script to add ip/ip ranges or edit the examples below
+# Use ./network-addiprange.sh script to add ip/ip ranges or edit the examples below
 #
 ## Example add IP range 176.9.216.192/27
 # up route add -net 94.130.239.192 netmask 255.255.255.192 gw ${default_v4gateway} dev ${default_interface}
