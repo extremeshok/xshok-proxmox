@@ -14,6 +14,9 @@
 ## CREATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX
 # Autodetects the correct settings (interface, gatewat, netmask, etc)
 # Supports IPv4 and IPv6, Private Network uses 10.10.10.1/24
+#
+# Also installs and properly configures the isc-dhcp-server to allow for DHCP on the vmbr1 (NAT)
+#
 # ROUTED (vmbr0):
 #   All traffic is routed via the main IP address and uses the MAC address of the physical interface.
 #   VM's can have multiple IP addresses and they do NOT require a MAC to be set for the IP via service provider
@@ -36,6 +39,11 @@
 
 network_interfaces_file="/etc/network/interfaces"
 
+#Detect and install dependencies
+if ! type "dhcpd" >& /dev/null; then
+  apt-get install -y isc-dhcp-server
+fi
+
 if ! [ -f "network-addiprange.sh" ]; then
   echo "Downloading network-addiprange.sh script"
   curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
@@ -52,6 +60,95 @@ net.ipv4.conf.eth0.send_redirects=0
 net.ipv6.conf.all.forwarding=1
 EOF
 fi
+
+# Configure isc-dhcp-server
+if [ -f "/etc/default/isc-dhcp-server" ] ; then
+  cp /etc/default/isc-dhcp-server "/etc/default/isc-dhcp-server.$(date +"%Y-%m-%d_%H-%M-%S")"
+fi
+if [ -f "/etc/dhcp/dhcpd.conf" ] ; then
+  cp /etc/dhcp/dhcpd.conf "/etc/dhcp/dhcpd.conf.$(date +"%Y-%m-%d_%H-%M-%S")"
+fi
+
+cat > /etc/default/isc-dhcp-server <<EOF
+# Defaults for isc-dhcp-server (sourced by /etc/init.d/isc-dhcp-server)
+
+# Path to dhcpd's config file (default: /etc/dhcp/dhcpd.conf).
+#DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+#DHCPDv6_CONF=/etc/dhcp/dhcpd6.conf
+
+# Path to dhcpd's PID file (default: /var/run/dhcpd.pid).
+#DHCPDv4_PID=/var/run/dhcpd.pid
+#DHCPDv6_PID=/var/run/dhcpd6.pid
+
+# Additional options to start dhcpd with.
+#       Don't use options -cf or -pf here; use DHCPD_CONF/ DHCPD_PID instead
+#OPTIONS=""
+
+# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?
+#       Separate multiple interfaces with spaces, e.g. "eth0 eth1".
+INTERFACESv4="vmbr0 vmbr1"
+#INTERFACESv6="vmbr0"
+EOF
+
+cat > /etc/dhcp/dhcpd.conf <<EOF
+#### NOTES ####
+## EXAMPLE client /etc/network/interfaces
+# auto lo
+# iface lo inet loopback
+# auto eth0
+# iface eth0 inet dhcp
+###########
+## alpine linux dhcp requires:
+# apk add dhclient
+###############
+
+ddns-update-style none;
+default-lease-time 600;
+max-lease-time 7200;
+log-facility local7;
+
+option rfc3442-classless-static-routes code 121 = array of integer 8;
+option ms-classless-static-routes code 249 = array of integer 8;
+
+option domain-name-servers home;
+
+### vmbr1 ; Private NAT network
+subnet 10.10.10.0 netmask 255.255.255.0 {
+  range 10.10.10.100 10.10.10.200 ;
+  authoritative;
+  default-lease-time 600;
+  max-lease-time 432000000;
+  option routers 10.10.10.1;
+  option subnet-mask 255.255.255.0;
+  option time-offset -18000;
+  option broadcast-address 10.10.10.255;
+  option rfc3442-classless-static-routes 32, 10, 10, 10, 1, 0, 0, 0, 0, 0, 10, 10, 10, 1;
+  option ms-classless-static-routes 32, 10, 10, 10, 1, 0, 0, 0, 0, 0, 10, 10, 10, 1;
+}
+
+### Extra IP Ranges ###
+## Example IP 11.22.33.44 for host my.example.com via 5.6.7.8
+#subnet 0.0.0.0 netmask 0.0.0.0 {
+#  authoritative;
+#  default-lease-time 21600000;
+#  max-lease-time 432000000;
+#
+#  option routers 5.6.7.8;
+#  option subnet-mask 255.255.255.0;
+#  #option broadcast-address 5.6.7.8;
+#  option domain-name-servers 1.1.1.1,8.8.8.8,8.8.4.4;
+#
+#  option rfc3442-classless-static-routes 24, 5, 6, 7, 8, 0, 0, 0, 0, 0, 5, 6, 7, 8;
+#  option ms-classless-static-routes 24, 5, 6, 7, 8, 0, 0, 0, 0, 0, 5, 6, 7, 8;
+#
+#  host my.example.com {
+#    hardware ethernet 9E:94:13:7D:F3:0E;
+#    fixed-address 11.22.33.44;
+#  }
+#}
+
+EOF
+systemctl enable isc-dhcp-server
 
 # Auto detect the existing network settings... this is all for ipv4
 echo "Auto detecting existing network settings"
