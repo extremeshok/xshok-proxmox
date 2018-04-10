@@ -36,12 +36,6 @@ sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 ## Install the latest ceph provided by proxmox
 echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
 
-## Bugfix frozen/hung update caused by broken ceph systemd script
-if [ -f /etc/systemd/system/ceph.service ]; then
-	sed -i "s/=ceph.target/=multi-user.target/" /etc/systemd/system/ceph.service
-	systemctl daemon-reload; systemctl disable ceph.service; systemctl enable ceph.service; systemctl daemon-reexec
-fi
-
 ## Refresh the package lists
 apt-get update
 
