@@ -249,8 +249,8 @@ subnet 0.0.0.0 netmask 0.0.0.0 {
   default-lease-time 21600000;
   max-lease-time 432000000;
   option routers ${default_v4ip};  
-  option rfc3442-classless-static-routes 24, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
-  option ms-classless-static-routes 24, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
+  option rfc3442-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
+  option ms-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
 }
 
 ## Assign a specific IP to a VM/CT with MAC 9E:94:13:7D:F3:0E to the IP 11.22.33.44 for host my.example.com
