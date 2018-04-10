@@ -123,7 +123,7 @@ iface ${default_interface} inet static
 # VM-Bridge used by Proxmox Guests
 auto vmbr0
 iface vmbr0 inet static
-  address cat /
+  address ${default_v4ip}
   netmask ${default_v4netmask}
   bridge_ports none
   bridge_stp off
