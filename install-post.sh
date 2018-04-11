@@ -101,6 +101,10 @@ echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 apt-get autoremove -y
 apt-get autoclean -y
 
+## Disable portmapper / rpcbind (security)
+systemctl disable rpcbind
+systemctl stop rpcbind
+
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone UTC
 echo > /etc/systemd/timesyncd.conf <<EOF
