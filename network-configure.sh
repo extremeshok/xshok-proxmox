@@ -107,6 +107,7 @@ cat > "$network_interfaces_file" <<EOF
 # Load extra files, ie for extra gateways
 source /etc/network/interfaces.d/*
 
+### LOOPBACK ###
 auto lo
 iface lo inet loopback
 iface lo inet6 loopback
@@ -120,7 +121,7 @@ iface ${default_interface} inet static
   gateway ${default_v4gateway}
   pointopoint ${default_v4gateway}
 
-# VM-Bridge used by Proxmox Guests
+### VM-Bridge used by Proxmox
 auto vmbr0
 iface vmbr0 inet static
   address ${default_v4ip}
@@ -129,6 +130,18 @@ iface vmbr0 inet static
   bridge_stp off
   bridge_fd 0
   bridge_maxwait 0
+
+### Private NAT used by Proxmox
+auto vmbr1
+iface vmbr1 inet static
+  address  10.10.10.1
+  netmask  255.255.255.0
+  bridge_ports none
+  bridge_stp off
+  bridge_fd 0
+  bridge_maxwait 0
+  post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
+  post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
 
 EOF
 
@@ -152,28 +165,15 @@ iface vmbr0 inet6 static
 EOF
 fi
 
-cat >> "$network_interfaces_file"  << EOF
-### Private NAT network
-auto vmbr1
-iface vmbr1 inet static
-  address  10.10.10.1
-  netmask  255.255.255.0
-  bridge_ports none
-  bridge_stp off
-  bridge_fd 0
-  post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
-  post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
-
-EOF
 
 cat >> "$network_interfaces_file"  << EOF
 ### Extra IP/IP Ranges ###
 # Use ./network-addiprange.sh script to add ip/ip ranges or edit the examples below
 #
 ## Example add IP range 176.9.216.192/27
-# up route add -net 94.130.239.192 netmask 255.255.255.192 gw ${default_v4gateway} dev ${default_interface}
+# up route add -net 94.130.239.192 netmask 255.255.255.192 dev vmbr0
 ## Example add IP 176.9.123.158
-# up route add -net 176.9.123.158 netmask 255.255.255.255 gw ${default_v4gateway} dev ${default_interface}
+# up route add -net 176.9.123.158 netmask 255.255.255.255 dev vmbr0
 
 EOF
 
@@ -248,7 +248,8 @@ subnet 0.0.0.0 netmask 0.0.0.0 {
   authoritative;
   default-lease-time 21600000;
   max-lease-time 432000000;
-  option routers ${default_v4ip};  
+  option routers ${default_v4ip};
+  option subnet-mask 255.255.255.255;
   option rfc3442-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
   option ms-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
 }
