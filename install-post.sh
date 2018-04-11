@@ -63,8 +63,11 @@ systemctl enable ksmtuned
 echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois omping wget axel nano ntp pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y whois omping wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
+
+## Remove conflicting utilities
+apt-get purge -y ntp openntpd chrony
 
 ## Detect AMD EPYC CPU and install kernel 4.15
 if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
@@ -99,6 +102,8 @@ apt-get autoremove -y
 apt-get autoclean -y
 
 ## Set Timezone to UTC and enable NTP
+# purge ntp*
+
 timedatectl set-timezone UTC
 echo > /etc/systemd/timesyncd.conf <<EOF
 [Time]
