@@ -252,18 +252,30 @@ group public {
   option subnet-mask 255.255.255.255;
   option rfc3442-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
   option ms-classless-static-routes 32, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]}, 0, 0, 0, 0, 0, ${default_v4ip_array[0]}, ${default_v4ip_array[1]}, ${default_v4ip_array[2]}, ${default_v4ip_array[3]};
-
-## Assign a specific IP to a VM/CT with MAC 9E:94:13:7D:F3:0E to the IP 11.22.33.44 for host my.example.com
-## set the bridge to vmbr0 and the MAC address will need to match the "hardware ethernet" MAC
-#  host my.example.com {
-#    hardware ethernet 9E:94:13:7D:F3:0E;
-#    fixed-address 11.22.33.44;
-#  }
-
+  # Add your host defines to the /etc/dhcp/hosts.public file
+  include "/etc/dhcp/hosts.public";
 }
 #end group public
 
 EOF
+if [ ! -f "/etc/dhcp/hosts.public" ] ; then
+cat > "/etc/dhcp/hosts.public" <<EOF
+## Assign a specific IP to a VM/CT with MAC 9E:94:13:7D:F3:0E to the IP 11.22.33.44 for host my.example.com
+## set the bridge to vmbr0 and the MAC address will need to match the "hardware ethernet" MAC
+#  host my.example.com {
+#    hardware ethernet AA:BB:CC:DD:EE:00;
+#    fixed-address 11.22.33.44;
+#  }
+#  host another.examle.com {
+#    option host-name "another.example.com"
+#    hardware ethernet 00:EE:DD:CC:BB:AA;
+#    fixed-address 44.33.22.11;
+#  }
+#
+#
+#
+EOF
+fi
 
 systemctl enable isc-dhcp-server
 
