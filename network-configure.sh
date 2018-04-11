@@ -23,6 +23,9 @@
 #
 # NAT (vmbr1):
 #   Allows a VM to have internet connectivity without requiring its own IP address
+#   Assignes 10.10.10.100 - 10.10.10.200 via DHCP
+#
+# Public IP's can be assigned via DHCP, adding a host define to the /etc/dhcp/hosts.public file
 #
 # Tested on OVH and Hetzner based servers
 #
