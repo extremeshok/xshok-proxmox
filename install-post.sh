@@ -57,7 +57,7 @@ apt-get install -y zfsutils
 
 ## Install missing ksmtuned
 apt-get install -y ksmtuned
-systemctrl enable ksmtuned
+systemctl enable ksmtuned
 
 ## Install ceph support
 echo "Y" | pveceph install
@@ -97,6 +97,19 @@ echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 ## Remove no longer required packages and purge old cached updates
 apt-get autoremove -y
 apt-get autoclean -y
+
+## Set Timezone to UTC and enable NTP
+timedatectl set-timezone UTC
+echo > /etc/systemd/timesyncd.conf <<EOF
+[Time]
+NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
+FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+RootDistanceMaxSec=5
+PollIntervalMinSec=32
+PollIntervalMaxSec=2048
+EOF
+service systemd-timesyncd start
+timedatectl set-ntp true 
 
 ## Set pigz to replace gzip, 2x faster gzip compression
 cat > /bin/pigzwrapper <<EOF
