@@ -102,8 +102,6 @@ apt-get autoremove -y
 apt-get autoclean -y
 
 ## Set Timezone to UTC and enable NTP
-# purge ntp*
-
 timedatectl set-timezone UTC
 echo > /etc/systemd/timesyncd.conf <<EOF
 [Time]
