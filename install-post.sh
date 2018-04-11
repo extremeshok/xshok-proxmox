@@ -55,6 +55,10 @@ apt-get install -y openvswitch-switch
 ## Install zfs support, appears to be missing on some Proxmox installs.
 apt-get install -y zfsutils
 
+## Install missing ksmtuned
+apt-get install -y ksmtuned
+systemctrl enable ksmtuned
+
 ## Install ceph support
 echo "Y" | pveceph install
 
