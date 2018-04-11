@@ -211,16 +211,8 @@ INTERFACESv4="vmbr0 vmbr1"
 EOF
 
 cat > /etc/dhcp/dhcpd.conf <<EOF
-#### NOTES ####
-## EXAMPLE client /etc/network/interfaces
-# auto lo
-# iface lo inet loopback
-# auto eth0
-# iface eth0 inet dhcp
-###########
-## alpine linux dhcp requires:
-# apk add dhclient
-###############
+### eXtremeSHOK.com
+# https://linux.die.net/man/5/dhcpd.conf
 
 ddns-update-style none;
 default-lease-time 600;
@@ -263,6 +255,17 @@ group public {
 EOF
 if [ ! -f "/etc/dhcp/hosts.public" ] ; then
 cat > "/etc/dhcp/hosts.public" <<EOF
+###########
+## EXAMPLE client /etc/network/interfaces
+# auto lo
+# iface lo inet loopback
+# auto eth0
+# iface eth0 inet dhcp
+###########
+## Alpine linux dhcp requires:
+# apk add dhclient
+###########
+
 ## Assign a specific IP to a VM/CT with MAC 9E:94:13:7D:F3:0E to the IP 11.22.33.44 for host my.example.com
 ## set the bridge to vmbr0 and the MAC address will need to match the "hardware ethernet" MAC
 #  host my.example.com {
