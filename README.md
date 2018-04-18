@@ -10,7 +10,7 @@ Recommeneded partitioning scheme:
 * Remaining for lv	ext4	/var/lib/vz (LVM)
 
 # Hetzner Proxmox Installation Guide #
-*includes and runs the  (postinstall.sh) script*
+*includes and runs the  (install-post.sh) script*
 * Select the Rescue tab for the specific server, via the hetzner robot manager
 * * Operating system=Linux
 * * Architecture=64 bit
@@ -22,7 +22,7 @@ Recommeneded partitioning scheme:
 * Wait a few mins
 * Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O hetzner-install.sh && chmod 777 hetzner-install.sh && ./hetzner-install.sh 
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O install-hetzner.sh && chmod 777 hetzner-install.sh && ./install-hetzner.sh 
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
@@ -52,7 +52,7 @@ Select install for the specific server, via the ovh manager
 * * 3	LV	Ext4	/var/lib/vz	data	1	REMAINING GB *(use all the remaining space)*
 * --NEXT-->
 * Hostname: server.fqdn.com
-* Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+* Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
 * Script return value: 0
 * SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
 * --CONFIRM-->
@@ -66,8 +66,8 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.
 
 # ------- SCRIPTS ------
 
-# Post Install Script (postinstall.sh) *run once*
-*not required if server setup with hetzner-install.sh*
+# Post Install Script (install-post.sh aka postinstall.sh) *run once*
+*not required if server setup with install-hetzner.sh*
 * Added: 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
 * Disables the enterprise repo, enables the public repo
 * Adds non-free sources
@@ -80,12 +80,13 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.
 * Increase max File Discriptor Limits
 * Increase max Key limits
 * Detect AMD EPYC CPU and install kernel 4.15
+* Detect AMD EPYC CPU and Apply EPYC fix to kernel
 
-https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh
+https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
 
 return value is 0
 
-Or run *postinstall.sh* after installation
+Or run *install-post.sh* after installation
 
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
