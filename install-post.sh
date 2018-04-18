@@ -176,7 +176,7 @@ sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 # create a daily cron to make sure the banner does not re-appear
 cat > /etc/cron.daily/proxmox-nosub <<EOF
-##!/bin/sh
+#!/bin/sh
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
 chmod 755 /etc/cron.daily/proxmox-nosub
