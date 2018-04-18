@@ -71,8 +71,15 @@ apt-get purge -y ntp openntpd chrony
 
 ## Detect AMD EPYC CPU and install kernel 4.15
 if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
-	echo "AMD EPYC detected, installing kernel 4.15"
-	apt-get install -y pve-kernel-4.15
+  echo "AMD EPYC detected"
+  #Apply EPYC fix to kernel : Fixes random crashing and instability
+  if ! cat /etc/default/grub | grep "GRUB_CMDLINE_LINUX_DEFAULT" | grep -q "idle=nomwait" ; then
+    echo "Setting kernel idle=nomwait"
+    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
+    update-grub
+  fi
+  echo "Installing kernel 4.15"
+  apt-get install -y pve-kernel-4.15
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
@@ -166,11 +173,11 @@ sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
  sysctl -p
 
 ## Remove subscription banner
-sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 # create a daily cron to make sure the banner does not re-appear
 cat > /etc/cron.daily/proxmox-nosub <<EOF
 ##!/bin/sh
-sed -i.bak "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
 chmod 755 /etc/cron.daily/proxmox-nosub
 
