@@ -1,4 +1,4 @@
-# xshok-proxmox :: proxmox post installation scripts
+# xshok-proxmox :: eXtremeSHOK.com Proxmox (pve) scripts
 
 ## Install Proxmox Recommendations
 Recommeneded partitioning scheme:
