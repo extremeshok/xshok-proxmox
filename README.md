@@ -154,14 +154,3 @@ bash tincvpn.sh -i 2 -c host3
 ```
 bash tincvpn.sh -i 3 -c host1
 ```
-
-# NOTES
-
-## Alpine Linux KVM / Qemu Agent Client Fix
-Run the following on the guest alpine linux
-```
-apk update && apk add qemu-guest-agent
-echo 'GA_PATH="/dev/vport2p1"' >> /etc/conf.d/qemu-guest-agent
-rc-update add qemu-guest-agent default
-/etc/init.d/qemu-guest-agent restart
-```
