@@ -13,7 +13,26 @@
 #
 ################################################################################
 #
-# Assumptions: proxmox installed
+# Assumptions: proxmox installed via OVH manager (non zfs)
+# Remaining for /var/lib/vz (LVM)
+#
+# Creates the following storage/rpools
+# zfsbackup (rpool/backup)
+# zfsvmdata (rpool/vmdata)
+#
+# Will automatically detect the required raid level and optimise.
+#
+# 1 Drive = zfs
+# 2 Drives = mirror
+# 3-5 Drives = raidz-1
+# 6-11 Drives = raidz-2
+# 11+ Drives = raidz-3
+#
+# NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz
+#
+# Usage:
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
+# ./lvm2zfs.sh
 #
 ################################################################################
 #
@@ -21,206 +40,196 @@
 #
 ################################################################################
 
-## disable enterprise proxmox repo
-if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-	echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
+# The default LVM mount which will be replaced with ZFS
+mypart="/var/lib/vz"
+echo "mypart=$mypart"
+
+#Detect and install dependencies
+if ! type "zpool" >& /dev/null; then
+  apt-get install -y zfsutils-linux
+  modprobe zfs
 fi
-## enable public proxmox repo
-if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-	echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
+
+mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
+ret=$?
+if [ $ret == 0 ] ; then
+   echo "Found partition, continuing"
+   echo "mydev=$mydev" #/dev/mapper/pve-data
+else
+  echo "ERROR: $mypart not found"
 fi
 
-## Add non-free to sources
-sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
+if [ "$(which zpool)" == "" ] ; then
+  echo "ERROR: ZFS not installed"
+  exit 1
+fi
 
-## Install the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
+myraid=$(pvdisplay 2> /dev/null  | sed -n -e 's/^.*\/dev\///p')
+ret=$?
+if [ $ret == 0 ] ; then
+   echo "Found raid, continuing"
+   echo "myraid=$myraid" #md5
+else
+  echo "ERROR: $myraid not found"
+  exit 1
+fi
 
-## Refresh the package lists
-apt-get update
+#pve/data
+mylv=$(lvdisplay "$mydev" 2> /dev/null | sed -n -e 's/^.*\/dev\///p')
+ret=$?
+if [ $ret == 0 ] ; then
+  echo "Found lv, continuing"
+  echo "mylv=$mylv" #sda1
+else
+  echo "ERROR: $mylv not found"
+  exit 1
+fi
 
-## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+IFS=' ' read -r -a mddevarray <<< "$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
 
-## Update proxmox and install various system utils
-apt-get -y dist-upgrade --force-yes
-pveam update
+if [ "${mddevarray[0]}" == "" ] ; then
+  echo "ERROR: no devices found for $myraid in /proc/mdstat"
+  exit 1
+fi
+#check there is a minimum of 1 drives detected, not needed, but i rather have it.
+if [ "${#mddevarray[@]}" -lt "1" ] ; then
+  echo "ERROR: less than 1 devices were detected"
+  exit 1
+fi
 
-## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+if [ "$mydev" != "" ] && [ "$myraid" != "" ] && [ "$mylv" != "" ] ; then
+  echo "All required varibles detected"
+else
+  echo "ERROR: required varible not found or the server is already converted to zfs"
+  exit 1
+fi
 
-## Install openvswitch for a virtual internal network
-apt-get install -y openvswitch-switch
+# remove [*] and /dev/ to each record
+echo "Creating the device array"
+for index in "${!mddevarray[@]}" ; do
+    tempmddevarraystring="${mddevarray[index]}"
+    mddevarray[$index]="/dev/${tempmddevarraystring%\[*\]}"
+done
 
-## Install zfs support, appears to be missing on some Proxmox installs.
-apt-get install -y zfsutils
+echo "Destroying LV (logical volume)"
+echo umount -l "$mypart"
+umount -l "$mypart"
+echo lvremove "/dev/$mylv" -y 2> /dev/null
+lvremove "/dev/$mylv" -y 2> /dev/null
 
-## Install missing ksmtuned
-apt-get install -y ksmtuned
-systemctl enable ksmtuned
+echo "Destroying MD (linux raid)"
+echo mdadm --stop "/dev/$myraid"
+mdadm --stop "/dev/$myraid"
+echo mdadm --remove "/dev/$myraid"
+mdadm --remove "/dev/$myraid"
 
-## Install ceph support
-echo "Y" | pveceph install
+for mydev in "${mddevarray[@]}" ; do
+    echo "zeroing $mydev"
+    echo mdadm --zero-superblock "$mydev"
+    mdadm --zero-superblock "$mydev"
+done
 
-## Install common system utilities
-apt-get install -y whois omping wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
-#snmpd snmp-mibs-downloader
+# #used to make a max free space lvm
+# #lvcreate -n ZFS pve -l 100%FREE -y
+if [ "${#mddevarray[@]}" -eq "1" ] ; then
+  echo "Creating ZFS mirror (raid1)"
+  echo zpool create -f -o ashift=12 -O compression=lz4 rpool "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool "${mddevarray[@]}"
+  ret=$?
+elif [ "${#mddevarray[@]}" -eq "2" ] ; then
+  echo "Creating ZFS mirror (raid1)"
+  echo zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${mddevarray[@]}"
+  ret=$?
+elif [ "${#mddevarray[@]}" -ge "3" ] && [ "${#mddevarray[@]}" -le "5" ] ; then
+  echo "Creating ZFS raidz-1 (raid5)"
+  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz "${mddevarray[@]}"
+  ret=$?
+elif [ "${#mddevarray[@]}" -ge "6" ] && [ "${#mddevarray[@]}" -lt "11" ] ; then
+  echo "Creating ZFS raidz-2 (raid6)"
+  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz2 "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz2 "${mddevarray[@]}"
+  ret=$?
+elif [ "${#mddevarray[@]}" -ge "11" ] ; then
+  echo "Creating ZFS raidz-3 (raid7)"
+  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz3 "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz3 "${mddevarray[@]}"
+  ret=$?
+fi
 
-## Remove conflicting utilities
-apt-get purge -y ntp openntpd chrony
+if [ $ret != 0 ] ; then
+  echo "ERROR: creating ZFS"
+  exit 1
+fi
 
-## Detect AMD EPYC CPU and install kernel 4.15
-if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
-  echo "AMD EPYC detected"
-  #Apply EPYC fix to kernel : Fixes random crashing and instability
-  if ! cat /etc/default/grub | grep "GRUB_CMDLINE_LINUX_DEFAULT" | grep -q "idle=nomwait" ; then
-    echo "Setting kernel idle=nomwait"
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
-    update-grub
+echo "Creating Secondary ZFS Pools"
+echo "-- rpool/vmdata"
+echo zfs create rpool/vmdata
+zfs create rpool/vmdata
+echo "-- rpool/backup (/backup_rpool)"
+echo zfs create -o mountpoint=/backup_rpool rpool/backup
+zfs create -o mountpoint=/backup_rpool rpool/backup
+echo "-- rpool/tmp (/tmp_rpool)"
+echo zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+
+#export the pool
+echo zpool export rpool
+zpool export rpool
+echo sleep 5
+sleep 5
+echo zpool import rpool
+zpool import rpool
+echo sleep 5
+sleep 5
+
+echo "Cleaning up fstab / mounts"
+#/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
+grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
+
+echo "Setting ZFS Optimisations"
+zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup" "rpool/tmp")
+for zfspool in "${zfspoolarray[@]}" ; do
+  echo "Optimising $zfspool"
+  echo zfs set compression=on "$zfspool"
+  zfs set compression=on "$zfspool"
+  echo zfs set compression=lz4 "$zfspool"
+  zfs set compression=lz4 "$zfspool"
+  echo zfs set sync=disabled "$zfspool"
+  zfs set sync=disabled "$zfspool"
+  echo zfs set primarycache=all "$zfspool"
+  zfs set primarycache=all "$zfspool"
+  echo zfs set atime=off "$zfspool"
+  zfs set atime=off "$zfspool"
+  echo zfs set checksum=off "$zfspool"
+  zfs set checksum=off "$zfspool"
+  echo zfs set dedup=off "$zfspool"
+  zfs set dedup=off "$zfspool"
+
+  echo "Adding weekly pool scrub for ${zfspool}"
+  if [ ! -f "/etc/cron.weekly/rpool" ] ; then
+    echo '#!/bin/bash' > "/etc/cron.weekly/rpool"
   fi
-  echo "Installing kernel 4.15"
-  apt-get install -y pve-kernel-4.15
+  echo "zpool scrub ${zfspool}" >> "/etc/cron.weekly/rpool"
+
+done
+
+if [ -f "/etc/vzdump.conf" ]; then
+  echo "set vzdump temp dir to use the /tmp_rpool"
+  sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /tmp_rpool|" /etc/vzdump.conf
 fi
 
-## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
-# use command 'reboot-quick'
-echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-apt-get install -y kexec-tools
-
-cat > /etc/systemd/system/kexec-pve.service <<EOF
-[Unit]
-Description=boot into into the latest pve kernel set as primary in the boot-loader
-Documentation=man:kexec(8)
-DefaultDependencies=no
-Before=shutdown.target umount.target final.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/kexec -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
-
-[Install]
-WantedBy=kexec.target
-EOF
-systemctl enable kexec-pve.service
-echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
-
-## Remove no longer required packages and purge old cached updates
-apt-get autoremove -y
-apt-get autoclean -y
-
-## Disable portmapper / rpcbind (security)
-systemctl disable rpcbind
-systemctl stop rpcbind
-
-## Set Timezone to UTC and enable NTP
-timedatectl set-timezone UTC
-echo > /etc/systemd/timesyncd.conf <<EOF
-[Time]
-NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
-FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
-RootDistanceMaxSec=5
-PollIntervalMinSec=32
-PollIntervalMaxSec=2048
-EOF
-service systemd-timesyncd start
-timedatectl set-ntp true 
-
-## Set pigz to replace gzip, 2x faster gzip compression
-cat > /bin/pigzwrapper <<EOF
-#!/bin/sh
-PATH=/bin:\$PATH
-GZIP="-1"
-exec /usr/bin/pigz "\$@"
-EOF
-mv -f /bin/gzip /bin/gzip.original
-cp -f /bin/pigzwrapper /bin/gzip
-chmod +x /bin/pigzwrapper
-chmod +x /bin/gzip
-
-## Detect if this is an OVH server by getting the global IP and checking the ASN
-if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
-	echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
-	#http://help.ovh.co.uk/RealTimeMonitoring
-	wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+if type "pvesm" >& /dev/null; then
+  # https://pve.proxmox.com/pve-docs/pvesm.1.html
+  echo "Adding the ZFS storage pools to Proxmox GUI"
+  echo "-- rpool-vmdata"
+  echo pvesm add zfspool rpool-vmdata --pool rpool/vmdata --sparse 1
+  pvesm add zfspool rpool-vmdata --pool rpool/vmdata --sparse 1
+  echo "-- rpool-backup"
+  echo pvesm add dir rpool-backup --path /backup_rpool
+  pvesm add dir rpool-backup --path /backup_rpool
 fi
 
-## Protect the web interface with fail2ban
-apt-get install -y fail2ban
-cat > /etc/fail2ban/filter.d/proxmox.conf <<EOF
-[Definition]
-failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
-ignoreregex =
-EOF
-cat > /etc/fail2ban/jail.d/proxmox <<EOF
-[proxmox]
-enabled = true
-port = https,http,8006
-filter = proxmox
-logpath = /var/log/daemon.log
-maxretry = 3
-# 1 hour
-bantime = 3600
-EOF
-systemctl enable fail2ban
-##testing
-#fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
-
-## Increase vzdump backup speed
-sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
-
-## Bugfix: pve 5.1 high swap usage with low memory usage
- echo "vm.swappiness=10" >> /etc/sysctl.conf
- sysctl -p
-
-## Remove subscription banner
-sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-# create a daily cron to make sure the banner does not re-appear
-cat > /etc/cron.daily/proxmox-nosub <<EOF
-#!/bin/sh
-sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-EOF
-chmod 755 /etc/cron.daily/proxmox-nosub
-
-## Pretty MOTD
-if ! grep -q https "/etc/motd" ; then
-cat > /etc/motd.new <<'EOF'
-   This system is optimised by:            https://eXtremeSHOK.com
-     __   ___                            _____ _    _  ____  _  __
-     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
- / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
- \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
-
-
-EOF
-	cat /etc/motd >> /etc/motd.new
-	mv /etc/motd.new /etc/motd
-fi
-
-## Increase max user watches
-# BUG FIX : No space left on device
-echo 1048576 > /proc/sys/fs/inotify/max_user_watches
-echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
-sysctl -p /etc/sysctl.conf
-
-## Increase max FD limit / ulimit
-cat <<'EOF' >> /etc/security/limits.conf
-* soft     nproc          131072
-* hard     nproc          131072
-* soft     nofile         131072
-* hard     nofile         131072
-root soft     nproc          131072
-root hard     nproc          131072
-root soft     nofile         131072
-root hard     nofile         131072
-EOF
-
-## Increase kernel max Key limit
-cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
-kernel.keys.root_maxkeys=1000000
-kernel.keys.maxkeys=1000000
-EOF
-
-## Script Finish
-echo -e '\033[1;33m Finished....please restart the system \033[0m'
+#script Finish
+echo -e '\033[1;33m Finished....please restart the server \033[0m'
