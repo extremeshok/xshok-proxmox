@@ -22,7 +22,7 @@ Recommeneded partitioning scheme:
 * Wait a few mins
 * Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner-install.sh -c -O install-hetzner.sh && chmod 777 hetzner-install.sh && ./install-hetzner.sh 
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod 777 install-hetzner.sh && ./install-hetzner.sh 
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
