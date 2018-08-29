@@ -129,11 +129,35 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzf
 bash createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
-#  Creates default routes to allow for extra ip ranges to be used (addiprange.sh) *optional*
+#  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
 If no interface is specified the default gateway interface will be detected and used.
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/addiprange.sh -c -O addiprange.sh
-bash addiprange.sh ip.xx.xx.xx/cidr interface_optional
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh
+bash network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
+```
+# REATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX (network-configure.sh) *optional*
+Autodetects the correct settings (interface, gatewat, netmask, etc)
+Supports IPv4 and IPv6, Private Network uses 10.10.10.1/24
+Also installs and properly configures the isc-dhcp-server to allow for DHCP on the vmbr1 (NAT)
+ROUTED (vmbr0):
+   All traffic is routed via the main IP address and uses the MAC address of the physical interface.
+   VM's can have multiple IP addresses and they do NOT require a MAC to be set for the IP via service provider
+
+ NAT (vmbr1):
+   Allows a VM to have internet connectivity without requiring its own IP address
+   Assignes 10.10.10.100 - 10.10.10.200 via DHCP
+
+ Public IP's can be assigned via DHCP, adding a host define to the /etc/dhcp/hosts.public file
+
+ Tested on OVH and Hetzner based servers
+
+ALSO CREATES A NAT Private Network as vmbr1
+
+ NOTE: WILL OVERWRITE /etc/network/interfaces
+ A backup will be created as /etc/network/interfaces.timestamp
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh
+bash network-configure.sh
 ```
 
 # Create Private mesh vpn/network (tincvpn.sh)
