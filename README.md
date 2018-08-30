@@ -200,8 +200,19 @@ bash tincvpn.sh -i 3 -c host1
 ## Alpine Linux KVM / Qemu Agent Client Fix
 Run the following on the guest alpine linux
 ```
-apk update && apk add qemu-guest-agent
+apk update && apk add qemu-guest-agent acpi
 echo 'GA_PATH="/dev/vport2p1"' >> /etc/conf.d/qemu-guest-agent
 rc-update add qemu-guest-agent default
+rc-update add acpid default
 /etc/init.d/qemu-guest-agent restart
 ```
+
+## Proxmox ACME / Letsencrypt
+Run the following on the proxmox server, ensure you have a valid DNS for the server which resolves
+```
+pvenode acme account register default mail@example.invalid
+pvenode config set --acme domains=example.invalid
+pvenode acme cert order
+systemctl restart pveproxy
+```
+
