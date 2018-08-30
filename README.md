@@ -26,11 +26,19 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+### LVM to ZFS
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
 ````
 * Reboot
+* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+### NETWORKING (vmbr0 vmbr1)
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && bash network-configure.sh && rm network-configure.sh
+```
+* Reboot
 * Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
+
 
 
 # OVH Proxmox Installation Guide #
@@ -57,11 +65,18 @@ Select install for the specific server, via the ovh manager
 * SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
 * --CONFIRM-->
 After installation, Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+### LVM to ZFS
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
 ````
 * Reboot
-* Post Install: login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
+* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
+### NETWORKING (vmbr0 vmbr1)
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && bash network-configure.sh && rm network-configure.sh
+```
+* Reboot
+* Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
 
 
 # ------- SCRIPTS ------
@@ -129,13 +144,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzf
 bash createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
-#  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
-If no interface is specified the default gateway interface will be detected and used.
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh
-bash network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
-```
-# REATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX (network-configure.sh) *optional*
+# REATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX (network-configure.sh) **run once**
 Autodetects the correct settings (interface, gatewat, netmask, etc)
 Supports IPv4 and IPv6, Private Network uses 10.10.10.1/24
 Also installs and properly configures the isc-dhcp-server to allow for DHCP on the vmbr1 (NAT)
@@ -158,6 +167,13 @@ ALSO CREATES A NAT Private Network as vmbr1
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh
 bash network-configure.sh
+```
+
+#  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
+If no interface is specified the default gateway interface will be detected and used.
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh
+bash network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
 ```
 
 # Create Private mesh vpn/network (tincvpn.sh)
