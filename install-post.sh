@@ -66,7 +66,7 @@ systemctl enable ksmtuned
 echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois omping tmux wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox screen unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 ## Remove conflicting utilities
