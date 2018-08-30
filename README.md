@@ -213,6 +213,5 @@ Run the following on the proxmox server, ensure you have a valid DNS for the ser
 pvenode acme account register default mail@example.invalid
 pvenode config set --acme domains=example.invalid
 pvenode acme cert order
-systemctl restart pveproxy
 ```
 
