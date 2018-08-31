@@ -133,28 +133,28 @@ done
 # #lvcreate -n ZFS pve -l 100%FREE -y
 if [ "${#mddevarray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  echo zpool create -f -o ashift=12 -O compression=lz4 rpool "${mddevarray[@]}"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool "${mddevarray[@]}"
+  echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool "${mddevarray[@]}"
   ret=$?
 elif [ "${#mddevarray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  echo zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${mddevarray[@]}"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool mirror "${mddevarray[@]}"
+  echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool mirror "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool mirror "${mddevarray[@]}"
   ret=$?
 elif [ "${#mddevarray[@]}" -ge "3" ] && [ "${#mddevarray[@]}" -le "5" ] ; then
   echo "Creating ZFS raidz-1 (raid5)"
-  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz "${mddevarray[@]}"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz "${mddevarray[@]}"
+  echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz "${mddevarray[@]}"
   ret=$?
 elif [ "${#mddevarray[@]}" -ge "6" ] && [ "${#mddevarray[@]}" -lt "11" ] ; then
   echo "Creating ZFS raidz-2 (raid6)"
-  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz2 "${mddevarray[@]}"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz2 "${mddevarray[@]}"
+  echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz2 "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz2 "${mddevarray[@]}"
   ret=$?
 elif [ "${#mddevarray[@]}" -ge "11" ] ; then
   echo "Creating ZFS raidz-3 (raid7)"
-  echo zpool create -f -o ashift=12 -O compression=lz4 rpool raidz3 "${mddevarray[@]}"
-  zpool create -f -o ashift=12 -O compression=lz4 rpool raidz3 "${mddevarray[@]}"
+  echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz3 "${mddevarray[@]}"
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool raidz3 "${mddevarray[@]}"
   ret=$?
 fi
 
@@ -165,14 +165,14 @@ fi
 
 echo "Creating Secondary ZFS sparse volumes"
 echo "-- rpool/vmdata"
-echo zfs create rpool/vmdata
+echo zfs create -s rpool/vmdata
 zfs create -s rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
 echo zfs create -s -o mountpoint=/backup_rpool rpool/backup
-zfs create -o mountpoint=/backup_rpool rpool/backup
+zfs create -s -o mountpoint=/backup_rpool rpool/backup
 echo "-- rpool/tmp (/tmp_rpool)"
 echo zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
-zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 
 #export the pool
 echo zpool export rpool
@@ -202,8 +202,8 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set primarycache=all "$zfspool"
   echo zfs set atime=off "$zfspool"
   zfs set atime=off "$zfspool"
-  echo zfs set checksum=off "$zfspool"
-  zfs set checksum=off "$zfspool"
+  echo zfs set checksum=on "$zfspool"
+  zfs set checksum=on "$zfspool"
   echo zfs set dedup=off "$zfspool"
   zfs set dedup=off "$zfspool"
 
