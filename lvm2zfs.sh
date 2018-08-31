@@ -132,7 +132,7 @@ done
 # #used to make a max free space lvm
 # #lvcreate -n ZFS pve -l 100%FREE -y
 if [ "${#mddevarray[@]}" -eq "1" ] ; then
-  echo "Creating ZFS mirror (raid1)"
+  echo "Creating ZFS single"
   echo zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool "${mddevarray[@]}"
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on rpool "${mddevarray[@]}"
   ret=$?
@@ -165,14 +165,11 @@ fi
 
 echo "Creating Secondary ZFS sparse volumes"
 echo "-- rpool/vmdata"
-echo zfs create -s rpool/vmdata
-zfs create -s rpool/vmdata
+echo zfs create rpool/vmdata
+zfs create rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
 echo zfs create -o mountpoint=/backup_rpool rpool/backup
 zfs create -o mountpoint=/backup_rpool rpool/backup
-#echo "-- rpool/tmp (/tmp_rpool)"
-#echo zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
-#zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 
 #export the pool
 echo zpool export rpool
@@ -197,8 +194,6 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set compression=on "$zfspool"
   echo zfs set compression=lz4 "$zfspool"
   zfs set compression=lz4 "$zfspool"
-  #echo zfs set sync=disabled "$zfspool"
-  #zfs set sync=disabled "$zfspool"
   echo zfs set primarycache=all "$zfspool"
   zfs set primarycache=all "$zfspool"
   echo zfs set atime=off "$zfspool"
