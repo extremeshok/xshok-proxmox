@@ -168,11 +168,11 @@ echo "-- rpool/vmdata"
 echo zfs create -s rpool/vmdata
 zfs create -s rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
-echo zfs create -s -o mountpoint=/backup_rpool rpool/backup
-zfs create -s -o mountpoint=/backup_rpool rpool/backup
-echo "-- rpool/tmp (/tmp_rpool)"
-echo zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
-zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+echo zfs create -o mountpoint=/backup_rpool rpool/backup
+zfs create -o mountpoint=/backup_rpool rpool/backup
+#echo "-- rpool/tmp (/tmp_rpool)"
+#echo zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+#zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 
 #export the pool
 echo zpool export rpool
