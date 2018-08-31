@@ -104,7 +104,7 @@ return value is 0
 Or run *install-post.sh* after installation
 
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/postinstall.sh -c -O postinstall.sh && bash postinstall.sh && rm postinstall.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
 ```
 
 # Enable Docker support for an LXC container (pve-enable-lxc-docker.sh) *optional*
