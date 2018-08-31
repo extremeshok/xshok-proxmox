@@ -153,13 +153,13 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
 	exit 1
 fi
 
-echo "Creating Secondary ZFS Pools"
+echo "Creating Secondary ZFS sparse volumes"
 echo "-- ${poolname}/vmdata"
-zfs create "${poolname}/vmdata"
+zfs create -s "${poolname}/vmdata"
 echo "-- ${poolname}/backup (/backup_${poolprefix})"
-zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
+zfs create -s -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 echo "-- ${poolname}/tmp (/tmp_${poolprefix})"
-zfs create -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
+zfs create -s -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
 
 #export the pool
 zpool export "${poolname}"
