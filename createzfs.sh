@@ -122,23 +122,23 @@ fi
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" ${zfsdevicearray[@]}
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" mirror ${zfsdevicearray[@]}
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" mirror ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "3" ] && [ "${#zfsdevicearray[@]}" -le "5" ] ; then
   echo "Creating ZFS raidz-1 (raid5)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz ${zfsdevicearray[@]}
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "6" ] && [ "${#zfsdevicearray[@]}" -lt "11" ] ; then
   echo "Creating ZFS raidz-2 (raid6)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz2 ${zfsdevicearray[@]}
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz2 ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "11" ] ; then
   echo "Creating ZFS raidz-3 (raid7)"
-  zpool create -f -o ashift=12 -O compression=lz4 "$poolname" raidz3 ${zfsdevicearray[@]}
+  zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz3 ${zfsdevicearray[@]}
   ret=$?
 fi
 
