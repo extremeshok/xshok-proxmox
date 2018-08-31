@@ -158,8 +158,8 @@ echo "-- ${poolname}/vmdata"
 zfs create -s "${poolname}/vmdata"
 echo "-- ${poolname}/backup (/backup_${poolprefix})"
 zfs create -s -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
-echo "-- ${poolname}/tmp (/tmp_${poolprefix})"
-zfs create -s -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
+#echo "-- ${poolname}/tmp (/tmp_${poolprefix})"
+#zfs create -s -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
 
 #export the pool
 zpool export "${poolname}"
@@ -168,16 +168,19 @@ zpool import "${poolname}"
 sleep 5
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
+#zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
+zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
   zfs set compression=lz4 "$zfspool"
-  zfs set sync=disabled "$zfspool"
+  #zfs set sync=disabled "$zfspool"
   zfs set primarycache=all "$zfspool"
   zfs set atime=off "$zfspool"
-  zfs set checksum=on "$zfspool"
+  zfs set relatime=off "$zfspool"
+  zfs set checksum=on "$zfspool" 
   zfs set dedup=off "$zfspool"
+  zfs set xattr=sa "$zfspool"
   
   echo "Adding weekly pool scrub for $zfspool"
   if [ ! -f "/etc/cron.weekly/${poolname}" ] ; then
