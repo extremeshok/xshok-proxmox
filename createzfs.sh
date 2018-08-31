@@ -121,7 +121,7 @@ fi
 
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
-  echo "Creating ZFS mirror (raid1)"
+  echo "Creating ZFS single"
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
@@ -155,11 +155,9 @@ fi
 
 echo "Creating Secondary ZFS sparse volumes"
 echo "-- ${poolname}/vmdata"
-zfs create -s "${poolname}/vmdata"
+zfs create "${poolname}/vmdata"
 echo "-- ${poolname}/backup (/backup_${poolprefix})"
-zfs create -s -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
-#echo "-- ${poolname}/tmp (/tmp_${poolprefix})"
-#zfs create -s -o setuid=off -o devices=off -o mountpoint="/tmp_${poolprefix}"  "${poolname}/tmp"
+zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 
 #export the pool
 zpool export "${poolname}"
@@ -168,13 +166,11 @@ zpool import "${poolname}"
 sleep 5
 
 echo "Setting ZFS Optimisations"
-#zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup" "${poolname}/tmp")
 zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   zfs set compression=on "$zfspool"
   zfs set compression=lz4 "$zfspool"
-  #zfs set sync=disabled "$zfspool"
   zfs set primarycache=all "$zfspool"
   zfs set atime=off "$zfspool"
   zfs set relatime=off "$zfspool"
