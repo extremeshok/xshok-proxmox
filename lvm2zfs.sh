@@ -189,23 +189,28 @@ echo "Cleaning up fstab / mounts"
 grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 
 echo "Setting ZFS Optimisations"
-zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup" "rpool/tmp")
+#zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup" "rpool/tmp")
+zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup")
 for zfspool in "${zfspoolarray[@]}" ; do
   echo "Optimising $zfspool"
   echo zfs set compression=on "$zfspool"
   zfs set compression=on "$zfspool"
   echo zfs set compression=lz4 "$zfspool"
   zfs set compression=lz4 "$zfspool"
-  echo zfs set sync=disabled "$zfspool"
-  zfs set sync=disabled "$zfspool"
+  #echo zfs set sync=disabled "$zfspool"
+  #zfs set sync=disabled "$zfspool"
   echo zfs set primarycache=all "$zfspool"
   zfs set primarycache=all "$zfspool"
   echo zfs set atime=off "$zfspool"
   zfs set atime=off "$zfspool"
+  echo zfs set relatime=off "$zfspool"
+  zfs set relatime=off "$zfspool"
   echo zfs set checksum=on "$zfspool"
   zfs set checksum=on "$zfspool"
   echo zfs set dedup=off "$zfspool"
   zfs set dedup=off "$zfspool"
+  echo zfs set xattr=sa "$zfspool"
+  zfs set xattr=sa "$zfspool"
 
   echo "Adding weekly pool scrub for ${zfspool}"
   if [ ! -f "/etc/cron.weekly/rpool" ] ; then
