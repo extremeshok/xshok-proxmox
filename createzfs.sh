@@ -176,7 +176,7 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set sync=disabled "$zfspool"
   zfs set primarycache=all "$zfspool"
   zfs set atime=off "$zfspool"
-  zfs set checksum=off "$zfspool"
+  zfs set checksum=on "$zfspool"
   zfs set dedup=off "$zfspool"
   
   echo "Adding weekly pool scrub for $zfspool"
