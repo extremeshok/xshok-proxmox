@@ -163,15 +163,15 @@ if [ $ret != 0 ] ; then
   exit 1
 fi
 
-echo "Creating Secondary ZFS Pools"
+echo "Creating Secondary ZFS sparse volumes"
 echo "-- rpool/vmdata"
 echo zfs create rpool/vmdata
-zfs create rpool/vmdata
+zfs create -s rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
-echo zfs create -o mountpoint=/backup_rpool rpool/backup
+echo zfs create -s -o mountpoint=/backup_rpool rpool/backup
 zfs create -o mountpoint=/backup_rpool rpool/backup
 echo "-- rpool/tmp (/tmp_rpool)"
-echo zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
+echo zfs create -s -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 zfs create -o setuid=off -o devices=off -o mountpoint=/tmp_rpool rpool/tmp
 
 #export the pool
