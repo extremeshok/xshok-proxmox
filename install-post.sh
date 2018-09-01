@@ -22,15 +22,15 @@
 ################################################################################
 
 ## Force APT to use IPv4
-echo -e "Acquire::ForceIPv4 \"true\";\n" > /etc/apt/apt.conf.d/99force-ipv4
+echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-	echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
+  echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-	echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
+  echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
 ## Add non-free to sources
@@ -73,10 +73,10 @@ apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop 
 apt-get purge -y ntp openntpd chrony
 
 ## Detect AMD EPYC CPU and install kernel 4.15
-if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
+if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
-  if ! cat /etc/default/grub | grep "GRUB_CMDLINE_LINUX_DEFAULT" | grep -q "idle=nomwait" ; then
+  if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
     echo "Setting kernel idle=nomwait"
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
@@ -117,7 +117,7 @@ systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone UTC
-echo > /etc/systemd/timesyncd.conf <<EOF
+cat > /etc/systemd/timesyncd.conf <<EOF
 [Time]
 NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
 FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
@@ -126,7 +126,7 @@ PollIntervalMinSec=32
 PollIntervalMaxSec=2048
 EOF
 service systemd-timesyncd start
-timedatectl set-ntp true 
+timedatectl set-ntp true
 
 ## Set pigz to replace gzip, 2x faster gzip compression
 cat > /bin/pigzwrapper <<EOF
@@ -142,13 +142,14 @@ chmod +x /bin/gzip
 
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
 if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
-	echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
-	#http://help.ovh.co.uk/RealTimeMonitoring
-	wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
+  #http://help.ovh.co.uk/RealTimeMonitoring
+  wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
 fi
 
 ## Protect the web interface with fail2ban
 apt-get install -y fail2ban
+# shellcheck disable=1117
 cat > /etc/fail2ban/filter.d/proxmox.conf <<EOF
 [Definition]
 failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*

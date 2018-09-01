@@ -44,26 +44,26 @@ reset="no"
 while getopts i:p:c:a:rh option
 do
   case "${option}"
-    in
-    i) vpn_ip_last=${OPTARG};;
-    p) vpn_port=${OPTARG};;
-    c) vpn_connect_to=${OPTARG};;
-    a) my_address=${OPTARG};;
-    r) reset="yes";;
-    *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit;;
+      in
+    i) vpn_ip_last=${OPTARG} ;;
+    p) vpn_port=${OPTARG} ;;
+    c) vpn_connect_to=${OPTARG} ;;
+    a) my_address=${OPTARG} ;;
+    r) reset="yes" ;;
+    *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit ;;
   esac
 done
 
 if [ "$my_address" == "" ] ; then
-	echo "Error: address not detected, please use -a <public ip address>"
-	exit
+  echo "Error: address not detected, please use -a <public ip address>"
+  exit
 fi
 
 if [ "$reset" == "yes" ] ; then
-	echo "Resetting"
-	systemctl stop tinc.service
-	pkill -9 tincd
-	rm -rf /etc/tinc/
+  echo "Resetting"
+  systemctl stop tinc.service
+  pkill -9 tincd
+  rm -rf /etc/tinc/
 fi
 
 
@@ -79,11 +79,11 @@ echo "VPN Connect to host: vpn_connect_to"
 echo "Public Address: $my_address"
 
 # Detect and Install
-if [ "$(which tincd)" == "" ] ; then
+if [ "$(command -v tincd)" == "" ] ; then
   echo "Tinc not found, installing...."
-  if [ "$(which yum)" != "" ] ; then
+  if [ "$(command -v yum)" != "" ] ; then
     yum install -y tinc
-    elif [ "$(which apt-get)" != "" ] ; then
+  elif [ "$(command -v apt-get)" != "" ] ; then
     apt-get install -y tinc
   fi
 fi
@@ -94,15 +94,15 @@ touch /etc/tinc/vpn/rsa_key.pub
 touch /etc/tinc/vpn/rsa_key.priv
 
 if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rssa_key.pub 2> /dev/null)" != "" ] ; then
-	if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
-		echo "Using Previous RSA Keys"
-	else
-		echo "Generating New RSA Keys"
-		tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
-	fi
+  if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
+    echo "Using Previous RSA Keys"
+  else
+    echo "Generating New RSA Keys"
+    tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
+  fi
 else
-	echo "Generating New RSA Keys"
-	tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
+  echo "Generating New RSA Keys"
+  tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 fi
 
 #Generate Configs
@@ -161,7 +161,7 @@ systemctl enable tinc.service
 
 # Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
 if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
-cat >> /etc/network/interfaces << EOF
+  cat >> /etc/network/interfaces << EOF
 
 iface Tun0 inet static
         address 192.168.0.$vpn_ip_last

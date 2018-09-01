@@ -49,7 +49,7 @@ function addlineifnotfound { #$file #$line
 }
 
 #add cgroups support
-if [ "$(which cgroupfs-mount)" == "" ] ; then
+if [ "$(command -v cgroupfs-mount)" == "" ] ; then
   apt-get install -y cgroupfs-mount
 fi
 
