@@ -28,7 +28,7 @@
 # 6-11 Drives = raidz-2
 # 11+ Drives = raidz-3
 #
-# NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz
+# NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT
 #
 # Usage:
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
@@ -40,55 +40,64 @@
 #
 ################################################################################
 
-# The default LVM mount which will be replaced with ZFS
-mypart="/var/lib/vz"
-echo "mypart=$mypart"
+LVM_MOUNT_POINT="$1"
 
-#Detect and install dependencies
-if ! type "zpool" >& /dev/null; then
-  apt-get install -y zfsutils-linux
-  modprobe zfs
+if [ "$LVM_MOUNT_POINT" == "" ]; then
+  # The default LVM mount which will be replaced with ZFS
+  LVM_MOUNT_POINT="/var/lib/vz"
 fi
 
-mydev=$(mount | grep "$mypart" | cut -d " " -f 1)
+echo "LVM_MOUNT_POINT=$LVM_MOUNT_POINT"
+
+MY_LVM_DEV=$(mount | grep "$LVM_MOUNT_POINT" | cut -d " " -f 1)
 ret=$?
 if [ $ret == 0 ] ; then
    echo "Found partition, continuing"
-   echo "mydev=$mydev" #/dev/mapper/pve-data
+   echo "MY_LVM_DEV=$MY_LVM_DEV" #/dev/mapper/pve-data
 else
-  echo "ERROR: $mypart not found"
+  echo "ERROR: $LVM_MOUNT_POINT not found"
 fi
 
+#Detect and install dependencies
+if [ "$(command -v zpool)" == "" ] ; then
+  if [ "$(command -v apt-get)" != "" ] ; then
+    apt-get install -y zfsutils-linux
+    modprobe zfs
+  else
+    echo "ERROR: ZFS not installed"
+    exit 1
+  fi
+fi
 if [ "$(command -v zpool)" == "" ] ; then
   echo "ERROR: ZFS not installed"
   exit 1
 fi
 
-myraid=$(pvdisplay 2> /dev/null  | sed -n -e 's/^.*\/dev\///p')
+MY_MD_RAID=$(pvdisplay 2> /dev/null  | sed -n -e 's/^.*\/dev\///p')
 ret=$?
 if [ $ret == 0 ] ; then
    echo "Found raid, continuing"
-   echo "myraid=$myraid" #md5
+   echo "MY_MD_RAID=$MY_MD_RAID" #md5
 else
-  echo "ERROR: $myraid not found"
+  echo "ERROR: $MY_MD_RAID not found"
   exit 1
 fi
 
 #pve/data
-mylv=$(lvdisplay "$mydev" 2> /dev/null | sed -n -e 's/^.*\/dev\///p')
+MY_LV=$(lvdisplay "$MY_LVM_DEV" 2> /dev/null | sed -n -e 's/^.*\/dev\///p')
 ret=$?
 if [ $ret == 0 ] ; then
   echo "Found lv, continuing"
-  echo "mylv=$mylv" #sda1
+  echo "MY_LV=$MY_LV" #sda1
 else
-  echo "ERROR: $mylv not found"
+  echo "ERROR: $MY_LV not found"
   exit 1
 fi
 
-IFS=' ' read -r -a mddevarray <<< "$(grep "$myraid :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
+IFS=' ' read -r -a mddevarray <<< "$(grep "$MY_MD_RAID :" /proc/mdstat | cut -d ' ' -f5- | xargs)"
 
 if [ "${mddevarray[0]}" == "" ] ; then
-  echo "ERROR: no devices found for $myraid in /proc/mdstat"
+  echo "ERROR: no devices found for $MY_MD_RAID in /proc/mdstat"
   exit 1
 fi
 #check there is a minimum of 1 drives detected, not needed, but i rather have it.
@@ -97,7 +106,7 @@ if [ "${#mddevarray[@]}" -lt "1" ] ; then
   exit 1
 fi
 
-if [ "$mydev" != "" ] && [ "$myraid" != "" ] && [ "$mylv" != "" ] ; then
+if [ "$MY_LVM_DEV" != "" ] && [ "$MY_MD_RAID" != "" ] && [ "$MY_LV" != "" ] ; then
   echo "All required varibles detected"
 else
   echo "ERROR: required varible not found or the server is already converted to zfs"
@@ -112,21 +121,21 @@ for index in "${!mddevarray[@]}" ; do
 done
 
 echo "Destroying LV (logical volume)"
-echo umount -l "$mypart"
-umount -l "$mypart"
-echo lvremove "/dev/$mylv" -y 2> /dev/null
-lvremove "/dev/$mylv" -y 2> /dev/null
+echo umount -l "$LVM_MOUNT_POINT"
+umount -l "$LVM_MOUNT_POINT"
+echo lvremove "/dev/$MY_LV" -y 2> /dev/null
+lvremove "/dev/$MY_LV" -y 2> /dev/null
 
 echo "Destroying MD (linux raid)"
-echo mdadm --stop "/dev/$myraid"
-mdadm --stop "/dev/$myraid"
-echo mdadm --remove "/dev/$myraid"
-mdadm --remove "/dev/$myraid"
+echo mdadm --stop "/dev/$MY_MD_RAID"
+mdadm --stop "/dev/$MY_MD_RAID"
+echo mdadm --remove "/dev/$MY_MD_RAID"
+mdadm --remove "/dev/$MY_MD_RAID"
 
-for mydev in "${mddevarray[@]}" ; do
-    echo "zeroing $mydev"
-    echo mdadm --zero-superblock "$mydev"
-    mdadm --zero-superblock "$mydev"
+for MY_LVM_DEV in "${mddevarray[@]}" ; do
+    echo "zeroing $MY_LVM_DEV"
+    echo mdadm --zero-superblock "$MY_LVM_DEV"
+    mdadm --zero-superblock "$MY_LVM_DEV"
 done
 
 # #used to make a max free space lvm
@@ -183,48 +192,35 @@ sleep 5
 
 echo "Cleaning up fstab / mounts"
 #/dev/pve/data   /var/lib/vz     ext3    defaults        1       2
-grep -v "$mypart" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
+grep -v "$LVM_MOUNT_POINT" /etc/fstab > /tmp/fstab.new && mv /tmp/fstab.new /etc/fstab
 
-echo "Setting ZFS Optimisations"
-#zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup" "rpool/tmp")
-zfspoolarray=("rpool" "rpool/vmdata" "rpool/backup")
-for zfspool in "${zfspoolarray[@]}" ; do
-  echo "Optimising $zfspool"
-  echo zfs set compression=on "$zfspool"
-  zfs set compression=on "$zfspool"
-  echo zfs set compression=lz4 "$zfspool"
-  zfs set compression=lz4 "$zfspool"
-  echo zfs set primarycache=all "$zfspool"
-  zfs set primarycache=all "$zfspool"
-  echo zfs set atime=off "$zfspool"
-  zfs set atime=off "$zfspool"
-  echo zfs set relatime=off "$zfspool"
-  zfs set relatime=off "$zfspool"
-  echo zfs set checksum=on "$zfspool"
-  zfs set checksum=on "$zfspool"
-  echo zfs set dedup=off "$zfspool"
-  zfs set dedup=off "$zfspool"
-  echo zfs set xattr=sa "$zfspool"
-  zfs set xattr=sa "$zfspool"
+echo "Optimising rpool"
+zfs set compression=on "rpool"
+zfs set compression=lz4 "rpool"
+zfs set primarycache=all "rpool"
+zfs set atime=off "rpool"
+zfs set relatime=off "rpool"
+zfs set checksum=on "rpool"
+zfs set dedup=off "rpool"
+zfs set xattr=sa "rpool"
 
-  #check we do not already have a cron for zfs
-  if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
-    if [ -f /usr/lib/zfs-linux/scrub ] ; then
-      cat <<EOF > /etc/cron.d/zfsutils-linux
+#check we do not already have a cron for zfs
+if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
+  if [ -f /usr/lib/zfs-linux/scrub ] ; then
+    cat <<'EOF' > /etc/cron.d/zfsutils-linux
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Scrub the pool every second Sunday of every month.
 24 0 8-14 * * root [ $(date +\%w) -eq 0 ] && [ -x /usr/lib/zfs-linux/scrub ] && /usr/lib/zfs-linux/scrub
 EOF
-    else
-      echo "Scrub the pool every second Sunday of every month ${zfspool}"
-      if [ ! -f "/etc/cron.d/zfs-scrub" ] ; then
-        echo "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"  > "/etc/cron.d/zfs-scrub"
-      fi
-      echo "24 0 8-14 * * root [ \$(date +\\%w) -eq 0 ] && zpool scrub ${zfspool}" >> "/etc/cron.d/zfs-scrub"
+  else
+    echo "Scrub the pool every second Sunday of every month rpool"
+    if [ ! -f "/etc/cron.d/zfs-scrub" ] ; then
+      echo "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"  > "/etc/cron.d/zfs-scrub"
     fi
+    echo "24 0 8-14 * * root [ \$(date +\\%w) -eq 0 ] && zpool scrub rpool" >> "/etc/cron.d/zfs-scrub"
   fi
-done
+fi
 
 if [ -f "/etc/vzdump.conf" ]; then
   echo "set vzdump temp dir to use the /tmp_rpool"
