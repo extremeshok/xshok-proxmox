@@ -90,7 +90,7 @@ fi
 echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
 apt-get install -y kexec-tools
 
-cat > /etc/systemd/system/kexec-pve.service <<EOF
+cat <<EOF > /etc/systemd/system/kexec-pve.service
 [Unit]
 Description=boot into into the latest pve kernel set as primary in the boot-loader
 Documentation=man:kexec(8)
@@ -117,7 +117,7 @@ systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone UTC
-cat > /etc/systemd/timesyncd.conf <<EOF
+cat <<EOF > /etc/systemd/timesyncd.conf
 [Time]
 NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
 FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
@@ -129,7 +129,7 @@ service systemd-timesyncd start
 timedatectl set-ntp true
 
 ## Set pigz to replace gzip, 2x faster gzip compression
-cat > /bin/pigzwrapper <<EOF
+cat  <<EOF > /bin/pigzwrapper
 #!/bin/sh
 PATH=/bin:\$PATH
 GZIP="-1"
@@ -150,12 +150,12 @@ fi
 ## Protect the web interface with fail2ban
 apt-get install -y fail2ban
 # shellcheck disable=1117
-cat > /etc/fail2ban/filter.d/proxmox.conf <<EOF
+cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 [Definition]
 failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
 ignoreregex =
 EOF
-cat > /etc/fail2ban/jail.d/proxmox <<EOF
+cat <<EOF > /etc/fail2ban/jail.d/proxmox
 [proxmox]
 enabled = true
 port = https,http,8006
@@ -173,21 +173,24 @@ systemctl enable fail2ban
 sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
- echo "vm.swappiness=10" >> /etc/sysctl.conf
- sysctl -p
+echo "vm.swappiness=10" >> /etc/sysctl.conf
+sysctl -p
+
 
 ## Remove subscription banner
-sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
+	sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 # create a daily cron to make sure the banner does not re-appear
-cat > /etc/cron.daily/proxmox-nosub <<EOF
+	cat <<EOF > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
-chmod 755 /etc/cron.daily/proxmox-nosub
+	chmod 755 /etc/cron.daily/proxmox-nosub
+fi
 
 ## Pretty MOTD
 if ! grep -q https "/etc/motd" ; then
-cat > /etc/motd.new <<'EOF'
+cat <<'EOF' > /etc/motd.new
    This system is optimised by:            https://eXtremeSHOK.com
      __   ___                            _____ _    _  ____  _  __
      \ \ / / |                          / ____| |  | |/ __ \| |/ /
@@ -209,7 +212,7 @@ echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
 sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
-cat <<'EOF' >> /etc/security/limits.conf
+cat <<EOF >> /etc/security/limits.conf
 * soft     nproc          131072
 * hard     nproc          131072
 * soft     nofile         131072
@@ -221,10 +224,40 @@ root hard     nofile         131072
 EOF
 
 ## Increase kernel max Key limit
-cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
+cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
+
+
+## Optimise ZFS arc size
+if [ "$(command -v zfs)" != "" ] ; then
+	RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
+	if [[ RAM_SIZE_GB -lt 16 ]] ; then
+		# 1GB/1GB
+		MY_ZFS_ARC_MIN=1073741824
+		MY_ZFS_ARC_MAX=1073741824
+	else
+		MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
+	  MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
+	fi
+	cat <<EOF > /etc/modprobe.d/zfs.conf
+# ZFS tuning for a proxmox machine
+
+# Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
+options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
+options zfs zfs_arc_max=$MY_ZFS_ARC_MAX
+
+# use the prefetch method
+options zfs l2arc_noprefetch=0
+
+# max write speed to l2arc
+# tradeoff between write/read and durability of ssd (?)
+# default : 8 * 1024 * 1024
+# setting here : 500 * 1024 * 1024
+options zfs l2arc_write_max=524288000
+EOF
+fi
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
