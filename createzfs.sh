@@ -58,7 +58,8 @@ if [ $# -lt "2" ] ; then
   echo "Usage: $(basename "$0") poolname /list/of /dev/device1 /dev/device2"
   echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
   echo "Recommended: use device names, /dev/disk/by-id"
-  ls /dev/disk/by-id/ | grep -v "\-part*" | grep -v "wwn\-*"
+  # shellcheck disable=2010
+  ls /dev/disk/by-id/ | grep -v "\\-part*" | grep -v "wwn\\-*"
   exit 1
 fi
 if [[ "$poolname" =~ "/" ]] ; then
@@ -72,11 +73,11 @@ fi
 
 #add the suffix pool to the poolname, prevent namepoolpool
 poolprefix=${poolname/pool/}
-poolname="${poolprefix}pool"  
+poolname="${poolprefix}pool"
 
 for zfsdevice in "${zfsdevicearray[@]}" ; do
   if ! [[ "$zfsdevice" =~ "/" ]] ; then
-    if ! [[ "$zfsdevice" =~ "-" ]] ; then 
+    if ! [[ "$zfsdevice" =~ "-" ]] ; then
       echo "ERROR: Invalid device specified: $zfsdevice"
       exit 1
     fi
@@ -87,15 +88,15 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
         echo "ERROR: Device $zfsdevice does not exist"
         exit 1
       fi
-    fi 
-  fi   
+    fi
+  fi
   if grep -q "$zfsdevice" "/proc/mounts" ; then
     echo "ERROR: Device is mounted $zfsdevice"
     exit 1
   fi
   echo "Clearing partitions: ${zfsdevice}"
-  for v_partition in $(parted -s ${zfsdevice} print|awk '/^ / {print $1}') ; do
-   parted -s "${zfsdevice}" rm ${v_partition}
+  for v_partition in $(parted -s "${zfsdevice}" print|awk '/^ / {print $1}') ; do
+    parted -s "${zfsdevice}" rm "${v_partition}"
   done
 done
 
@@ -108,49 +109,54 @@ echo "Ensure ZFS is started"
 systemctl start zfs.target
 modprobe zfs
 
-if [ "$(zpool import 2> /dev/null | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
-	echo "ERROR: $poolname already exists as an exported pool"
-	zpool import
-	exit 1
+if [ "$(zpool import 2> /dev/null | grep -m 1 -o "\\s$poolname\\b")" == "$poolname" ] ; then
+  echo "ERROR: $poolname already exists as an exported pool"
+  zpool import
+  exit 1
 fi
-if [ "$(zpool list 2> /dev/null | grep -m 1 -o "\s$poolname\b")" == "$poolname" ] ; then
-	echo "ERROR: $poolname already exists as a listed pool"
-	zpool list
-	exit 1
+if [ "$(zpool list 2> /dev/null | grep -m 1 -o "\\s$poolname\\b")" == "$poolname" ] ; then
+  echo "ERROR: $poolname already exists as a listed pool"
+  zpool list
+  exit 1
 fi
 
 echo "Creating the array"
 if [ "${#zfsdevicearray[@]}" -eq "1" ] ; then
   echo "Creating ZFS single"
+  # shellcheck disable=2068
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -eq "2" ] ; then
   echo "Creating ZFS mirror (raid1)"
+  # shellcheck disable=2068
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" mirror ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "3" ] && [ "${#zfsdevicearray[@]}" -le "5" ] ; then
   echo "Creating ZFS raidz-1 (raid5)"
+  # shellcheck disable=2068
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "6" ] && [ "${#zfsdevicearray[@]}" -lt "11" ] ; then
   echo "Creating ZFS raidz-2 (raid6)"
+  # shellcheck disable=2068
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz2 ${zfsdevicearray[@]}
   ret=$?
 elif [ "${#zfsdevicearray[@]}" -ge "11" ] ; then
   echo "Creating ZFS raidz-3 (raid7)"
+  # shellcheck disable=2068
   zpool create -f -o ashift=12 -O compression=lz4 -O checksum=on "$poolname" raidz3 ${zfsdevicearray[@]}
   ret=$?
 fi
 
 if [ $ret != 0 ] ; then
-	echo "ERROR: creating ZFS"
-	exit 1
+  echo "ERROR: creating ZFS"
+  exit 1
 fi
 
 if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; then
-	echo "ERROR: $poolname pool not found"
-	zpool list
-	exit 1
+  echo "ERROR: $poolname pool not found"
+  zpool list
+  exit 1
 fi
 
 echo "Creating Secondary ZFS sparse volumes"
@@ -174,15 +180,18 @@ for zfspool in "${zfspoolarray[@]}" ; do
   zfs set primarycache=all "$zfspool"
   zfs set atime=off "$zfspool"
   zfs set relatime=off "$zfspool"
-  zfs set checksum=on "$zfspool" 
+  zfs set checksum=on "$zfspool"
   zfs set dedup=off "$zfspool"
   zfs set xattr=sa "$zfspool"
-  
-  echo "Adding weekly pool scrub for $zfspool"
-  if [ ! -f "/etc/cron.weekly/${poolname}" ] ; then
-    echo '#!/bin/bash' > "/etc/cron.weekly/${poolname}"
-  fi  
-  echo "zpool scrub $zfspool" >> "/etc/cron.weekly/${poolname}"
+
+  #check we do not already have a cron for zfs
+  if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
+    echo "Adding weekly pool scrub for ${zfspool}"
+    if [ ! -f "/etc/cron.weekly/rpool" ] ; then
+      echo '#!/bin/bash' > "/etc/cron.weekly/rpool"
+    fi
+    echo "zpool scrub ${zfspool}" >> "/etc/cron.weekly/rpool"
+  fi
 done
 
 # pvesm (proxmox) is optional
@@ -190,9 +199,9 @@ if type "pvesm" >& /dev/null; then
   # https://pve.proxmox.com/pve-docs/pvesm.1.html
   echo "Adding the ZFS storage pools to Proxmox GUI"
   echo "-- ${poolname}-vmdata"
-  pvesm add zfspool ${poolname}-vmdata --pool "${poolname}/vmdata" --sparse 1
+  pvesm add zfspool "${poolname}-vmdata" --pool "${poolname}/vmdata" --sparse 1
   echo "-- ${poolname}-backup"
-  pvesm add dir ${poolname}-backup --path /backup_${poolprefix} 
+  pvesm add dir "${poolname}-backup" --path "/backup_${poolprefix}"
 fi
 
 ### Work in progress , create specialised pools ###

@@ -59,7 +59,7 @@ else
   echo "ERROR: $mypart not found"
 fi
 
-if [ "$(which zpool)" == "" ] ; then
+if [ "$(command -v zpool)" == "" ] ; then
   echo "ERROR: ZFS not installed"
   exit 1
 fi
@@ -207,11 +207,14 @@ for zfspool in "${zfspoolarray[@]}" ; do
   echo zfs set xattr=sa "$zfspool"
   zfs set xattr=sa "$zfspool"
 
-  echo "Adding weekly pool scrub for ${zfspool}"
-  if [ ! -f "/etc/cron.weekly/rpool" ] ; then
-    echo '#!/bin/bash' > "/etc/cron.weekly/rpool"
+  #check we do not already have a cron for zfs
+  if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
+    echo "Adding weekly pool scrub for ${zfspool}"
+    if [ ! -f "/etc/cron.weekly/rpool" ] ; then
+      echo '#!/bin/bash' > "/etc/cron.weekly/rpool"
+    fi
+    echo "zpool scrub ${zfspool}" >> "/etc/cron.weekly/rpool"
   fi
-  echo "zpool scrub ${zfspool}" >> "/etc/cron.weekly/rpool"
 
 done
 
