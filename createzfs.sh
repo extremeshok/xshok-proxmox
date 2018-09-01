@@ -22,6 +22,8 @@
 #
 # Will automatically detect the required raid level and optimise.
 #
+# Will automatically resolve device names (eg. /dev/sda) to device id (eg. SSD1_16261489FFCA)
+#
 # 1 Drive = zfs
 # 2 Drives = mirror
 # 3-5 Drives = raidz-1
@@ -57,9 +59,10 @@ fi
 if [ $# -lt "2" ] ; then
   echo "Usage: $(basename "$0") poolname /list/of /dev/device1 /dev/device2"
   echo "Note will append 'pool' to the poolname, eg. hdd -> hddpool"
-  echo "Recommended: use device names, /dev/disk/by-id"
+  echo "Will automatically resolve device names (eg. /dev/sda) to device id (eg. SSD1_16261489FFCA)"
+  echo "Device names, /dev/disk/by-id"
   # shellcheck disable=2010
-  ls /dev/disk/by-id/ | grep -v "\\-part*" | grep -v "wwn\\-*"
+  ls -l /dev/disk/by-id/ | grep -v "\\-part*" | grep -v "wwn\\-*" | grep -v "usb\\-*" | cut -d" " -f10-20 | sed 's|../../|/dev/|' | awk NF
   exit 1
 fi
 if [[ "$poolname" =~ "/" ]] ; then
@@ -75,6 +78,7 @@ fi
 poolprefix=${poolname/pool/}
 poolname="${poolprefix}pool"
 
+INDEX=0
 for zfsdevice in "${zfsdevicearray[@]}" ; do
   if ! [[ "$zfsdevice" =~ "/" ]] ; then
     if ! [[ "$zfsdevice" =~ "-" ]] ; then
@@ -84,7 +88,7 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   fi
   if ! [ -e "$zfsdevice" ]; then
     if ! [ -e "/dev/disk/by-id/$zfsdevice" ]; then
-      if ! [ -e "/ls /dev/disk/by-uuid/$zfsdevice" ]; then
+      if ! [ -e "/dev/disk/by-uuid/$zfsdevice" ]; then
         echo "ERROR: Device $zfsdevice does not exist"
         exit 1
       fi
@@ -98,6 +102,21 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   for v_partition in $(parted -s "${zfsdevice}" print|awk '/^ / {print $1}') ; do
     parted -s "${zfsdevice}" rm "${v_partition}"
   done
+
+  if [[ "$zfsdevice" =~ "/" ]] ; then
+    MY_DEV="${zfsdevice/*\//}"
+    # shellcheck disable=2010
+    MY_DEV="$(ls -l /dev/disk/by-id/ | grep -i "/${MY_DEV}\$" | grep -o 'ata[^ ]*')"
+    if ! [ -e "/dev/disk/by-id/${MY_DEV}" ]; then
+      echo "ERROR: Device $zfsdevice does not exist"
+      exit 1
+    else
+      echo "${zfsdevice} -> ${MY_DEV}"
+      #replace current value
+      zfsdevicearray[$INDEX]="${MY_DEV}"
+    fi
+  fi
+  ((INDEX++))
 done
 
 echo "Enable ZFS to autostart and mount"
