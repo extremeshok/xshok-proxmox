@@ -36,6 +36,8 @@ MY_SWAP=""
 MY_CACHE=""
 #set size of slog partition or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes, 0 to disable
 MY_SLOG=""
+#set size of root partition, will be in gbytes, 10GB or larger
+MY_ROOT="40"
 #comment out to disable LVM and use a very simple partition setup of / and swap
 USE_LVM="TRUE"
 
@@ -89,6 +91,16 @@ fi
 
 # check for ram size
 #if [[ $(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000)) -le "64" ]] ; then
+
+
+##### CONFIGURE ROOT
+if [[ $MY_ROOT -lt 10 ]] ; then
+  echo "error: MY_ROOT is too small, must be larger than 10 GB"
+  exit 1
+elif [ "$MY_ROOT" == "" ] || [[ ! $MY_SWAP =~ ^[0-9]+$ ]] ; then
+  echo "error: MY_ROOT is Not a number, specify in GB"
+  exit 1
+fi
 
 #### CONFIGURE SWAP
 # HDD more than 400gb = 64GB swap
@@ -172,6 +184,14 @@ elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/
   fi
 fi
 
+#### CHECK PARTITIONS WILL FIT ON DISK
+if [[ $(( MY_ROOT + MY_SWAP + MY_CACHE + MY_SLOG + 1 )) -gt $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
+  echo "ERROR: Drive is too small"
+  exit 1
+fi
+
+echo "SDA SIZE:  $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions)"
+echo "ROOT: ${MY_ROOT}"
 if [ "$MY_SWAP" != "" ]; then
   echo "SWAP: ${MY_SWAP}"
   MY_SWAP=",swap:swap:${MY_SWAP}G"
@@ -199,9 +219,9 @@ if grep -q '#!/bin/bash' "/post-install"; then
   echo "Starting Installer"
 
   if [ "$USE_LVM" == "TRUE" ]; then
-    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:40G,lvm:vg0:all${MY_SWAP}${MY_CACHE}${MY_SLOG}" -v "vg0:data:/var/lib/vz:ext4:all"
+    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},lvm:vg0:all" -v "vg0:data:/var/lib/vz:ext4:all"
   else
-    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:all,${MY_SWAP}${MY_CACHE}${MY_SLOG}"
+    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},/var/lib/vz:ext4:all"
   fi
 
 else
