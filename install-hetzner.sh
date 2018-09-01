@@ -94,7 +94,12 @@ fi
 # HDD more than 400gb = 64GB swap
 # HDD more than 160gb = 32GB swap
 # HDD less than 160gb = 16GB swap
-if [ "$MY_SWAP" == "" ]; then
+if [ "$MY_SWAP" == "0" ] ; then
+  MY_SWAP=""
+elif [ "$MY_SWAP" != "" ] && [[ ! $MY_SWAP =~ ^[0-9]+$ ]] ; then
+  echo "error: MY_SWAP is Not a number, specify in GB"
+  exit 1
+else
   echo "Detecting and setting optimal swap partition size"
   if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
     MY_SWAP="64"
@@ -103,92 +108,73 @@ if [ "$MY_SWAP" == "" ]; then
   else
     MY_SWAP="16"
   fi
-else
-  if ! [[ $MY_SWAP =~ ^[0-9]+$ ]] ; then
-    echo "error: MY_SWAP is Not a number, specify in GB"
-    exit 1
-  fi
-  if [ "$MY_SWAP" == "0" ] ; then
-    MY_SWAP=""
-  fi
 fi
 
-#### CONFIGURE SLOG PARTITIONS
-if [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+#### CONFIGURE SLOG PARTITION
+if [ "$MY_SLOG" == "0" ] ; then
+  MY_SLOG=""
+elif [ "$MY_SLOG" != "" ] && [[ ! $MY_SLOG =~ ^[0-9]+$ ]] ; then
+  echo "error: MY_SLOG is Not a number, specify in GB"
+  exit 1
+elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
   echo "HDD Detected, ignoring slog partition"
   MY_SLOG=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring slog partition"
   MY_SLOG=""
-else
-  if [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
-    echo "HDD Detected with SSD, enabling slog partition"
-    #### CONFIGURE CACHE
-    # HDD more than 800gb = 120GB CACHE
-    # HDD more than 400gb = 60GB CACHE
-    # HDD more than 160gb = 30GB CACHE
-    # HDD less than 160gb = DISABLE CACHE
-    echo "Detecting and setting optimal slog partition size"
-    if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
-      MY_SLOG="10"
-    elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
-      MY_SLOG="5"
-    elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
-      MY_SLOG="1"
-    else
-      MY_SLOG=""
-    fi
+elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+  echo "HDD Detected with SSD, enabling slog partition"
+  #### CONFIGURE CACHE
+  # HDD more than 800gb = 120GB CACHE
+  # HDD more than 400gb = 60GB CACHE
+  # HDD more than 160gb = 30GB CACHE
+  # HDD less than 160gb = DISABLE CACHE
+  echo "Detecting and setting optimal slog partition size"
+  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
+    MY_SLOG="10"
+  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+    MY_SLOG="5"
+  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+    MY_SLOG="1"
   else
-    if ! [[ $MY_SLOG =~ ^[0-9]+$ ]] ; then
-      echo "error: MY_SLOG is Not a number, specify in GB"
-      exit 1
-    fi
-    if [ "$MY_SLOG" == "0" ] ; then
-      MY_SLOG=""
-    fi
+    MY_SLOG=""
   fi
 fi
 
-
-#### CONFIGURE CACHE PARTITIONS
-if [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+#### CONFIGURE CACHE PARTITION
+if [ "$MY_CACHE" == "0" ] ; then
+  MY_CACHE=""
+elif [ "$MY_CACHE" != "" ] && [[ ! $MY_CACHE =~ ^[0-9]+$ ]] ; then
+  echo "error: ${MY_CACHE} is Not a number, specify in GB"
+  exit 1
+elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
   echo "HDD Detected, ignoring cache partition"
   MY_CACHE=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring cache partition"
   MY_CACHE=""
-else
-  if [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
-    echo "HDD Detected with SSD, enabling cache partition"
-    #### CONFIGURE CACHE
-    # HDD more than 800gb = 120GB CACHE
-    # HDD more than 400gb = 60GB CACHE
-    # HDD more than 160gb = 30GB CACHE
-    # HDD less than 160gb = DISABLE CACHE
-    echo "Detecting and setting optimal swap partition size"
-    if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
-      MY_CACHE="120"
-    elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
-      MY_CACHE="60"
-    elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
-      MY_CACHE="30"
-    else
-      MY_CACHE=""
-    fi
+elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+  echo "HDD Detected with SSD, enabling cache partition"
+  #### CONFIGURE CACHE
+  # HDD more than 800gb = 120GB CACHE
+  # HDD more than 400gb = 60GB CACHE
+  # HDD more than 160gb = 30GB CACHE
+  # HDD less than 160gb = DISABLE CACHE
+  echo "Detecting and setting optimal swap partition size"
+  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
+    MY_CACHE="120"
+  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+    MY_CACHE="60"
+  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+    MY_CACHE="30"
   else
-    if ! [[ $MY_CACHE =~ ^[0-9]+$ ]] ; then
-      echo "error: ${MY_CACHE} is Not a number, specify in GB"
-      exit 1
-    fi
-    if [ "$MY_CACHE" == "0" ] ; then
-      MY_CACHE=""
-    fi
+    MY_CACHE=""
   fi
 fi
 
 if [ "$MY_SWAP" != "" ]; then
   echo "SWAP: ${MY_SWAP}"
-  MY_CACHE=",swap:swap:${MY_SWAP}G"
+  MY_SWAP=",swap:swap:${MY_SWAP}G"
 fi
 if [ "$MY_CACHE" != "" ]; then
   echo "CACHE: ${MY_CACHE}"
