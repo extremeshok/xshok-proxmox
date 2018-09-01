@@ -65,25 +65,25 @@ else
   MY_RAID_SLAVE=""
   MY_RAID_ENABLE="no"
 fi
-# HDD less than 130gb = 16GB swap
-# RAM less or equal to 64GB = 32GB swap
-# RAM more than 64GB = 64GB swap
 
+# check for ram size
+#if [[ $(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000)) -le "64" ]] ; then
 
+# HDD more than 400gb = 64GB swap
+# HDD more than 160gb = 32GB swap
+# HDD less than 160gb = 16GB swap
 if [ "$MY_SWAP" == "" ]; then
   echo "Detecting and setting optimal swap partition size"
-  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "130" ]] ; then
-    if [[ $(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000)) -le "64" ]] ; then
-      MY_SWAP="32"
-    else
-      MY_SWAP="64"
-    fi
+  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+    MY_SWAP="64"
+  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+    MY_SWAP="32"
   else
     MY_SWAP="16"
   fi
 else
   if ! [[ $MY_SWAP =~ ^[0-9]+$ ]] ; then
-    echo "error: MY_SWAP is Not a number"
+    echo "error: MY_SWAP is Not a number, specify in GB"
     exit 1
   fi
 fi
