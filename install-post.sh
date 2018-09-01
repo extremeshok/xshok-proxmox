@@ -36,7 +36,7 @@ fi
 ## Add non-free to sources
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
-## Install the latest ceph provided by proxmox
+## Add the latest ceph provided by proxmox
 echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
@@ -90,7 +90,7 @@ fi
 echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
 apt-get install -y kexec-tools
 
-cat <<EOF > /etc/systemd/system/kexec-pve.service
+cat <<'EOF' > /etc/systemd/system/kexec-pve.service
 [Unit]
 Description=boot into into the latest pve kernel set as primary in the boot-loader
 Documentation=man:kexec(8)
