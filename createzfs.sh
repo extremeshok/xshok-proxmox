@@ -178,7 +178,7 @@ if [ "$( zpool list | grep  "$poolname" | cut -f 1 -d " ")" != "$poolname" ] ; t
   exit 1
 fi
 
-echo "Creating Secondary ZFS sparse volumes"
+echo "Creating Secondary ZFS volumes"
 echo "-- ${poolname}/vmdata"
 zfs create "${poolname}/vmdata"
 echo "-- ${poolname}/backup (/backup_${poolprefix})"
@@ -190,37 +190,33 @@ sleep 10
 zpool import "${poolname}"
 sleep 5
 
-echo "Setting ZFS Optimisations"
-zfspoolarray=("$poolname" "${poolname}/vmdata" "${poolname}/backup")
-for zfspool in "${zfspoolarray[@]}" ; do
-  echo "Optimising $zfspool"
-  zfs set compression=on "$zfspool"
-  zfs set compression=lz4 "$zfspool"
-  zfs set primarycache=all "$zfspool"
-  zfs set atime=off "$zfspool"
-  zfs set relatime=off "$zfspool"
-  zfs set checksum=on "$zfspool"
-  zfs set dedup=off "$zfspool"
-  zfs set xattr=sa "$zfspool"
+echo "Optimising ${poolname}"
+zfs set compression=on "${poolname}"
+zfs set compression=lz4 "${poolname}"
+zfs set primarycache=all "${poolname}"
+zfs set atime=off "${poolname}"
+zfs set relatime=off "${poolname}"
+zfs set checksum=on "${poolname}"
+zfs set dedup=off "${poolname}"
+zfs set xattr=sa "${poolname}"
 
-  #check we do not already have a cron for zfs
-  if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
-    if [ -f /usr/lib/zfs-linux/scrub ] ; then
-      cat <<'EOF' > /etc/cron.d/zfsutils-linux
+#check we do not already have a cron for zfs
+if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
+  if [ -f /usr/lib/zfs-linux/scrub ] ; then
+    cat <<\EOF > /etc/cron.d/zfsutils-linux
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Scrub the pool every second Sunday of every month.
 24 0 8-14 * * root [ $(date +\%w) -eq 0 ] && [ -x /usr/lib/zfs-linux/scrub ] && /usr/lib/zfs-linux/scrub
 EOF
-    else
-      echo "Scrub the pool every second Sunday of every month ${zfspool}"
-      if [ ! -f "/etc/cron.d/zfs-scrub" ] ; then
-        echo "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"  > "/etc/cron.d/zfs-scrub"
-      fi
-      echo "24 0 8-14 * * root [ \$(date +\\%w) -eq 0 ] && zpool scrub ${zfspool}" >> "/etc/cron.d/zfs-scrub"
+  else
+    echo "Scrub the pool every second Sunday of every month ${poolname}"
+    if [ ! -f "/etc/cron.d/zfs-scrub" ] ; then
+      echo "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"  > "/etc/cron.d/zfs-scrub"
     fi
+    echo "24 0 8-14 * * root [ \$(date +\\%w) -eq 0 ] && zpool scrub ${poolname}" >> "/etc/cron.d/zfs-scrub"
   fi
-done
+fi
 
 # pvesm (proxmox) is optional
 if type "pvesm" >& /dev/null; then

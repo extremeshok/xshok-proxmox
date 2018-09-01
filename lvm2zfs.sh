@@ -210,7 +210,7 @@ for zfspool in "${zfspoolarray[@]}" ; do
   #check we do not already have a cron for zfs
   if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
     if [ -f /usr/lib/zfs-linux/scrub ] ; then
-      cat <<'EOF' > /etc/cron.d/zfsutils-linux
+      cat <<EOF > /etc/cron.d/zfsutils-linux
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Scrub the pool every second Sunday of every month.
