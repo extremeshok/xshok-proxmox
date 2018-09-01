@@ -17,8 +17,12 @@
 # Run this script from the hetzner rescue system
 # Operating system=Linux, Architecture=64 bit, Public key=*optional*
 #
-# Assumes 2 identical disks at /dev/sda and /dev/ssb, it ignores any extra disks
+# Assumes 2 or 4 identical disks at /dev/sda and /dev/sdb,sdc,sdd,sde,sdf it ignores any extra disks which are not identical
+# Will make sure the raid 1 use sda and the next identical sized disk, eg. sdc if sdb is not the same siza as sda
 # software raid 1 (mirror) will be setup as well as LVM and will automatically detect and set the swap size
+# If 4 identical disks are detected (sda,sdb,sdc,sdd) raid 10 will be used. (mirror and striped)
+#
+# SWAP partition size is adjusted according to available drive space
 #
 ################################################################################
 #
@@ -66,6 +70,18 @@ else
   MY_RAID_ENABLE="no"
 fi
 
+#test for possible raid10, using 4 devices of equal size
+if [ "$MY_RAID_ENABLE" == "yes" ]; then
+  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdb$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
+    MY_RAID_LEVEL="10"
+  else
+    MY_RAID_LEVEL="1"
+  fi
+fi
+
+
+
+
 # check for ram size
 #if [[ $(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000)) -le "64" ]] ; then
 
@@ -101,9 +117,9 @@ if grep -q '#!/bin/bash' "/post-install"; then
   echo "Starting Installer"
 
   if [ "$USE_LVM" == "TRUE" ]; then
-    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l 1 -p "/:ext4:40G,swap:swap:${MY_SWAP}G,lvm:vg0:all" -v "vg0:data:/var/lib/vz:ext4:all"
+    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:40G,swap:swap:${MY_SWAP}G,lvm:vg0:all" -v "vg0:data:/var/lib/vz:ext4:all"
   else
-    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l 1 -p "/:ext4:all,swap:swap:${MY_SWAP}G"
+    $installimage_bin -a -i "root/images/Debian-94-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:all,swap:swap:${MY_SWAP}G"
   fi
 
 else
