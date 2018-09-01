@@ -97,7 +97,7 @@ fi
 if [[ $MY_ROOT -lt 10 ]] ; then
   echo "error: MY_ROOT is too small, must be larger than 10 GB"
   exit 1
-elif [ "$MY_ROOT" == "" ] || [[ ! $MY_SWAP =~ ^[0-9]+$ ]] ; then
+elif [ "$MY_ROOT" == "" ] || [[ ! $MY_ROOT =~ ^[0-9]+$ ]] ; then
   echo "error: MY_ROOT is Not a number, specify in GB"
   exit 1
 fi
