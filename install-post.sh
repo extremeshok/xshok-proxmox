@@ -47,34 +47,34 @@ echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/
 apt-get update > /dev/null
 
 ## Fix no public key error for debian repo
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' debian-archive-keyring
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
 
 ## Update proxmox and install various system utils
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
 pveam update
 
 ## Fix no public key error for debian repo
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' debian-archive-keyring
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
 
 ## Install openvswitch for a virtual internal network
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' openvswitch-switch
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 
 ## Install zfs support, appears to be missing on some Proxmox installs.
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' zfsutils
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef install 'zfsutils
 
 ## Install missing ksmtuned
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' ksmtuned
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
 systemctl enable ksmtuned
 
 ## Install ceph support
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 ## Remove conflicting utilities
-apt-get purge -y ntp openntpd chrony
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
 ## Detect AMD EPYC CPU and install kernel 4.15
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
@@ -86,13 +86,13 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     update-grub
   fi
   echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' pve-kernel-4.15
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install install pve-kernel-4.15
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 # use command 'reboot-quick'
 echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' kexec-tools
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install install kexec-tools
 
 cat <<'EOF' > /etc/systemd/system/kexec-pve.service
 [Unit]
@@ -152,7 +152,7 @@ if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | ta
 fi
 
 ## Protect the web interface with fail2ban
-/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' fail2ban
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
 # shellcheck disable=1117
 cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 [Definition]
