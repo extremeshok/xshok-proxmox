@@ -106,7 +106,7 @@ else
 fi
 
 #Generate Configs
-cat > /etc/tinc/vpn/tinc.conf <<EOF
+cat <<EOF > /etc/tinc/vpn/tinc.conf
 Name = $my_name
 AddressFamily = ipv4
 Interface = Tun0
@@ -114,14 +114,14 @@ Mode = switch
 ConnectTo = $vpn_connect_to
 EOF
 
-cat > "/etc/tinc/vpn/hosts/$my_name" <<EOF
+cat <<EOF > "/etc/tinc/vpn/hosts/$my_name"
 Address = $my_address
 Port = $vpn_port
 Compression = 10 #LZO
 EOF
 cat /etc/tinc/vpn/rsa_key.pub >> "/etc/tinc/vpn/hosts/$my_name"
 
-cat > /etc/tinc/vpn/tinc-up <<EOF
+cat <<EOF > /etc/tinc/vpn/tinc-up
 #!/bin/bash
 ip link set \$INTERFACE up
 ip addr add  192.168.0.$vpn_ip_last/24 dev \$INTERFACE
@@ -139,7 +139,7 @@ EOF
 
 chmod 755 /etc/tinc/vpn/tinc-up
 
-cat > /etc/tinc/vpn/tinc-down <<EOF
+cat <<EOF > /etc/tinc/vpn/tinc-down
 #!/bin/bash
 ip route del 192.168.0.0/24 dev \$INTERFACE
 ip addr del 192.168.0.$vpn_ip_last/24 dev \$INTERFACE
@@ -161,7 +161,7 @@ systemctl enable tinc.service
 
 # Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
 if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
-  cat >> /etc/network/interfaces << EOF
+  cat <<EOF >> /etc/network/interfaces
 
 iface Tun0 inet static
         address 192.168.0.$vpn_ip_last
