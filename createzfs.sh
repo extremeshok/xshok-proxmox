@@ -104,7 +104,7 @@ for zfsdevice in "${zfsdevicearray[@]}" ; do
   fi
   echo "Clearing partitions: ${zfsdevice}"
   for v_partition in $(parted -s "${zfsdevice}" print|awk '/^ / {print $1}') ; do
-    parted -s "${zfsdevice}" rm "${v_partition}"
+    parted -s "${zfsdevice}" rm "${v_partition}" 2> /dev/null
   done
 
   if [[ "$zfsdevice" =~ "/" ]] ; then
