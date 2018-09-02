@@ -66,11 +66,12 @@ sleep 1
 
 MY_LVM_DEV=$(mount | grep "$LVM_MOUNT_POINT" | cut -d " " -f 1)
 ret=$?
-if [ $ret == 0 ] ; then
+if [ $ret == 0 ] && [ "$MY_LVM_DEV" != "" ] ; then
    echo "Found partition, continuing"
    echo "MY_LVM_DEV=$MY_LVM_DEV" #/dev/mapper/pve-data
 else
   echo "ERROR: $LVM_MOUNT_POINT not found"
+  exit 1
 fi
 
 #Detect and install dependencies
