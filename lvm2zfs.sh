@@ -28,11 +28,13 @@
 # 6-11 Drives = raidz-2
 # 11+ Drives = raidz-3
 #
-# NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT
+# NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT, default is /var/lib/vz
+#
+# Assumes LVM on top of a MD raid (linux software raid)
 #
 # Usage:
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
-# ./lvm2zfs.sh
+# ./lvm2zfs.sh LVM_MOUNT_POINT
 #
 ################################################################################
 #
@@ -47,7 +49,20 @@ if [ "$LVM_MOUNT_POINT" == "" ]; then
   LVM_MOUNT_POINT="/var/lib/vz"
 fi
 
-echo "LVM_MOUNT_POINT=$LVM_MOUNT_POINT"
+echo "+++++++++++++++++++++++++"
+echo "WILL DESTROY ALL DATA ON"
+echo "$LVM_MOUNT_POINT"
+echo "+++++++++++++++++++++++++"
+echo "[CTRL]+[C] to exit"
+echo "+++++++++++++++++++++++++"
+sleep 1
+echo "5.." ; sleep 1
+echo "4.." ; sleep 1
+echo "3.." ; sleep 1
+echo "2.." ; sleep 1
+echo "1.." ; sleep 1
+echo "STARTING CONVERSION"
+sleep 1
 
 MY_LVM_DEV=$(mount | grep "$LVM_MOUNT_POINT" | cut -d " " -f 1)
 ret=$?
