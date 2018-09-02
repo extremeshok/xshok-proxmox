@@ -32,9 +32,6 @@
 #
 ################################################################################
 
-
-echo "Update and upgrade system, please wait ..."
-
 # Set the local
 export LANG="en_US.UTF-8"
 export LC_ALL="C"

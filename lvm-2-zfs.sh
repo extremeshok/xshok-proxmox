@@ -43,6 +43,10 @@
 #
 ################################################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 LVM_MOUNT_POINT="$1"
 
 if [ "$LVM_MOUNT_POINT" == "" ]; then
@@ -79,7 +83,7 @@ fi
 #Detect and install dependencies
 if [ "$(command -v zpool)" == "" ] ; then
   if [ "$(command -v apt-get)" != "" ] ; then
-    apt-get install -y zfsutils-linux
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
     modprobe zfs
   else
     echo "ERROR: ZFS not installed"

@@ -1,8 +1,12 @@
 #!/bin/bash
 # https://blog.programster.org/zfs-add-intent-log-device
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 if [ ! -e /usr/bin/time ] ; then
-  apt-get install time
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install time
 fi
 
 echo "Performing cached write of 1,000,000 4k blocks..."

@@ -32,6 +32,10 @@
 #
 ################################################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 MY_ZFS_POOL="$1"
 
 if [ "$MY_ZFS_POOL" == "" ]; then
@@ -72,7 +76,7 @@ for XSHOK_MOUNT_POINT in "${XSHOK_MOUNTS[@]}" ; do
   #Detect and install dependencies
   if [ "$(command -v zpool)" == "" ] ; then
     if [ "$(command -v apt-get)" != "" ] ; then
-      apt-get install -y zfsutils-linux
+      /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
       modprobe zfs
     else
       echo "ERROR: ZFS not installed"

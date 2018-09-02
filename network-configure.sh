@@ -40,11 +40,15 @@
 #
 ################################################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 network_interfaces_file="/etc/network/interfaces"
 
 #Detect and install dependencies
 if ! type "dhcpd" >& /dev/null; then
-  apt-get install -y isc-dhcp-server
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install isc-dhcp-server
 fi
 
 if ! [ -f "network-addiprange.sh" ]; then

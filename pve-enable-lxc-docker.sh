@@ -26,6 +26,10 @@
 #
 ##############################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 container_id="$1"
 
 container_config="/etc/pve/lxc/$container_id.conf"
@@ -50,7 +54,7 @@ function addlineifnotfound { #$file #$line
 
 #add cgroups support
 if [ "$(command -v cgroupfs-mount)" == "" ] ; then
-  apt-get install -y cgroupfs-mount
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install cgroupfs-mount
 fi
 
 if [ -f "$container_config" ]; then

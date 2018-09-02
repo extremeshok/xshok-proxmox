@@ -21,6 +21,10 @@
 #
 ################################################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 ## Force APT to use IPv4
 echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
@@ -40,33 +44,33 @@ sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
-apt-get update
+apt-get update > /dev/null
 
 ## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' debian-archive-keyring
 
 ## Update proxmox and install various system utils
-apt-get -y dist-upgrade --force-yes
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
 pveam update
 
 ## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' debian-archive-keyring
 
 ## Install openvswitch for a virtual internal network
-apt-get install -y openvswitch-switch
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' openvswitch-switch
 
 ## Install zfs support, appears to be missing on some Proxmox installs.
-apt-get install -y zfsutils
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' zfsutils
 
 ## Install missing ksmtuned
-apt-get install -y ksmtuned
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' ksmtuned
 systemctl enable ksmtuned
 
 ## Install ceph support
 echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
 #snmpd snmp-mibs-downloader
 
 ## Remove conflicting utilities
@@ -82,13 +86,13 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     update-grub
   fi
   echo "Installing kernel 4.15"
-  apt-get install -y pve-kernel-4.15
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' pve-kernel-4.15
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 # use command 'reboot-quick'
 echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-apt-get install -y kexec-tools
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' kexec-tools
 
 cat <<'EOF' > /etc/systemd/system/kexec-pve.service
 [Unit]
@@ -108,8 +112,8 @@ systemctl enable kexec-pve.service
 echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 
 ## Remove no longer required packages and purge old cached updates
-apt-get autoremove -y
-apt-get autoclean -y
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoclean
 
 ## Disable portmapper / rpcbind (security)
 systemctl disable rpcbind
@@ -148,7 +152,7 @@ if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | ta
 fi
 
 ## Protect the web interface with fail2ban
-apt-get install -y fail2ban
+/usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confdef' fail2ban
 # shellcheck disable=1117
 cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 [Definition]

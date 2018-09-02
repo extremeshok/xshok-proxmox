@@ -46,17 +46,20 @@
 #/dev/md3              4.9G   20M  4.6G   1% /xshok/zfs-slog
 #/dev/md2               59G   53M   56G   1% /xshok/zfs-cache
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
 
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
 #Detect and install dependencies
 if ! type "zpool" >& /dev/null; then
-  apt-get install -y zfsutils-linux
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
   modprobe zfs
 fi
 if ! type "parted" >& /dev/null; then
-  apt-get install -y parted
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install parted
 fi
 
 #check arguments

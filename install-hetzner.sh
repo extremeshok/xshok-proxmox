@@ -45,6 +45,10 @@ USE_LVM="TRUE"
 
 ################################################################################
 
+# Set the local
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
 installimage_bin="/root/.oldroot/nfs/install/installimage"
 
 MY_HOSTNAME="$1"
