@@ -98,7 +98,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzf
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 ./xshok_slog_cache-2-zfs.sh poolname
 ```
 * Reboot
