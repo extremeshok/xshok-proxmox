@@ -22,19 +22,22 @@ Recommeneded partitioning scheme:
 * Wait a few mins
 * Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod 777 install-hetzner.sh && ./install-hetzner.sh 
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
+./install-hetzner.sh
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ### LVM to ZFS
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
+ ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ### NETWORKING (vmbr0 vmbr1)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && bash network-configure.sh && rm network-configure.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+./network-configure.sh && rm network-configure.sh
 ```
 * Reboot
 * Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
@@ -67,13 +70,15 @@ Select install for the specific server, via the ovh manager
 After installation, Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ### LVM to ZFS
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
+ ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ### NETWORKING (vmbr0 vmbr1)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && bash network-configure.sh && rm network-configure.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+./network-configure.sh && rm network-configure.sh
 ```
 * Reboot
 * Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
@@ -111,22 +116,29 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-
 There can be security implications as the LXC container is running in a higher privileged mode.
 ```
 curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
- pve-enable-lxc-docker container_id
+pve-enable-lxc-docker container_id
 ```
 
-# Convert from LVM to ZFS (lvm2zfs.sh) *run once*
-Converts the storage LVM into a ZFS raid 1 (mirror)
-* Uses the LVM with the path/mount of /var/lib/vz
-* Will automatically detect the required raid level and optimise
-* 1 Drive = zfs (single)
-* 2 Drives = mirror (raid1)
-* 3-5 Drives = raidz-1 (raid5)
-* 6-11 Drives = raidz-2 (raid6)
-* 11+ Drives = raidz-3 (raid7)
+# Convert from LVM to ZFS (lvm-2-zfs.sh) *run once*
+Converts the a MDADM BASED LVM into a ZFS raid 1 (mirror)
+* Defaults to mount point: /var/lib/vz
+* Optional: specify the LVM_MOUNT_POINT ( ./lvm-2-zfs.sh LVM_MOUNT_POINT )
+* Creates the following storage/rpools
+* zfsbackup (rpool/backup)
+* zfsvmdata (rpool/vmdata)
+* /var/lib/vz/tmp_backup (rpool/tmp_backup)
+*
+* Will automatically detect the required raid level and optimise.
+* 1 Drive = zfs
+* 2 Drives = mirror
+* 3-5 Drives = raidz-1
+* 6-11 Drives = raidz-2
+* 11+ Drives = raidz-3
 
-**NOTE: WILL  DESTROY ALL DATA ON /var/lib/vz**
+**NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh -c -O lvm2zfs.sh && bash lvm2zfs.sh && rm lvm2zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh && chmod +x lvm-2-zfs.sh
+./lvm-2-zfs.sh
 ```
 
 # Create ZFS from devices (createzfs.sh) *optional*
@@ -140,8 +152,17 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh
-bash createzfs.sh poolname /dev/device1 /dev/device2
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
+./createzfs.sh poolname /dev/device1 /dev/device2
+```
+
+# Create ZFS cache and slog from /xshok/zfs-cache and /xshok/zfs-slog partitions and adds them to a zpool (xshok_slog_cache-2-zfs.sh) *optional*
+Creates a zfs pool from specified devices
+* Will automatically mirror the slog and stripe the cache if there are multiple drives
+**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+./xshok_slog_cache-2-zfs.sh poolname
 ```
 
 # REATES A ROUTED vmbr0 AND NAT vmbr1 NETWORK CONFIGURATION FOR PROXMOX (network-configure.sh) **run once**
@@ -165,21 +186,22 @@ ALSO CREATES A NAT Private Network as vmbr1
  NOTE: WILL OVERWRITE /etc/network/interfaces
  A backup will be created as /etc/network/interfaces.timestamp
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh
-bash network-configure.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+./network-configure.sh && rm network-configure.sh
 ```
 
 #  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
 If no interface is specified the default gateway interface will be detected and used.
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh
-bash network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh && chmod +x network-addiprange.sh
+./network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
 ```
 
 # Create Private mesh vpn/network (tincvpn.sh)
 tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh -c -O tincvpn.sh && bash tincvpn.sh -h
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh -c -O tincvpn.sh && chmod +x tincvpn.sh
+./tincvpn.sh -h
 ```
 ## Example for 3 node Cluster
 ### First Host (hostname: host1)
@@ -214,4 +236,3 @@ pvenode acme account register default mail@example.invalid
 pvenode config set --acme domains=example.invalid
 pvenode acme cert order
 ```
-
