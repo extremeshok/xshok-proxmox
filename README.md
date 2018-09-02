@@ -227,7 +227,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.
 #### First Host (hostname: host1)
 ```
 bash tincvpn.sh -i 1 -c host2
-```DEVICES
+```
 #### Second Host (hostname: host2)
 ```
 bash tincvpn.sh -i 2 -c host3
