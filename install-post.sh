@@ -181,8 +181,9 @@ sysctl -p
 if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
 	sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 # create a daily cron to make sure the banner does not re-appear
-	cat <<EOF > /etc/cron.daily/proxmox-nosub
+	cat <<'EOF' > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
+# eXtremeSHOK.com Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
 	chmod 755 /etc/cron.daily/proxmox-nosub
@@ -213,6 +214,7 @@ sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
 cat <<EOF >> /etc/security/limits.conf
+# eXtremeSHOK.com Increase max FD limit / ulimit
 * soft     nproc          131072
 * hard     nproc          131072
 * soft     nofile         131072
@@ -225,6 +227,7 @@ EOF
 
 ## Increase kernel max Key limit
 cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
+# eXtremeSHOK.com
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
@@ -242,7 +245,7 @@ if [ "$(command -v zfs)" != "" ] ; then
 	  MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
 	fi
 	cat <<EOF > /etc/modprobe.d/zfs.conf
-# ZFS tuning for a proxmox machine
+# eXtremeSHOK.com ZFS tuning
 
 # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
 options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
