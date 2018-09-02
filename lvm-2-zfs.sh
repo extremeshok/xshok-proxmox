@@ -253,5 +253,7 @@ if type "pvesm" >& /dev/null; then
   pvesm add dir rpool-backup --path /backup_rpool
 fi
 
+zpool iostat -v "rpool" -L -T d
+
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'

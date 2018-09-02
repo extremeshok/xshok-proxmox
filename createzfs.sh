@@ -247,5 +247,7 @@ fi
 # echo "RDBMS partition (MySQL/PostgreSQL/Oracle)"
 # zfs create -o recordsize=8K -o primarycache=metadata -o mountpoint=/rdbms -o logbias=throughput "$poolname"/rdbms
 
+zpool iostat -v "${poolname}" -L -T d
+
 #script Finish
 echo -e '\033[1;33m Finished....please restart the server \033[0m'

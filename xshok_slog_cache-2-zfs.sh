@@ -154,7 +154,7 @@ for XSHOK_MOUNT_POINT in "${XSHOK_MOUNTS[@]}" ; do
   fi
 done
 
-zpool status -T d -L "$MY_ZFS_POOL"
+zpool iostat -v "$MY_ZFS_POOL" -L -T d
 
 
 #script Finish
