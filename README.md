@@ -88,13 +88,15 @@ Assumptions: Proxmox installed, SSD raid1 partitions mounted as /xshok/zfs-slog 
 
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the follow
 ## Create ZFS from unused devices (createzfs.sh)
+
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
 ./createzfs.sh poolname /dev/device1 /dev/device2
 ```
 ## Create ZFS cache and slog from /xshok/zfs-cache and /xshok/zfs-slog partitions and adds them to a zpool (xshok_slog_cache-2-zfs.sh) *optional*
-**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
+
+**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 ./xshok_slog_cache-2-zfs.sh poolname
@@ -176,6 +178,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzf
 ## Create ZFS cache and slog from /xshok/zfs-cache and /xshok/zfs-slog partitions and adds them to a zpool (xshok_slog_cache-2-zfs.sh) *optional*
 Creates a zfs pool from specified devices
 * Will automatically mirror the slog and stripe the cache if there are multiple drives
+
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
@@ -224,7 +227,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.
 #### First Host (hostname: host1)
 ```
 bash tincvpn.sh -i 1 -c host2
-```
+```DEVICES
 #### Second Host (hostname: host2)
 ```
 bash tincvpn.sh -i 2 -c host3
