@@ -131,7 +131,7 @@ for XSHOK_MOUNT_POINT in "${XSHOK_MOUNTS[@]}" ; do
       mdadm --zero-superblock "$MY_MD_DEV"
       #MY_MD_DEV_UUID="$(uuidgen)"
       #tune2fs "$MY_MD_DEV" -U "$MY_MD_DEV_UUID"
-      MY_MD_DEV_UUID="$(blkid | grep /dev/sdb5 | cut -d= -f2 | xargs)"
+      MY_MD_DEV_UUID="$(blkid | grep "$MY_MD_DEV" | cut -d= -f2 | xargs)"
       MY_MD_DEV_UUID_LIST="${MY_MD_DEV_UUID_LIST} ${MY_MD_DEV_UUID}"
   done
 
