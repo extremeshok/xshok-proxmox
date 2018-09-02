@@ -24,6 +24,8 @@
 #
 # SWAP partition size is adjusted according to available drive space
 #
+# Note: will automatically run the install-post.sh script
+#
 ################################################################################
 #
 #   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
