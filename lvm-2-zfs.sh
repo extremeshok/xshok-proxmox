@@ -19,6 +19,7 @@
 # Creates the following storage/rpools
 # zfsbackup (rpool/backup)
 # zfsvmdata (rpool/vmdata)
+# /var/lib/vz/tmp_backup (rpool/tmp_backup)
 #
 # Will automatically detect the required raid level and optimise.
 #
@@ -33,8 +34,8 @@
 # Assumes LVM on top of a MD raid (linux software raid)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm2zfs.sh
-# ./lvm2zfs.sh LVM_MOUNT_POINT
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm-2-zfs.sh
+# ./lvm-2-zfs.sh LVM_MOUNT_POINT
 #
 ################################################################################
 #
@@ -64,7 +65,8 @@ echo "1.." ; sleep 1
 echo "STARTING CONVERSION"
 sleep 1
 
-MY_LVM_DEV=$(mount | grep "$LVM_MOUNT_POINT" | cut -d " " -f 1)
+#check mountpiont exists and is a device
+MY_LVM_DEV=$(mount | grep -i "$LVM_MOUNT_POINT" | cut -d " " -f 1)
 ret=$?
 if [ $ret == 0 ] && [ "$MY_LVM_DEV" != "" ] ; then
    echo "Found partition, continuing"
@@ -188,13 +190,15 @@ if [ $ret != 0 ] ; then
   exit 1
 fi
 
-echo "Creating Secondary ZFS sparse volumes"
+echo "Creating Secondary ZFS volumes"
 echo "-- rpool/vmdata"
 echo zfs create rpool/vmdata
 zfs create rpool/vmdata
 echo "-- rpool/backup (/backup_rpool)"
 echo zfs create -o mountpoint=/backup_rpool rpool/backup
 zfs create -o mountpoint=/backup_rpool rpool/backup
+echo "ZFS tmp_backup partition"
+zfs create -o setuid=off -o devices=off -o sync=disabled -o mountpoint=/var/lib/vz/tmp_backup -o atime=off rpool/tmp_backup
 
 #export the pool
 echo zpool export rpool
@@ -236,11 +240,6 @@ EOF
     fi
     echo "24 0 8-14 * * root [ \$(date +\\%w) -eq 0 ] && zpool scrub rpool" >> "/etc/cron.d/zfs-scrub"
   fi
-fi
-
-if [ -f "/etc/vzdump.conf" ]; then
-  echo "set vzdump temp dir to use the /tmp_rpool"
-  sed -i "s|tmpdir: /var/lib/vz/tmp_backup|tmpdir: /tmp_rpool|" /etc/vzdump.conf
 fi
 
 if type "pvesm" >& /dev/null; then
