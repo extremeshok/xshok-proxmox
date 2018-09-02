@@ -35,6 +35,7 @@
 
 echo "Update and upgrade system, please wait ..."
 
+# Set the local
 export LANG="en_US.UTF-8"
 export LC_ALL="C"
 
@@ -43,10 +44,6 @@ if [ -d "/run/lock" ] ; then
   mkdir /run/lock
   chmod a+rwxt /run/lock
 fi
-
-# Set the local
-export LANG="en_US.UTF-8"
-export LC_ALL="C"
 
 echo "Deinstalling any linux firmware packages "
 firmware="$(dpkg -l | grep -i 'firmware-')"
