@@ -197,6 +197,10 @@ if [ "$MY_SWAP" != "" ]; then
   MY_SWAP=",swap:swap:${MY_SWAP}G"
 fi
 if [ "$MY_CACHE" != "" ]; then
+  if [ "$MY_RAID_LEVEL" == "1" ]; then
+    #devide by 2 as the cache will be doubled (stripped)
+    MY_CACHE=$(( MY_CACHE / 2 ))
+  fi
   echo "CACHE: ${MY_CACHE}"
   MY_CACHE=",/xshok/zfs-cache:ext4:${MY_CACHE}G"
 fi
