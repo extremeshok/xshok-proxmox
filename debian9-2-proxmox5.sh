@@ -51,18 +51,17 @@ export LC_ALL="C"
 echo "Deinstalling any linux firmware packages "
 firmware="$(dpkg -l | grep -i 'firmware-')"
 if [ -n "$firmware" ]; then
-  aptitude -q -y purge firmware-bnx2x firmware-realtek firmware-linux firmware-linux-free firmware-linux-nonfree
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge firmware-bnx2x firmware-realtek firmware-linux firmware-linux-free firmware-linux-nonfree
 else
   echo "No firmware packages loaded"
 fi
 
 echo "Deinstalling the Debian standard kernel packages "
-apt-get -y purge linux-image-4.9.* linux-image-amd64echo "Deinstalling the Debian standard kernel packages "
-apt-get -y purge linux-image-4.9.* linux-image-amd64
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-amd64
 
 echo "Removing conflicting packages"
-apt-get -y purge os-prober cloud-init
-apt-get -y autoremove
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge os-prober cloud-init
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
 apt-get clean all
 
 echo "Auto detecting existing network settings"
@@ -87,7 +86,7 @@ echo "Configure /etc/hosts"
 if [ -f /etc/cloud/cloud.cfg ] ; then
   echo 'manage_etc_hosts: False' | tee --append /etc/cloud/cloud.cfg
 fi
-cat <<EOF > /etc/hosts2
+cat <<EOF > /etc/hosts
 127.0.0.1 localhost.localdomain localhost
 ${default_v4ip} $(hostname -f) $(hostname) pvelocalhost
 
@@ -133,6 +132,9 @@ echo "Installing open-iscsi"
 
 echo "Installing proxmox-ve"
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install -y proxmox-ve
+
+echo "Remove legacy (4.9) kernel"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-4.9.*
 
 echo "Force grub to update"
 update-grub
