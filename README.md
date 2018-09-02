@@ -131,6 +131,18 @@ Or run *install-post.sh* after installation
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
 ```
 
+
+## Convert from Debian 9 to Proxmox 5 (debian9-2-proxmox5.sh) *optional*
+Assumptions: Debian9 installed with a valid FQDN hostname set
+* Tested on KVM, VirtualBox and Dedicated Server
+* Will automatically detect cloud-init and disable.
+* Will automatically generate a correct /etc/hosts
+* Note: will automatically run the install-post.sh script
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
+./debian9-2-proxmox5.sh
+```
+
 ## Enable Docker support for an LXC container (pve-enable-lxc-docker.sh) *optional*
 There can be security implications as the LXC container is running in a higher privileged mode.
 ```
