@@ -43,6 +43,10 @@
 #
 ##############################################################
 
+#/dev/md3              4.9G   20M  4.6G   1% /xshok/zfs-slog
+#/dev/md2               59G   53M   56G   1% /xshok/zfs-cache
+
+
 poolname=${1}
 zfsdevicearray=("${@:2}")
 
