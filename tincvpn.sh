@@ -36,10 +36,21 @@
 #
 ##############################################################
 vpn_ip_last=1
-vpn_connect_to=prx-b
+vpn_connect_to=""
 vpn_port=655
-my_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0' | grep -v '10.10.' | grep -v '127.0.0.1' | tail -n 1)
+#my_default_v4ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0.' | grep -v '10.10.' | grep -v '127.0.0.' | tail -n 1)
+my_default_v4ip=""
 reset="no"
+
+
+if [ "$(command -v tinc)" == "" ] ; then
+  if [ "$(command -v apt-get)" != "" ] ; then
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install tinc
+  else
+    echo "ERROR: tinc not installed"
+    exit 1
+  fi
+fi
 
 while getopts i:p:c:a:rh option
 do
@@ -48,22 +59,37 @@ do
     i) vpn_ip_last=${OPTARG} ;;
     p) vpn_port=${OPTARG} ;;
     c) vpn_connect_to=${OPTARG} ;;
-    a) my_address=${OPTARG} ;;
+    a) my_default_v4ip=${OPTARG} ;;
     r) reset="yes" ;;
-    *) echo "-i <last_ip_part 192.168.0.?> -p <vpn port if not 655> -c <vpn host file to connect to, prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit ;;
+    *) echo "-i <last_ip_part 10.10.1.?> -p <vpn port if not 655> -c <vpn host to connect to, eg. prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit ;;
   esac
 done
 
-if [ "$my_address" == "" ] ; then
-  echo "Error: address not detected, please use -a <public ip address>"
-  exit
+if [ "$my_default_v4ip" == "" ] ; then
+  #detect default ipv4 and default interface
+  default_interface="$(ip route | awk '/default/ { print $5 }' | grep -v "vmbr")"
+  if [ "$default_interface" == "" ]; then
+    #filter the interfaces to get the default interface and which is not down and not a virtual bridge
+    default_interface="$(ip link | sed -e '/state DOWN / { N; d; }' | sed -e '/veth[0-9].*:/ { N; d; }' | sed -e '/vmbr[0-9].*:/ { N; d; }' | sed -e '/tap[0-9].*:/ { N; d; }' | sed -e '/lo:/ { N; d; }' | head -n 1 | cut -d':' -f 2 | xargs)"
+  fi
+  if [ "$default_interface" == "" ]; then
+    echo "ERROR: Could not detect default interface"
+    exit 1
+  fi
+  default_v4="$(ip -4 addr show dev "$default_interface" | awk '/inet/ { print $2 }' )"
+  my_default_v4ip=${default_v4%/*}
+  if [ "$my_default_v4ip" == "" ] ; then
+    echo "ERROR: Could not detect default IPv4 address"
+    echo "IP: ${my_default_v4ip}"
+    exit 1
+  fi
 fi
 
 if [ "$reset" == "yes" ] ; then
   echo "Resetting"
   systemctl stop tinc.service
   pkill -9 tincd
-  rm -rf /etc/tinc/
+  rm -rf /etc/tinc/my_default_v4ip
 fi
 
 
@@ -73,10 +99,10 @@ my_name=$(uname -n)
 my_name=${my_name/-/_}
 
 echo "Options:"
-echo "VPN IP: 192.168.1.$vpn_ip_last"
-echo "VPN PORT: vpn_port"
-echo "VPN Connect to host: vpn_connect_to"
-echo "Public Address: $my_address"
+echo "VPN IP: 10.10.1.${vpn_ip_last}"
+echo "VPN PORT: ${vpn_port}"
+echo "VPN Connect to host: ${vpn_connect_to}"
+echo "Public Address: ${my_default_v4ip}"
 
 # Detect and Install
 if [ "$(command -v tincd)" == "" ] ; then
@@ -101,7 +127,7 @@ if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rssa_key.pub 2> /dev/null)" !=
     tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
   fi
 else
-  echo "Generating New RSA Keys"
+  echo "Generating New 4096 bit RSA Keys"
   tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
 fi
 
@@ -111,21 +137,23 @@ Name = $my_name
 AddressFamily = ipv4
 Interface = Tun0
 Mode = switch
+# Switch: Unicast, multicast and broadcast packaets
 ConnectTo = $vpn_connect_to
 EOF
 
 cat <<EOF > "/etc/tinc/vpn/hosts/$my_name"
-Address = $my_address
-Port = $vpn_port
+Address = ${my_default_v4ip}
+Subnet =  10.10.1.${vpn_ip_last}
+Port = ${vpn_port}
 Compression = 10 #LZO
 EOF
-cat /etc/tinc/vpn/rsa_key.pub >> "/etc/tinc/vpn/hosts/$my_name"
+cat /etc/tinc/vpn/rsa_key.pub >> "/etc/tinc/vpn/hosts/${my_name}"
 
 cat <<EOF > /etc/tinc/vpn/tinc-up
 #!/bin/bash
 ip link set \$INTERFACE up
-ip addr add  192.168.0.$vpn_ip_last/24 dev \$INTERFACE
-ip route add 192.168.0.0/24 dev \$INTERFACE
+ip addr add  10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
+ip route add 10.10.1.0/24 dev \$INTERFACE
 
 # Set a multicast route over interface
 route add -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
@@ -141,8 +169,8 @@ chmod 755 /etc/tinc/vpn/tinc-up
 
 cat <<EOF > /etc/tinc/vpn/tinc-down
 #!/bin/bash
-ip route del 192.168.0.0/24 dev \$INTERFACE
-ip addr del 192.168.0.$vpn_ip_last/24 dev \$INTERFACE
+ip route del 10.10.1.0/24 dev \$INTERFACE
+ip addr del 10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
 ip link set \$INTERFACE down
 
 # Set a multicast route over interface
@@ -164,9 +192,9 @@ if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
   cat <<EOF >> /etc/network/interfaces
 
 iface Tun0 inet static
-        address 192.168.0.$vpn_ip_last
-        netmask 255.255.255.0
-        broadcast 0.0.0.0
+  address 10.10.1.$vpn_ip_last
+  netmask 255.255.255.0
+  broadcast 0.0.0.0
 
 EOF
 fi
@@ -174,6 +202,6 @@ fi
 
 #Display the Host config for simple cpy-paste to another node
 echo "Run the following on the other VPN nodes:"
-echo "cat > /etc/tinc/vpn/hosts/$my_name << EOF"
-cat "/etc/tinc/vpn/hosts/$my_name"
+echo "cat <<'EOF' >> /etc/tinc/vpn/hosts/${my_name}"
+cat "/etc/tinc/vpn/hosts/${my_name}"
 echo "EOF"
