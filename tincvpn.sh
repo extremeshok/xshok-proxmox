@@ -90,6 +90,8 @@ if [ "$reset" == "yes" ] ; then
   systemctl stop tinc.service
   pkill -9 tincd
   rm -rf /etc/tinc/my_default_v4ip
+  rm -rf /etc/tinc/vpn
+  mv -f /etc/tinc/nets.boot.orig /etc/tinc/nets.boot
 fi
 
 
@@ -182,6 +184,7 @@ EOF
 chmod 755 /etc/tinc/vpn/tinc-down
 
 # Set which VPN to start
+cp -f /etc/tinc/nets.boot /etc/tinc/nets.boot.orig
 echo "vpn" >> /etc/tinc/nets.boot
 
 # Enable at Boot
@@ -192,7 +195,7 @@ if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
   cat <<EOF >> /etc/network/interfaces
 
 iface Tun0 inet static
-  address 10.10.1.$vpn_ip_last
+  address 10.10.1.${vpn_ip_last}
   netmask 255.255.255.0
   broadcast 0.0.0.0
 
