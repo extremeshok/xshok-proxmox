@@ -61,7 +61,7 @@ done
 
 if [ "$reset" == "yes" ] || [ "$uninstall" == "yes" ] ; then
   echo "Stopping Tinc"
-  systemctl stop tinc.service
+  systemctl stop tinc-xsvpn.service
   pkill -9 tincd
 
   echo "Removing configs"

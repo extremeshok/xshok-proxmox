@@ -236,6 +236,11 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.
 ./tincvpn.sh -h
 ```
 ### Example for 3 node Cluster
+# cat /etc/hosts
+# global ips for tinc servers
+# 11.11.11.11 host1
+# 22.22.22.22 host2
+# 33.33.33.33 host3
 #### First Host (hostname: host1)
 ```
 bash tincvpn.sh -i 1 -c host2
