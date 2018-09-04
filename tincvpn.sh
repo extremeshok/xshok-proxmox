@@ -106,9 +106,14 @@ if [ "$my_default_v4ip" == "" ] ; then
 fi
 
 # Assign and Fix varibles
-#vpn_connect_to=${vpn_connect_to//-/_}
+
 my_name=$(uname -n)
-#my_name=${my_name//-/_}
+my_name=${my_name//-/_}
+
+if [ "$vpn_connect_to" != "${vpn_connect_to//-/_}" ]; then
+  echo "ERROR: - character is not allowed in hostname for vpn_connect_to"
+  exit 1
+fi
 
 echo "Options:"
 echo "VPN IP: 10.10.1.${vpn_ip_last}"
@@ -194,8 +199,26 @@ EOF
 chmod 755 /etc/tinc/vpn/tinc-down
 
 # Set which VPN to start
-cp -f /etc/tinc/nets.boot /etc/tinc/nets.boot.orig
-echo "vpn" >> /etc/tinc/nets.boot
+#cp -f /etc/tinc/nets.boot /etc/tinc/nets.boot.orig
+#echo "vpn" >> /etc/tinc/nets.boot
+
+cat <<EOF > /etc/systemd/system/tinc-vpn.service
+[Unit]
+Description=Tinc vpn
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/tinc/vpn
+ExecStart=/sbin/tincd -n vpn -D -d3
+ExecReload=/sbin/tincd -n linodeVPN -kHUP
+TimeoutStopSec=5
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 # Enable at Boot
 systemctl enable tinc.service
