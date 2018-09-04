@@ -67,6 +67,7 @@ if [ "$reset" == "yes" ] || [ "$uninstall" == "yes" ] ; then
   rm -rf /etc/tinc/xsvpn
   mv -f /etc/tinc/nets.boot.orig /etc/tinc/nets.boot
   rm -f /etc/network/interfaces.d/tinc-vpn.cfg
+  rm -f /etc/systemd/system/tinc-xsvpn.service
 
   if [ "$uninstall" == "yes" ] ; then
     systemctl disable tinc.service
@@ -202,7 +203,7 @@ chmod 755 /etc/tinc/xsvpn/tinc-down
 #cp -f /etc/tinc/nets.boot /etc/tinc/nets.boot.orig
 #echo "vpn" >> /etc/tinc/nets.boot
 
-cat <<EOF > /etc/systemd/system/tinc-vpn.service
+cat <<EOF > /etc/systemd/system/tinc-xsvpn.service
 [Unit]
 Description=eXtremeSHOK.com Tinc VPN
 After=network.target
@@ -221,7 +222,7 @@ WantedBy=multi-user.target
 EOF
 
 # Enable at Boot
-systemctl enable tinc.service
+systemctl enable tinc-xsvpn.service
 
 # Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
 if [ "$(grep "source /etc/network/interfaces.d/*.cfg" /etc/network/interfaces.d/tinc-vpn.cfg 2> /dev/null)" == "" ] ; then
