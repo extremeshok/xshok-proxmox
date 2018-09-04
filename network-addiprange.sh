@@ -19,6 +19,7 @@
 # Usage:
 # curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 # ./network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
+# ./network-addiprange.sh ip.xx.xx.xx / cidr interface_optional
 # ./network-addiprange.sh ip.xx.xx.xx interface_optional
 #
 # If no interface is specified the default gateway interface will be used.
@@ -39,14 +40,22 @@ if [ $# -lt "1" ] ; then
   echo "Usage: $(basename "$0") ip/mask optional_gateway_interface"
   exit 1
 else
-  ipwithcidr=$1
+  ipwithcidr="$1"
 fi
-if ! [[ "$ipwithcidr" =~ "/" ]] ; then
-  echo "Info: IP missing cidr, assigning default: 32"
-  cidr="32"
-else
+if [[ "$ipwithcidr" =~ "/" ]] ; then
   networkip=${ipwithcidr%/*}
   cidr=${ipwithcidr##*/}
+  gatewaydev="$2"
+else
+  networkip="$1"
+  if [ "$2" == "/"  ] ; then #assume xx.xx.xx.xx / 29 eth0
+    cidr="$3"
+    gatewaydev="$4"
+  else
+    echo "Info: IP missing cidr, assigning default: 32"
+    cidr="32"
+    gatewaydev="$3"
+  fi
 fi
 if ! [[ $networkip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
   echo "ERROR: Invaid IP, use xxx.xxx.xxx.xxx/xx format: $networkip"
@@ -63,9 +72,7 @@ if [ "$cidr" -lt "1" ] || [ "$cidr" -gt "32" ] ; then
 else
   totalip=$((2**(32-cidr) )) # y = 2^(32-x), x = CIDR class
 fi
-if [ "$2" != "" ] ; then
-  gatewaydev="$2"
-else
+if [ "$gatewaydev" == "" ] ; then
   gatewaydev="$(route -4 | grep default | awk '{ print $NF }')"
 fi
 usableip=$((totalip - 2))
