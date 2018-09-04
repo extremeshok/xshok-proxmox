@@ -111,9 +111,6 @@ cp "$network_interfaces_file" "${network_interfaces_file}.$(date +"%Y-%m-%d_%H-%
 cat > "$network_interfaces_file" <<EOF
 ###### eXtremeSHOK.com
 
-# Load extra files, ie for extra gateways
-source /etc/network/interfaces.d/*
-
 ### LOOPBACK ###
 auto lo
 iface lo inet loopback
@@ -149,6 +146,9 @@ iface vmbr1 inet static
   bridge_maxwait 0
   post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
   post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
+
+# Load extra files, ie for extra gateways
+source /etc/network/interfaces.d/*
 
 EOF
 
