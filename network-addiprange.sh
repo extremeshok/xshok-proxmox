@@ -73,8 +73,14 @@ else
   totalip=$((2**(32-cidr) )) # y = 2^(32-x), x = CIDR class
 fi
 if [ "$gatewaydev" == "" ] ; then
-  gatewaydev="$(route -4 | grep default | awk '{ print $NF }')"
+  if ip -br link show | grep -v 'UNKNOWN' | grep -v '@'  | grep -v ':' | cut -d' ' -f1 | grep -q vmbr0 ; then
+    gatewaydev="vmbr0"
+  else
+    gatewaydev="$(route -4 | grep default | awk '{ print $NF }')"
+  fi
 fi
+echo "Set gatewaydev to ${gatewaydev}"
+
 usableip=$((totalip - 2))
 if [ "$usableip" -eq "0" ] ; then
   echo "ERROR: No usable IP ($totalip - 2 = $usableip)"
