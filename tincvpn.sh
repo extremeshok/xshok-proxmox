@@ -52,7 +52,7 @@ if [ "$(command -v tinc)" == "" ] ; then
   fi
 fi
 
-while getopts i:p:c:a:rh option
+while getopts i:p:c:a:r:u:h option
 do
   case "${option}"
       in
@@ -61,9 +61,28 @@ do
     c) vpn_connect_to=${OPTARG} ;;
     a) my_default_v4ip=${OPTARG} ;;
     r) reset="yes" ;;
-    *) echo "-i <last_ip_part 10.10.1.?> -p <vpn port if not 655> -c <vpn host to connect to, eg. prx_b> -a <public ip address, or will auto-detect> -r (reset/reinstall)" ; exit ;;
+    u) uninstall="yes" ;;
+    *) echo "-i <last_ip_part 10.10.1.?> -p <vpn port if not 655> -c <vpn host to connect to, eg. prx_b> -a <public ip address, or will auto-detect> -r (reset) -u (uninstall)" ; exit ;;
   esac
 done
+
+if [ "$reset" == "yes" ] || [ "$uninstall" == "yes" ] ; then
+  echo "Stopping Tinc"
+  systemctl stop tinc.service
+  pkill -9 tincd
+
+  echo "Removing configs"
+  rm -rf /etc/tinc/my_default_v4ip
+  rm -rf /etc/tinc/vpn
+  mv -f /etc/tinc/nets.boot.orig /etc/tinc/nets.boot
+  rm -f /etc/network/interfaces.d/tinc-vpn.cfg
+
+  if [ "$uninstall" == "yes" ] ; then
+    systemctl disable tinc.service
+    echo "Tinc uninstalled"
+    exit 0
+  fi
+fi
 
 if [ "$my_default_v4ip" == "" ] ; then
   #detect default ipv4 and default interface
@@ -85,20 +104,10 @@ if [ "$my_default_v4ip" == "" ] ; then
   fi
 fi
 
-if [ "$reset" == "yes" ] ; then
-  echo "Resetting"
-  systemctl stop tinc.service
-  pkill -9 tincd
-  rm -rf /etc/tinc/my_default_v4ip
-  rm -rf /etc/tinc/vpn
-  mv -f /etc/tinc/nets.boot.orig /etc/tinc/nets.boot
-fi
-
-
-#Assign and Fix varibles
-vpn_connect_to=${vpn_connect_to/-/_}
+# Assign and Fix varibles
+#vpn_connect_to=${vpn_connect_to//-/_}
 my_name=$(uname -n)
-my_name=${my_name/-/_}
+#my_name=${my_name//-/_}
 
 echo "Options:"
 echo "VPN IP: 10.10.1.${vpn_ip_last}"
@@ -191,20 +200,26 @@ echo "vpn" >> /etc/tinc/nets.boot
 systemctl enable tinc.service
 
 # Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
-if [ "$(grep "iface Tun0" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
-  cat <<EOF >> /etc/network/interfaces
-
+if [ "$(grep "source /etc/network/interfaces.d/*.cfg" /etc/network/interfaces.d/tinc-vpn.cfg 2> /dev/null)" == "" ] ; then
+  echo "source /etc/network/interfaces.d/*.cfg" > /etc/network/interfaces
+  mkdir -p  /etc/network/interfaces.d/
+fi
+if [ ! -f /etc/network/interfaces.d/tinc-vpn.cfg ]; then
+  cat <<EOF > /etc/network/interfaces.d/tinc-vpn.cfg
+# tinc vpn
 iface Tun0 inet static
   address 10.10.1.${vpn_ip_last}
   netmask 255.255.255.0
   broadcast 0.0.0.0
-
 EOF
 fi
 
 
 #Display the Host config for simple cpy-paste to another node
+echo ""
 echo "Run the following on the other VPN nodes:"
-echo "cat <<'EOF' >> /etc/tinc/vpn/hosts/${my_name}"
+echo ""
+echo 'cat <<EOF >> /etc/tinc/vpn/hosts/'"${my_name}"
 cat "/etc/tinc/vpn/hosts/${my_name}"
 echo "EOF"
+echo ""
