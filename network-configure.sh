@@ -147,7 +147,21 @@ iface vmbr1 inet static
   post-up   iptables -t nat -A POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
   post-down iptables -t nat -D POSTROUTING -s '10.10.10.0/24' -o ${default_interface} -j MASQUERADE
 
-# Load extra files, ie for extra gateways
+### Fast Private LAN
+#iface enp28s0 inet manual
+#auto vmbr2
+#iface vmbr2 inet static
+#  address  10.10.3.2
+#  netmask  255.255.255.0
+#  bridge_ports enp28s0
+#  bridge_stp off
+#  bridge_fd 0
+#  pre-up ip link set enp28s0 mtu 8192
+#
+## ## Run the following to enable migrations via the Fast Private LAN:
+## echo "migration: insecure,network=10.10.3.0/24" >> /etc/pve/datacenter.cfg
+
+### Load extra files, ie for extra gateways
 source /etc/network/interfaces.d/*
 
 EOF
