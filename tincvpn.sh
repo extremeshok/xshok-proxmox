@@ -16,6 +16,13 @@
 # ./tincvpn.sh -h
 #
 # Example for 3 node Cluster
+#
+# cat /etc/hosts
+# global ips for tinc servers
+# 11.11.11.11 host1
+# 22.22.22.22 host2
+# 33.33.33.33 host3
+#
 # First Host (hostname: host1)
 # ./tincvpn.sh -i 1 -c host2
 # Second Host (hostname: host2)
@@ -23,11 +30,6 @@
 # Third Host (hostname: host3)
 # ./tincvpn.sh -3 -c host1
 #
-# Example for 2 node Cluster
-# First Host (hostname: host1)
-# ./tincvpn.sh -i 1 -c host2
-# Second Host (hostname: host2)
-# ./tincvpn.sh -i 2 -c host1
 #
 ################################################################################
 #
@@ -211,8 +213,8 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/etc/tinc/xsvpn
-ExecStart=/sbin/tincd -n xsvpn -D -d3
-ExecReload=/sbin/tincd -n xsvpn -kHUP
+ExecStart=$(command -v tincd) -n xsvpn -D -d3
+ExecReload=$(command -v tincd) -n xsvpn -kHUP
 TimeoutStopSec=5
 Restart=always
 RestartSec=60
