@@ -227,7 +227,7 @@ EOF
 systemctl enable tinc-xsvpn.service
 
 # Add a Tun0 entry to /etc/network/interfaces to allow for ceph suport over the VPN
-if [ "$(grep "source /etc/network/interfaces.d/*" /etc/network/interfaces.d/tinc-vpn.cfg 2> /dev/null)" == "" ] ; then
+if [ "$(grep "source /etc/network/interfaces.d/*" /etc/network/interfaces 2> /dev/null)" == "" ] ; then
   echo "source /etc/network/interfaces.d/*" >> /etc/network/interfaces
   mkdir -p  /etc/network/interfaces.d/
 fi
