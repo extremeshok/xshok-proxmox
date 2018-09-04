@@ -43,16 +43,7 @@ my_default_v4ip=""
 reset="no"
 
 
-if [ "$(command -v tinc)" == "" ] ; then
-  if [ "$(command -v apt-get)" != "" ] ; then
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install tinc
-  else
-    echo "ERROR: tinc not installed"
-    exit 1
-  fi
-fi
-
-while getopts i:p:c:a:r:u:h option
+while getopts i:p:c:a:rh:uh option
 do
   case "${option}"
       in
@@ -83,6 +74,16 @@ if [ "$reset" == "yes" ] || [ "$uninstall" == "yes" ] ; then
     exit 0
   fi
 fi
+
+if [ "$(command -v tinc)" == "" ] ; then
+  if [ "$(command -v apt-get)" != "" ] ; then
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install tinc
+  else
+    echo "ERROR: tinc not installed"
+    exit 1
+  fi
+fi
+
 
 if [ "$my_default_v4ip" == "" ] ; then
   #detect default ipv4 and default interface
