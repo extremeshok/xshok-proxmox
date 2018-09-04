@@ -64,7 +64,7 @@ if [ "$reset" == "yes" ] || [ "$uninstall" == "yes" ] ; then
 
   echo "Removing configs"
   rm -rf /etc/tinc/my_default_v4ip
-  rm -rf /etc/tinc/vpn
+  rm -rf /etc/tinc/xsvpn
   mv -f /etc/tinc/nets.boot.orig /etc/tinc/nets.boot
   rm -f /etc/network/interfaces.d/tinc-vpn.cfg
 
@@ -132,24 +132,24 @@ if [ "$(command -v tincd)" == "" ] ; then
 fi
 
 #Create the DIR and key files
-mkdir -p /etc/tinc/vpn/hosts
-touch /etc/tinc/vpn/rsa_key.pub
-touch /etc/tinc/vpn/rsa_key.priv
+mkdir -p /etc/tinc/xsvpn/hosts
+touch /etc/tinc/xsvpn/rsa_key.pub
+touch /etc/tinc/xsvpn/rsa_key.priv
 
-if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/vpn/rssa_key.pub 2> /dev/null)" != "" ] ; then
-  if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/vpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
+if [ "$(grep "BEGIN RSA PUBLIC KEY" /etc/tinc/xsvpn/rssa_key.pub 2> /dev/null)" != "" ] ; then
+  if [ "$(grep "BEGIN RSA PRIVATE KEY" /etc/tinc/xsvpn/rssa_key.priv 2> /dev/null)" != "" ] ; then
     echo "Using Previous RSA Keys"
   else
     echo "Generating New RSA Keys"
-    tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
+    tincd -K4096 -c /etc/tinc/xsvpn </dev/null 2>/dev/null
   fi
 else
   echo "Generating New 4096 bit RSA Keys"
-  tincd -K4096 -c /etc/tinc/vpn </dev/null 2>/dev/null
+  tincd -K4096 -c /etc/tinc/xsvpn </dev/null 2>/dev/null
 fi
 
 #Generate Configs
-cat <<EOF > /etc/tinc/vpn/tinc.conf
+cat <<EOF > /etc/tinc/xsvpn/tinc.conf
 Name = $my_name
 AddressFamily = ipv4
 Interface = Tun0
@@ -158,15 +158,15 @@ Mode = switch
 ConnectTo = $vpn_connect_to
 EOF
 
-cat <<EOF > "/etc/tinc/vpn/hosts/$my_name"
+cat <<EOF > "/etc/tinc/xsvpn/hosts/$my_name"
 Address = ${my_default_v4ip}
 Subnet =  10.10.1.${vpn_ip_last}
 Port = ${vpn_port}
 Compression = 10 #LZO
 EOF
-cat /etc/tinc/vpn/rsa_key.pub >> "/etc/tinc/vpn/hosts/${my_name}"
+cat /etc/tinc/xsvpn/rsa_key.pub >> "/etc/tinc/xsvpn/hosts/${my_name}"
 
-cat <<EOF > /etc/tinc/vpn/tinc-up
+cat <<EOF > /etc/tinc/xsvpn/tinc-up
 #!/bin/bash
 ip link set \$INTERFACE up
 ip addr add  10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
@@ -182,9 +182,9 @@ route add -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
 #echo 0 > /sys/devices/virtual/net/\$INTERFACE/bridge/multicast_snooping
 EOF
 
-chmod 755 /etc/tinc/vpn/tinc-up
+chmod 755 /etc/tinc/xsvpn/tinc-up
 
-cat <<EOF > /etc/tinc/vpn/tinc-down
+cat <<EOF > /etc/tinc/xsvpn/tinc-down
 #!/bin/bash
 ip route del 10.10.1.0/24 dev \$INTERFACE
 ip addr del 10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
@@ -196,7 +196,7 @@ route del -net 224.0.0.0 netmask 240.0.0.0 dev \$INTERFACE
 #echo 0 > /proc/sys/net/ipv4/ip_forward
 EOF
 
-chmod 755 /etc/tinc/vpn/tinc-down
+chmod 755 /etc/tinc/xsvpn/tinc-down
 
 # Set which VPN to start
 #cp -f /etc/tinc/nets.boot /etc/tinc/nets.boot.orig
@@ -204,14 +204,14 @@ chmod 755 /etc/tinc/vpn/tinc-down
 
 cat <<EOF > /etc/systemd/system/tinc-vpn.service
 [Unit]
-Description=Tinc vpn
+Description=eXtremeSHOK.com Tinc VPN
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/etc/tinc/vpn
-ExecStart=/sbin/tincd -n vpn -D -d3
-ExecReload=/sbin/tincd -n linodeVPN -kHUP
+WorkingDirectory=/etc/tinc/xsvpn
+ExecStart=/sbin/tincd -n xsvpn -D -d3
+ExecReload=/sbin/tincd -n xsvpn -kHUP
 TimeoutStopSec=5
 Restart=always
 RestartSec=60
@@ -238,12 +238,17 @@ iface Tun0 inet static
 EOF
 fi
 
-
 #Display the Host config for simple cpy-paste to another node
 echo ""
 echo "Run the following on the other VPN nodes:"
+echo "The following information is stored in /etc/tinc/xsvpn/this_host.info"
+
+echo 'cat <<EOF >> /etc/tinc/xsvpn/hosts/'"${my_name}" > /etc/tinc/xsvpn/this_host.info
+cat "/etc/tinc/xsvpn/hosts/${my_name}" >> /etc/tinc/xsvpn/this_host.info
+echo "EOF" >> /etc/tinc/xsvpn/this_host.info
+
 echo ""
-echo 'cat <<EOF >> /etc/tinc/vpn/hosts/'"${my_name}"
-cat "/etc/tinc/vpn/hosts/${my_name}"
+echo 'cat <<EOF >> /etc/tinc/xsvpn/hosts/'"${my_name}"
+cat "/etc/tinc/xsvpn/hosts/${my_name}"
 echo "EOF"
 echo ""
