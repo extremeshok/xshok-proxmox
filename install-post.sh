@@ -173,8 +173,10 @@ systemctl enable fail2ban
 ##testing
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
-## Increase vzdump backup speed
-sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
+## Increase vzdump backup speed, enable pigz and fix ionice
+sed -i "s/#bwlimit:.*/bwlimit: 10240000/" /etc/vzdump.conf
+sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
+sed -i "s/#ionice:.*/ionice: 1/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
 echo "vm.swappiness=10" >> /etc/sysctl.conf
