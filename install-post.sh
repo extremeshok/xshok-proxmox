@@ -174,7 +174,7 @@ systemctl enable fail2ban
 #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
 ## Increase vzdump backup speed, enable pigz and fix ionice
-sed -i "s/#bwlimit:.*/bwlimit: 10240000/" /etc/vzdump.conf
+sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
 sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
 sed -i "s/#ionice:.*/ionice: 1/" /etc/vzdump.conf
 

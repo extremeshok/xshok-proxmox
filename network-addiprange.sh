@@ -42,6 +42,13 @@ if [ $# -lt "1" ] ; then
 else
   ipwithcidr="$1"
 fi
+myroute="$(command -v route)"
+if [ "$myroute" == "" ] ; then
+  echo "ERROR: route command is missing"
+  exit 1
+fi
+
+
 if [[ "$ipwithcidr" =~ "/" ]] ; then
   networkip=${ipwithcidr%/*}
   cidr=${ipwithcidr##*/}
@@ -103,14 +110,13 @@ elif ! [ "$((totalip/256**3))" -gt "256" ]; then		# totalip/256/256/256
   netmask="$((256-(totalip/256**3) )).0.0.0"		# 256-(totalip/256/256/256)
 fi
 
-#information
+#informationmyroute="$(command -v route)"
 echo "UsableIP $usableip | TotalIP $totalip | Netmask $netmask | CIDR $cidr | NetworkIP $networkip | GatewayDev $gatewaydev"
 
 # Check if the route is currently in use, otherwise add it.
 res="$(route | grep "$networkip" | grep "$netmask" | grep "$gatewaydev")"
 if [ "$res" == "" ] ; then
   echo "Activating the route until restart"
-  myroute="$(command -v route)"
   $myroute add -net "$networkip" netmask "$netmask" dev "$gatewaydev"
 else
   echo "Route is already active"
@@ -125,9 +131,9 @@ if [ ! -f "/etc/network/if-up.d/route" ] ; then
   echo '#!/bin/bash' > /etc/network/if-up.d/route
   chmod +x /etc/network/if-up.d/route
 fi
-if ! grep -q "route add -net $networkip netmask $netmask dev $gatewaydev" "/etc/network/if-up.d/route" ; then
+if ! grep -q "${myroute} add -net ${networkip} netmask ${netmask} dev ${gatewaydev}" "/etc/network/if-up.d/route" ; then
   echo "Permantly added the route"
-  echo "up route add -net $networkip netmask $netmask dev $gatewaydev" >> "/etc/network/if-up.d/route"
+  echo "${myroute} add -net ${networkip} netmask ${netmask} dev ${gatewaydev}" >> "/etc/network/if-up.d/route"
 else
   echo "Route is already exists in /etc/network/if-up.d/route"
 fi
