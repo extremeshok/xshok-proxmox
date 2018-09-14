@@ -240,7 +240,7 @@ log-facility local7;
 option rfc3442-classless-static-routes code 121 = array of integer 8;
 option ms-classless-static-routes code 249 = array of integer 8;
 
-option domain-name-servers home;
+option domain-name-servers 1.1.1.1,8.8.8.8;
 
 ### Default to private NAT network
 subnet 0.0.0.0 netmask 0.0.0.0 {
