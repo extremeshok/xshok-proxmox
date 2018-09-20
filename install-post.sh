@@ -68,6 +68,7 @@ pveam update
 ## Install missing ksmtuned
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
 systemctl enable ksmtuned
+systemctl enable ksm
 
 ## Install ceph support
 echo "Y" | pveceph install
