@@ -86,13 +86,13 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     update-grub
   fi
   echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install install pve-kernel-4.15
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 # use command 'reboot-quick'
 echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install install kexec-tools
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install kexec-tools
 
 cat <<'EOF' > /etc/systemd/system/kexec-pve.service
 [Unit]
