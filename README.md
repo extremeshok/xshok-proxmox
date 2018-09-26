@@ -120,6 +120,7 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_sl
 * Increase max Key limits
 * Detect AMD EPYC CPU and install kernel 4.15
 * Detect AMD EPYC CPU and Apply EPYC fix to kernel
+* Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
 
@@ -272,4 +273,14 @@ Run the following on the proxmox server, ensure you have a valid DNS for the ser
 pvenode acme account register default mail@example.invalid
 pvenode config set --acme domains=example.invalid
 pvenode acme cert order
+```
+
+## ZFS Snapshot Usage
+```
+# list all snapshots
+zfs list -t snapshot
+# create a pre-rollback snapshot
+zfs-auto-snapshot --verbose --label=prerollback -r //
+# rollback to a specific snapshot
+zfs rollback <snapshotname>
 ```
