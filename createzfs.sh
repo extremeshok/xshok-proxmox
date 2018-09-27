@@ -20,6 +20,8 @@
 # poolnamebackup (poolname/backup)
 # poolnamevmdata (poolname/vmdata)
 #
+# zfs-auto-snapshot is disabled on the backup (poolname/backup)
+#
 # Will automatically detect the required raid level and optimise.
 #
 # Will automatically resolve device names (eg. /dev/sda) to device id (eg. SSD1_16261489FFCA)
@@ -189,7 +191,6 @@ echo "Creating Secondary ZFS volumes"
 echo "-- ${poolname}/vmdata"
 zfs create "${poolname}/vmdata"
 echo "-- ${poolname}/backup (/backup_${poolprefix})"
-zfs create -o mountpoint="/backup_${poolprefix}" "${poolname}/backup"
 
 #export the pool
 zpool export "${poolname}"
@@ -206,6 +207,9 @@ zfs set relatime=off "${poolname}"
 zfs set checksum=on "${poolname}"
 zfs set dedup=off "${poolname}"
 zfs set xattr=sa "${poolname}"
+
+# disable zfs-auto-snapshot on backup pools
+zfs set com.sun:auto-snapshot=false "${poolname}/backup"
 
 #check we do not already have a cron for zfs
 if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
