@@ -17,9 +17,10 @@
 # Remaining for /var/lib/vz (LVM)
 #
 # Creates the following storage/rpools
-# zfsbackup (rpool/backup)
 # zfsvmdata (rpool/vmdata)
+# zfsbackup (rpool/backup)
 # /var/lib/vz/tmp_backup (rpool/tmp_backup)
+# zfs-auto-snapshot is disabled on the rpool/backup and rpool/tmp_backup
 #
 # Will automatically detect the required raid level and optimise.
 #
@@ -204,6 +205,7 @@ zfs create -o mountpoint=/backup_rpool rpool/backup
 echo "ZFS tmp_backup partition"
 zfs create -o setuid=off -o devices=off -o sync=disabled -o mountpoint=/var/lib/vz/tmp_backup -o atime=off rpool/tmp_backup
 
+
 #export the pool
 echo zpool export rpool
 zpool export rpool
@@ -227,6 +229,10 @@ zfs set relatime=off "rpool"
 zfs set checksum=on "rpool"
 zfs set dedup=off "rpool"
 zfs set xattr=sa "rpool"
+# disable zfs-auto-snapshot on backup pools
+zfs set com.sun:auto-snapshot=false rpool/backup
+zfs set com.sun:auto-snapshot=false rpool/tmp_backup
+
 
 #check we do not already have a cron for zfs
 if [ ! -f "/etc/cron.d/zfsutils-linux" ] ; then
