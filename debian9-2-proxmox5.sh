@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # This is property of eXtremeSHOK.com
 # You are free to use, modify and distribute, however you may not remove this notice.
@@ -137,6 +137,6 @@ echo "Done installing Proxmox VE"
 
 echo "Fetching postinstall script"
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
-if grep -q '#!/bin/bash' "install-post.sh"; then
+if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
   bash install-post.sh
 fi

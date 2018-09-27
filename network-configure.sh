@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # This is property of eXtremeSHOK.com
 # You are free to use, modify and distribute, however you may not remove this notice.
@@ -55,7 +55,7 @@ if ! [ -f "network-addiprange.sh" ]; then
   echo "Downloading network-addiprange.sh script"
   curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 fi
-if ! grep -q '#!/bin/bash' "network-addiprange.sh"; then
+if ! grep -q '#!/usr/bin/env bash' "network-addiprange.sh"; then
   echo "ERROR: network-addiprange.sh is invalid"
 fi
 

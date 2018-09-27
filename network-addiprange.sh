@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # This is property of eXtremeSHOK.com
 # You are free to use, modify and distribute, however you may not remove this notice.
@@ -128,7 +128,7 @@ fi
 
 
 if [ ! -f "/etc/network/if-up.d/route" ] ; then
-  echo '#!/bin/bash' > /etc/network/if-up.d/route
+  echo '#!/usr/bin/env bash' > /etc/network/if-up.d/route
   chmod +x /etc/network/if-up.d/route
 fi
 if ! grep -q "${myroute} add -net ${networkip} netmask ${netmask} dev ${gatewaydev}" "/etc/network/if-up.d/route" ; then

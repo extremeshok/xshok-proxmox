@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # This is property of eXtremeSHOK.com
 # You are free to use, modify and distribute, however you may not remove this notice.
@@ -170,7 +170,7 @@ EOF
 cat /etc/tinc/xsvpn/rsa_key.pub >> "/etc/tinc/xsvpn/hosts/${my_name}"
 
 cat <<EOF > /etc/tinc/xsvpn/tinc-up
-#!/bin/bash
+#!/usr/bin/env bash
 ip link set \$INTERFACE up
 ip addr add  10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
 ip route add 10.10.1.0/24 dev \$INTERFACE
@@ -188,7 +188,7 @@ EOF
 chmod 755 /etc/tinc/xsvpn/tinc-up
 
 cat <<EOF > /etc/tinc/xsvpn/tinc-down
-#!/bin/bash
+#!/usr/bin/env bash
 ip route del 10.10.1.0/24 dev \$INTERFACE
 ip addr del 10.10.1.${vpn_ip_last}/24 dev \$INTERFACE
 ip link set \$INTERFACE down

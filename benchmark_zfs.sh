@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # https://blog.programster.org/zfs-add-intent-log-device
 
 # Set the local
