@@ -98,7 +98,7 @@ systemctl enable ksm
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
 
 ## Detect AMD EPYC CPU and install kernel 4.15
@@ -193,6 +193,10 @@ logpath = /var/log/daemon.log
 maxretry = 3
 # 1 hour
 bantime = 3600
+EOF
+cat <<EOF > /etc/fail2ban/jail.local
+[DEFAULT]
+banaction = iptables-ipset-proto4
 EOF
 systemctl enable fail2ban
 ##testing
