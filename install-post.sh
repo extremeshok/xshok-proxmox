@@ -112,9 +112,15 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     echo "Setting kernel idle=nomwait"
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
-  fi
+  fi  
   echo "Installing kernel 4.15"
   /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
+fi
+
+if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
+  ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
+  echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
+  echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
