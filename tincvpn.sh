@@ -213,7 +213,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/etc/tinc/xsvpn
-ExecStart=$(command -v tincd) -n xsvpn -D -d3
+ExecStart=$(command -v tincd) -n xsvpn -D -d2
 ExecReload=$(command -v tincd) -n xsvpn -kHUP
 TimeoutStopSec=5
 Restart=always
