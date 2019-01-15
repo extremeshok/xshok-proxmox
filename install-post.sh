@@ -261,14 +261,14 @@ sysctl -p /etc/sysctl.conf
 ## Increase max FD limit / ulimit
 cat <<EOF >> /etc/security/limits.conf
 # eXtremeSHOK.com Increase max FD limit / ulimit
-* soft     nproc          131072
-* hard     nproc          131072
-* soft     nofile         131072
-* hard     nofile         131072
-root soft     nproc          131072
-root hard     nproc          131072
-root soft     nofile         131072
-root hard     nofile         131072
+* soft     nproc          256000
+* hard     nproc          256000
+* soft     nofile         256000
+* hard     nofile         256000
+root soft     nproc          256000
+root hard     nproc          256000
+root soft     nofile         256000
+root hard     nofile         256000
 EOF
 
 ## Increase kernel max Key limit
@@ -278,6 +278,15 @@ kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
 
+## Set systemd ulimits
+echo "DefaultLimitNOFILE=256000" >> /etc/systemd/system.conf
+echo "DefaultLimitNOFILE=256000" >> /etc/systemd/user.conf
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session-noninteractive
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/runuser-l
+
+## Set ulimit for the shell user
+cd ~ && echo "ulimit -n 256000" >> .bashrc ; echo "ulimit -n 256000" >> .profile
 
 ## Optimise ZFS arc size
 if [ "$(command -v zfs)" != "" ] ; then
