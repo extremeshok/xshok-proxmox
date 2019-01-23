@@ -16,7 +16,7 @@
 # Assumptions: proxmox installed
 #
 # Notes:
-# to disable the MOTD banner, set the env NO_MOTD_BANNER to true (export NO_MOTD_BANNER=true) 
+# to disable the MOTD banner, set the env NO_MOTD_BANNER to true (export NO_MOTD_BANNER=true)
 #
 ################################################################################
 #
@@ -112,7 +112,7 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     echo "Setting kernel idle=nomwait"
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
-  fi  
+  fi
   echo "Installing kernel 4.15"
   /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
 fi
@@ -271,9 +271,18 @@ root soft     nofile         256000
 root hard     nofile         256000
 EOF
 
+## Enable TCP BBR congestion control
+cat <<EOF > /etc/sysctl.d/10-kernel-bbr.conf
+# eXtremeSHOK.com
+# TCP BBR congestion control
+net.core.default_qdisc=fq
+net.ipv4.tcp_congestion_control=bbr
+EOF
+
 ## Increase kernel max Key limit
 cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
 # eXtremeSHOK.com
+# Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF

@@ -1,5 +1,39 @@
 # xshok-proxmox :: eXtremeSHOK.com Proxmox (pve) scripts
 
+## Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
+*not required if server setup with install-hetzner.sh*
+* 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
+* Force APT to use IPv4
+* Disables the enterprise repo, enables the public repo
+* Adds non-free sources
+* Adds the latest ceph, ksmtuned
+* Fixes known bugs (public key missing, max user watches, etc)
+* Updates the system
+* Installs openvswitch-switch, zfsutils and common system utilities
+* Increase vzdump backup speed, enable pigz and fix ionice
+* Increase max Key limits,  max user watches, max File Discriptor Limits, ulimits
+* Detect AMD EPYC CPU and install kernel 4.15
+* Detect AMD EPYC CPU and Apply EPYC fixes to kernel and KVM
+* Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
+* Disable portmapper / rpcbind (security)
+* set-timezone UTC and enable timesyncd as nntp client
+* Set pigz to replace gzip, 2x faster gzip compression
+* Deteted OVH Server, installing OVH RTM (real time monitoring)"
+* Protects the webinterface with fail2ban (security)
+* Optimise ZFS arc size depending on installed memory, Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
+* ZFS Tuning, prefetch method and max write speed to l2arc
+* Enable TCP BBR congestion control, improves overall network throughput
+
+https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
+
+return value is 0
+
+Or run *install-post.sh* after installation
+
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
+```
+
 ## Install Proxmox Recommendations
 Recommeneded partitioning scheme:
 * Raid 1 (mirror) 40 000MB ext4 /
@@ -104,34 +138,6 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_sl
 * Reboot
 
 # ------- SCRIPTS ------
-
-## Post Install Script (install-post.sh aka postinstall.sh) *run once*
-*not required if server setup with install-hetzner.sh*
-* Added: 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
-* Disables the enterprise repo, enables the public repo
-* Adds non-free sources
-* Adds the latest ceph
-* Fixes known bugs (public key missing, max user watches, etc)
-* Updates the system
-* Installs openvswitch-switch, zfsutils and common system utilities
-* Protects the webinterface with fail2ban
-* Increase vzdump backup speed
-* Increase max File Discriptor Limits
-* Increase max Key limits
-* Detect AMD EPYC CPU and install kernel 4.15
-* Detect AMD EPYC CPU and Apply EPYC fix to kernel
-* Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
-
-https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
-
-return value is 0
-
-Or run *install-post.sh* after installation
-
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
-```
-
 
 ## Convert from Debian 9 to Proxmox 5 (debian9-2-proxmox5.sh) *optional*
 Assumptions: Debian9 installed with a valid FQDN hostname set
