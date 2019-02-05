@@ -214,12 +214,15 @@ systemctl enable fail2ban
 ## Increase vzdump backup speed, enable pigz and fix ionice
 sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
 sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
-sed -i "s/#ionice:.*/ionice: 1/" /etc/vzdump.conf
+sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
 echo "vm.swappiness=10" >> /etc/sysctl.conf
 sysctl -p
 
+## Bugfix: reserve 512MB memory for system
+echo "vm.min_free_kbytes = 524288" >> /etc/sysctl.conf
+sysctl -p
 
 ## Remove subscription banner
 if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
