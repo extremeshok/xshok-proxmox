@@ -329,5 +329,8 @@ options zfs l2arc_write_max=524288000
 EOF
 fi
 
+# propagate the setting into the kernel
+update-initramfs -u -k all
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
