@@ -239,7 +239,7 @@ fi
 ## Pretty MOTD BANNER
 if [ -z "${NO_MOTD_BANNER}" ] ; then
 	if ! grep -q https "/etc/motd" ; then
-	cat <<'EOF' > /etc/motd.new
+cat << 'EOF' > /etc/motd.new
 	   This system is optimised by:            https://eXtremeSHOK.com
 	     __   ___                            _____ _    _  ____  _  __
 	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
@@ -249,7 +249,8 @@ if [ -z "${NO_MOTD_BANNER}" ] ; then
 	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
 
 
-	EOF
+EOF
+
 		cat /etc/motd >> /etc/motd.new
 		mv /etc/motd.new /etc/motd
 	fi
