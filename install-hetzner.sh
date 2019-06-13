@@ -224,7 +224,7 @@ curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-i
 #Customising post install file
 echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
-if grep -q '#!/usr/bin/env bash' "/post-install"; then
+if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
   echo "Starting Installer"
 
