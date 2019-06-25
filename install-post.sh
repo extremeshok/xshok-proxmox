@@ -226,20 +226,20 @@ sysctl -p
 
 ## Remove subscription banner
 if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
-	sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-# create a daily cron to make sure the banner does not re-appear
-	cat <<'EOF' > /etc/cron.daily/proxmox-nosub
+  sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+  # create a daily cron to make sure the banner does not re-appear
+  cat <<'EOF' > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
 # eXtremeSHOK.com Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
-	chmod 755 /etc/cron.daily/proxmox-nosub
+  chmod 755 /etc/cron.daily/proxmox-nosub
 fi
 
 ## Pretty MOTD BANNER
 if [ -z "${NO_MOTD_BANNER}" ] ; then
-	if ! grep -q https "/etc/motd" ; then
-cat << 'EOF' > /etc/motd.new
+  if ! grep -q https "/etc/motd" ; then
+    cat << 'EOF' > /etc/motd.new
 	   This system is optimised by:            https://eXtremeSHOK.com
 	     __   ___                            _____ _    _  ____  _  __
 	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
@@ -251,9 +251,9 @@ cat << 'EOF' > /etc/motd.new
 
 EOF
 
-		cat /etc/motd >> /etc/motd.new
-		mv /etc/motd.new /etc/motd
-	fi
+    cat /etc/motd >> /etc/motd.new
+    mv /etc/motd.new /etc/motd
+  fi
 fi
 
 ## Increase max user watches
@@ -303,16 +303,23 @@ cd ~ && echo "ulimit -n 256000" >> .bashrc ; echo "ulimit -n 256000" >> .profile
 
 ## Optimise ZFS arc size
 if [ "$(command -v zfs)" != "" ] ; then
-	RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
-	if [[ RAM_SIZE_GB -lt 16 ]] ; then
-		# 1GB/1GB
-		MY_ZFS_ARC_MIN=1073741824
-		MY_ZFS_ARC_MAX=1073741824
-	else
-		MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
-	  MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
-	fi
-	cat <<EOF > /etc/modprobe.d/zfs.conf
+  RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
+  if [[ RAM_SIZE_GB -lt 16 ]] ; then
+    # 1GB/1GB
+    MY_ZFS_ARC_MIN=1073741824
+    MY_ZFS_ARC_MAX=1073741824
+  else
+    MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
+    MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
+  fi
+  # Enforce the minimum, incase of a faulty vmstat
+  if [[ MY_ZFS_ARC_MIN -lt 1073741824 ]] ; then
+    MY_ZFS_ARC_MIN=1073741824
+  fi
+  if [[ MY_ZFS_ARC_MAX -lt 1073741824 ]] ; then
+    MY_ZFS_ARC_MAX=1073741824
+  fi
+  cat <<EOF > /etc/modprobe.d/zfs.conf
 # eXtremeSHOK.com ZFS tuning
 
 # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
