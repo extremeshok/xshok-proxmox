@@ -193,7 +193,7 @@ cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
 ignoreregex =
 EOF
-cat <<EOF > /etc/fail2ban/jail.d/proxmox
+cat <<EOF > /etc/fail2ban/jail.d/proxmox.conf
 [proxmox]
 enabled = true
 port = https,http,8006
