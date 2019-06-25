@@ -24,7 +24,9 @@
 #
 # SWAP partition size is adjusted according to available drive space
 #
-# Note: will automatically run the install-post.sh script
+# Notes:
+# will automatically run the install-post.sh script
+# will automatically detect and use the latest debian install image
 #
 ################################################################################
 #
@@ -218,6 +220,10 @@ fi
 #wait 5 seconds
 sleep 5
 
+# Detect the latest installimage file to use
+installimage_file=$(curl -s "https://raw.githubusercontent.com/hetzneronline/installimage/master/configs/proxmox5" | grep "IMAGE " | cut -d ' ' -f 2)
+installimage_file=${installimage_file#/}
+
 #fetching post install
 curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox5" --output /post-install
 
@@ -226,12 +232,12 @@ echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/in
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
-  echo "Starting Installer"
+  echo "Starting Installer with Install Image: ${installimage_file}"
 
   if [ "$USE_LVM" == "TRUE" ]; then
-    $installimage_bin -a -i "root/images/Debian-95-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},lvm:vg0:all" -v "vg0:data:/var/lib/vz:xfs:all"
+    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},lvm:vg0:all" -v "vg0:data:/var/lib/vz:xfs:all"
   else
-    $installimage_bin -a -i "root/images/Debian-95-stretch-64-minimal.tar.gz" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},/var/lib/vz:xfs:all"
+    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},/var/lib/vz:xfs:all"
   fi
 
 else
