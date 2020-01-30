@@ -181,8 +181,9 @@ chmod +x /bin/gzip
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
 if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
   echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
-  #http://help.ovh.co.uk/RealTimeMonitoring
-  wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+  # http://help.ovh.co.uk/RealTimeMonitoring
+  # https://docs.ovh.com/gb/en/dedicated/install-rtm/
+  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
 fi
 
 ## Protect the web interface with fail2ban
