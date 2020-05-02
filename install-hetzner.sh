@@ -242,7 +242,7 @@ if [ ! -f $installimage_file ] ; then
 fi
 
 #fetching post install
-curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox6" --output /post-install
+curl "https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/hetzner-prox/proxmox6" --output /post-install
 
 #Customising post install file
 echo "wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
