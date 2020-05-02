@@ -233,7 +233,7 @@ fi
 sleep 5
 
 # Detect the latest installimage file to use
-installimage_file=$(find root/images/ -iname 'Debian-*-buster-64-minimal.tar.gz' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
+installimage_file=$(find /root/images/ -iname 'Debian-*-buster-64-minimal.tar.gz' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
 if [ ! -f $installimage_file ] ; then
   echo "Error: Image file was not found: ${installimage_file}"
   echo "Please log an issue on the github repo with the following"
