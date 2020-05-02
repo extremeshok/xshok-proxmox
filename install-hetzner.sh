@@ -17,10 +17,10 @@
 # Run this script from the hetzner rescue system
 # Operating system=Linux, Architecture=64 bit, Public key=*optional*
 #
-# Assumes 2 or 4 identical disks at /dev/sda and /dev/sdb,sdc,sdd,sde,sdf it ignores any extra disks which are not identical
-# Will make sure the raid 1 use sda and the next identical sized disk, eg. sdc if sdb is not the same siza as sda
+# Assumes 2 or 4 identical disks at /dev/nvme0n1 and /dev/nvme1n1,nvme2n1,nvme3n1,sde,sdf it ignores any extra disks which are not identical
+# Will make sure the raid 1 use nvme0n1 and the next identical sized disk, eg. nvme2n1 if nvme1n1 is not the same siza as nvme0n1
 # software raid 1 (mirror) will be setup as well as LVM and will automatically detect and set the swap size
-# If 4 identical disks are detected (sda,sdb,sdc,sdd) raid 10 will be used. (mirror and striped)
+# If 4 identical disks are detected (nvme0n1,nvme1n1,nvme2n1,nvme3n1) raid 10 will be used. (mirror and striped)
 #
 # SWAP partition size is adjusted according to available drive space
 #
@@ -64,23 +64,23 @@ if [ "$MY_HOSTNAME" == "" ]; then
 fi
 
 ##### CONFIGURE RAID
-# Detect discs for software raid and ensure sda and sd? are the identical size
-# autoselects the second drive to raid with sda
-# sda is always used, as sda is generally the primary boot disk
+# Detect discs for software raid and ensure nvme0n1 and sd? are the identical size
+# autoselects the second drive to raid with nvme0n1
+# nvme0n1 is always used, as nvme0n1 is generally the primary boot disk
 # disables raid if a suitable second disk is not found
-if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdb$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme1n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdb"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_SLAVE=",nvme1n1"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme2n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdc"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_SLAVE=",nvme2n1"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme3n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdd"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sde$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_SLAVE=",nvme3n1"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sde$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
   MY_RAID_SLAVE=",sde"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdf$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdf$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
   MY_RAID_SLAVE=",sdf"
 else
@@ -89,14 +89,14 @@ else
 fi
 #test for possible raid10, using 4 devices of equal size
 if [ "$MY_RAID_ENABLE" == "yes" ]; then
-  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdb$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
+  if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme1n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme2n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme3n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
     MY_RAID_LEVEL="10"
-    MY_RAID_SLAVE=",sdb,sdc,sdd"
+    MY_RAID_SLAVE=",nvme1n1,nvme2n1,nvme3n1"
   else
     MY_RAID_LEVEL="1"
   fi
   echo "RAID ENABLED"
-  echo "RAID Devices: sda${MY_RAID_SLAVE}"
+  echo "RAID Devices: nvme0n1${MY_RAID_SLAVE}"
   echo "Set RAID level to ${MY_RAID_LEVEL}"
 fi
 
@@ -132,9 +132,9 @@ elif [ "$MY_SWAP" != "" ] && [[ ! $MY_SWAP =~ ^[0-9]+$ ]] ; then
   exit 1
 else
   echo "Detecting and setting optimal swap partition size"
-  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+  if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
     MY_SWAP="64"
-  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+  elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
     MY_SWAP="32"
   else
     MY_SWAP="16"
@@ -147,13 +147,13 @@ if [ "$MY_SLOG" == "0" ] ; then
 elif [ "$MY_SLOG" != "" ] && [[ ! $MY_SLOG =~ ^[0-9]+$ ]] ; then
   echo "error: MY_SLOG is Not a number, specify in GB"
   exit 1
-elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme0n1/queue/rotational)" == "1" ] ; then
   echo "HDD Detected, ignoring slog partition"
   MY_SLOG=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring slog partition"
   MY_SLOG=""
-elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme2n1/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/nvme3n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling slog partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -161,11 +161,11 @@ elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/
   # HDD more than 160gb = 30GB CACHE
   # HDD less than 160gb = DISABLE CACHE
   echo "Detecting and setting optimal slog partition size"
-  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
+  if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
     MY_SLOG="10"
-  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+  elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
     MY_SLOG="5"
-  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+  elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
     MY_SLOG="1"
   else
     MY_SLOG=""
@@ -178,13 +178,13 @@ if [ "$MY_CACHE" == "0" ] ; then
 elif [ "$MY_CACHE" != "" ] && [[ ! $MY_CACHE =~ ^[0-9]+$ ]] ; then
   echo "error: ${MY_CACHE} is Not a number, specify in GB"
   exit 1
-elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme0n1/queue/rotational)" == "1" ] ; then
   echo "HDD Detected, ignoring cache partition"
   MY_CACHE=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring cache partition"
   MY_CACHE=""
-elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme2n1/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/nvme3n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling cache partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -192,11 +192,11 @@ elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/
   # HDD more than 160gb = 30GB CACHE
   # HDD less than 160gb = DISABLE CACHE
   echo "Detecting and setting optimal swap partition size"
-  if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
+  if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "800" ]] ; then
     MY_CACHE="120"
-  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
+  elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "400" ]] ; then
     MY_CACHE="60"
-  elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
+  elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -gt "160" ]] ; then
     MY_CACHE="30"
   else
     MY_CACHE=""
@@ -204,12 +204,12 @@ elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/
 fi
 
 #### CHECK PARTITIONS WILL FIT ON DISK
-if [[ $(( MY_BOOT + MY_ROOT + MY_SWAP + MY_CACHE + MY_SLOG + 1 )) -gt $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
+if [[ $(( MY_BOOT + MY_ROOT + MY_SWAP + MY_CACHE + MY_SLOG + 1 )) -gt $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
   echo "ERROR: Drive is too small"
   exit 1
 fi
 
-echo "SDA SIZE:  $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions)"
+echo "nvme0n1 SIZE:  $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions)"
 echo "BOOT: ${MY_BOOT}"
 echo "ROOT: ${MY_ROOT}"
 if [ "$MY_SWAP" != "" ]; then
@@ -253,9 +253,9 @@ if grep -q '#!/bin/bash' "/post-install"; then
 
   if [ "$USE_LVM" == "TRUE" ]; then
     echo "Using LVM"
-    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/boot:ext3:${MY_BOOT}G,/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},lvm:vg0:all" -v "vg0:data:/var/lib/vz:xfs:all"
+    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "nvme0n1${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/boot:ext3:${MY_BOOT}G,/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},lvm:vg0:all" -v "vg0:data:/var/lib/vz:xfs:all"
   else
-    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "sda${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/boot:ext3:${MY_BOOT}G,/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},/var/lib/vz:xfs:all"
+    $installimage_bin -a -i "$installimage_file" -g -s en -x /post-install -n "${MY_HOSTNAME}" -b grub -d "nvme0n1${MY_RAID_SLAVE}" -r "${MY_RAID_ENABLE}" -l "${MY_RAID_LEVEL}" -p "/boot:ext3:${MY_BOOT}G,/:ext4:${MY_ROOT}G${MY_SWAP}${MY_CACHE}${MY_SLOG},/var/lib/vz:xfs:all"
   fi
 
 else
