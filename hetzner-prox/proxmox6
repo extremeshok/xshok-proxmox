@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#
+# Proxmox Virtualization Environment installer script
+#   based on Debian Buster
+#
+
+
+echo -e "\n----- Update and upgrade system, please wait ... -----\n"
+
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
+#create lock dir for aptitude
+mkdir /run/lock
+chmod a+rwxt /run/lock
+
+aptitude update >/dev/null
+aptitude -y safe-upgrade
+
+#echo -e "\n----------------- Deinstalling any linux firmware packages ------------------\n"
+
+firmware="$(dpkg -l | grep -i 'firmware-')"
+
+if [ -n "$firmware" ]; then
+  aptitude -q -y purge firmware-bnx2x firmware-realtek firmware-linux firmware-linux-free firmware-linux-nonfree
+else
+  echo "kein firmware Paket vorhanden"
+fi
+
+echo -e "\n----------------- Deinstalling the Debian standard kernel packages ------------------\n"
+aptitude -q -y purge linux-image-amd64 linux-image-4.19.0-5-amd64
+
+echo -e "\n----- Add Proxmox repo to APT sources -----\n"
+
+echo -e "\n\n# PVE packages provided by proxmox.com" >>/etc/apt/sources.list.d/proxmox.list
+echo -e "deb http://mirror.hetzner.de/debian/pve buster pve-no-subscription\n" >>/etc/apt/sources.list.d/proxmox.list
+echo -e "deb http://download.proxmox.com/debian/pve buster pve-no-subscription\n" >>/etc/apt/sources.list.d/proxmox.list
+wget -q "http://download.proxmox.com/debian/proxmox-ve-release-6.x.gpg" -O /etc/apt/trusted.gpg.d/proxmox-ve-release-6.x.gpg
+
+aptitude update >/dev/null
+
+echo -e "\n----- Install Proxmox packages -----\n"
+
+cat <<EOF | debconf-set-selections
+postfix postfix/mailname           string $(cat /etc/hostname)
+postfix postfix/destinations       string $(cat /etc/hostname), proxmox, localhost.localdomain, localhost
+postfix postfix/chattr             boolean false
+postfix postfix/mailbox_limit      string 0
+postfix postfix/main_mailer_type   select Local only
+postfix postfix/mynetworks         string 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+postfix postfix/protocols          select all
+postfix postfix/recipient_delim    string +
+postfix postfix/rfc1035_violation  boolean false
+samba-common samba-common/dhcp     boolean false
+EOF
+
+#/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install proxmox-ve-$PROXMOX_KERNEL_VERSION
+aptitude --without-recommends -y install postfix proxmox-ve open-iscsi
+
+if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
+	echo -e "\n----- Removing Proxmox Enterprise repo -----\n"
+	rm /etc/apt/sources.list.d/pve-enterprise.list
+fi
+
+echo -e "\n----- Upgrading remaining packages -----\n"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' upgrade
+update-grub
+
+echo -e "\n----- Done installing Proxmox VE -----\n"
