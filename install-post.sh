@@ -114,7 +114,7 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     update-grub
   fi
   echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.4
 fi
 
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
@@ -154,7 +154,7 @@ systemctl disable rpcbind
 systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
-timedatectl set-timezone UTC
+timedatectl set-timezone Europe/Copenhagen
 cat <<EOF > /etc/systemd/timesyncd.conf
 [Time]
 NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
@@ -218,8 +218,8 @@ sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
 sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
-echo "vm.swappiness=10" >> /etc/sysctl.conf
-sysctl -p
+#echo "vm.swappiness=10" >> /etc/sysctl.conf
+#sysctl -p
 
 ## Bugfix: reserve 512MB memory for system
 echo "vm.min_free_kbytes = 524288" >> /etc/sysctl.conf
@@ -237,25 +237,25 @@ EOF
   chmod 755 /etc/cron.daily/proxmox-nosub
 fi
 
-## Pretty MOTD BANNER
-if [ -z "${NO_MOTD_BANNER}" ] ; then
-  if ! grep -q https "/etc/motd" ; then
-    cat << 'EOF' > /etc/motd.new
-	   This system is optimised by:            https://eXtremeSHOK.com
-	     __   ___                            _____ _    _  ____  _  __
-	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
-	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
-	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
+# ## Pretty MOTD BANNER
+# if [ -z "${NO_MOTD_BANNER}" ] ; then
+#   if ! grep -q https "/etc/motd" ; then
+#     cat << 'EOF' > /etc/motd.new
+# 	   This system is optimised by:            https://eXtremeSHOK.com
+# 	     __   ___                            _____ _    _  ____  _  __
+# 	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
+# 	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
+# 	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
+# 	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
+# 	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
 
 
-EOF
+# EOF
 
-    cat /etc/motd >> /etc/motd.new
-    mv /etc/motd.new /etc/motd
-  fi
-fi
+#     cat /etc/motd >> /etc/motd.new
+#     mv /etc/motd.new /etc/motd
+#   fi
+# fi
 
 ## Increase max user watches
 # BUG FIX : No space left on device
