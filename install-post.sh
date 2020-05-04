@@ -104,7 +104,7 @@ echo "Y" | pveceph install
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
 
-## Detect AMD EPYC CPU and install kernel 4.15
+## Detect AMD EPYC CPU and install kernel 5.4
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
@@ -113,7 +113,7 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
   fi
-  echo "Installing kernel 4.15"
+  echo "Installing kernel 5.4"
   /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.4
 fi
 
@@ -121,6 +121,8 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ 
   ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
   echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
   echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
+  echo "Installing kernel 5.4"
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.4
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
