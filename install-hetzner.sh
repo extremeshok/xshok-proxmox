@@ -38,11 +38,11 @@
 #set size of swap partition or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes, 0 to disable
 MY_SWAP="8"
 #set size of cache partition or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes, 0 to disable
-MY_CACHE=""
+MY_CACHE="20"
 #set size of slog partition or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes, 0 to disable
-MY_SLOG=""
+MY_SLOG="1"
 #set size of boot partition or leave blank for autoconfig, will be in gbytes, 1GB or larger
-MY_BOOT="1"
+MY_BOOT="3"
 #set size of root partition, will be in gbytes, 10GB or larger
 MY_ROOT="10"
 #comment out to disable LVM and use a very simple partition setup of / and swap
