@@ -44,7 +44,7 @@ MY_SLOG=""
 #set size of boot partition or leave blank for autoconfig, will be in gbytes, 1GB or larger
 MY_BOOT="1"
 #set size of root partition, will be in gbytes, 10GB or larger
-MY_ROOT="40"
+MY_ROOT="10"
 #comment out to disable LVM and use a very simple partition setup of / and swap
 USE_LVM="TRUE"
 
