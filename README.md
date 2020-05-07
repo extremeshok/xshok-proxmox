@@ -29,7 +29,7 @@ return value is 0
 Or run *install-post.sh* after installation
 
 ```
-wget https://raw.githubusercontent.com/ris-F/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
+wget https://raw.githubusercontent.com/Cris-F/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
 ```
 
 ## Install Proxmox Recommendations
