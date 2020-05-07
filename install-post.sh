@@ -33,11 +33,11 @@ echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-  echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\\n" > /etc/apt/sources.list.d/pve-enterprise.list
+  echo -e "#deb https://enterprise.proxmox.com/debian buster pve-enterprise\\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-  echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
+  echo -e "deb http://download.proxmox.com/debian buster pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
 ## Add non-free to sources
@@ -71,26 +71,26 @@ pveam update
 ## Install zfs-auto-snapshot
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
 # make 5min snapshots , keep 12 5min snapshots
-if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
-  sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
-fi
+#if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
+#  sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
+#  sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
+#fi
 # keep 24 hourly snapshots
-if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
-fi
+#if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
+#  sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
+#fi
 # keep 7 daily snapshots
-if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
-fi
+#if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
+#  sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
+#fi
 # keep 4 weekly snapshots
-if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
-fi
+#if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
+#  sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
+#fi
 # keep 3 monthly snapshots
-if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
-fi
+#if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
+#  sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
+#fi
 
 ## Install missing ksmtuned
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
@@ -101,8 +101,8 @@ systemctl enable ksm
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
-#snmpd snmp-mibs-downloader
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux wget nano pigz net-tools htop iptraf iotop iftop iperf unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+#snmpd snmp-mibs-downloader sshpass axel
 
 ## Detect AMD EPYC CPU and install kernel 4.15
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
@@ -179,12 +179,12 @@ chmod +x /bin/pigzwrapper
 chmod +x /bin/gzip
 
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
-if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
-  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
+#if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
+#  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
   # http://help.ovh.co.uk/RealTimeMonitoring
   # https://docs.ovh.com/gb/en/dedicated/install-rtm/
-  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
-fi
+#  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
+#fi
 
 ## Protect the web interface with fail2ban
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
@@ -200,9 +200,9 @@ enabled = true
 port = https,http,8006
 filter = proxmox
 logpath = /var/log/daemon.log
-maxretry = 3
+maxretry = 4
 # 1 hour
-bantime = 3600
+bantime = 360
 EOF
 cat <<EOF > /etc/fail2ban/jail.local
 [DEFAULT]
@@ -218,7 +218,7 @@ sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
 sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
-echo "vm.swappiness=10" >> /etc/sysctl.conf
+echo "vm.swappiness=7 >> /etc/sysctl.conf
 sysctl -p
 
 ## Bugfix: reserve 512MB memory for system
@@ -238,24 +238,24 @@ EOF
 fi
 
 ## Pretty MOTD BANNER
-if [ -z "${NO_MOTD_BANNER}" ] ; then
-  if ! grep -q https "/etc/motd" ; then
-    cat << 'EOF' > /etc/motd.new
-	   This system is optimised by:            https://eXtremeSHOK.com
-	     __   ___                            _____ _    _  ____  _  __
-	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
-	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
-	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
+#f [ -z "${NO_MOTD_BANNER}" ] ; then
+# if ! grep -q https "/etc/motd" ; then
+#   cat << 'EOF' > /etc/motd.new
+#   This system is optimised by:            https://eXtremeSHOK.com
+#     __   ___                            _____ _    _  ____  _  __
+#     \ \ / / |                          / ____| |  | |/ __ \| |/ /
+#  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
+# / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
+#|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
+# \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
+#
+#
+#EOF
 
-
-EOF
-
-    cat /etc/motd >> /etc/motd.new
-    mv /etc/motd.new /etc/motd
-  fi
-fi
+#    cat /etc/motd >> /etc/motd.new
+#    mv /etc/motd.new /etc/motd
+#  fi
+#fi
 
 ## Increase max user watches
 # BUG FIX : No space left on device
