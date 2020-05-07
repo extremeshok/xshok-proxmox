@@ -218,7 +218,7 @@ sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
 sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
-echo "vm.swappiness=7 >> /etc/sysctl.conf
+echo "vm.swappiness=7" >> /etc/sysctl.conf
 sysctl -p
 
 ## Bugfix: reserve 512MB memory for system
