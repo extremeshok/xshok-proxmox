@@ -35,7 +35,7 @@
 # Assumes LVM on top of a MD raid (linux software raid)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/CrisF/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm-2-zfs.sh
+# curl -O https://raw.githubusercontent.com/Cris-F/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm-2-zfs.sh
 # ./lvm-2-zfs.sh LVM_MOUNT_POINT
 #
 ################################################################################
