@@ -53,7 +53,7 @@ fi
 
 if ! [ -f "network-addiprange.sh" ]; then
   echo "Downloading network-addiprange.sh script"
-  curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
+  curl -O https://raw.githubusercontent.com/Cris-F/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
 fi
 if ! grep -q '#!/usr/bin/env bash' "network-addiprange.sh"; then
   echo "ERROR: network-addiprange.sh is invalid"
