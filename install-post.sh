@@ -44,7 +44,7 @@ fi
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
 ## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-luminous buster main" > /etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
 apt-get update > /dev/null
