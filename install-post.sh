@@ -47,7 +47,7 @@ sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 apt-get update > /dev/null
 
 ## Remove conflicting utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony ksm-control-daemon
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony #ksm-control-daemon
 
 ## Fix no public key error for debian repo
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
