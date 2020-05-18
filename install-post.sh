@@ -228,5 +228,55 @@ fi
 # propagate the setting into the kernel
 update-initramfs -u -k all
 
+# grc color configuration
+mv /usr/share/grc/conf.log /usr/share/grc/conf.log.orig
+cat <<EOF > /usr/share/grc/conf.log
+# this configuration file is suitable for displaying kernel log files
+
+# display this line in yellow and stop further processing
+regexp=.*last message repeated \d+ times$
+colours=yellow
+count=stop
+======
+# this is date
+regexp=^... (\d| )\d \d\d:\d\d:\d\d(\s[\w\d]+?\s)
+colours=green, green, red
+count=once
+======
+# everything in parentheses
+regexp=\(.+?\)
+colours=blue
+count=more
+======
+# everything in `'
+regexp=\`.+?\'
+colours=bold yellow
+count=more
+======
+# this is probably a pathname
+regexp=/[a-zA-Z_/\.\-]+
+colours=blue
+count=more
+======
+# everything in <>
+regexp=\<.*?\>
+colours=blue
+count=more
+======
+# name of process and pid
+regexp=([\w/\.\-]+)(\[\d+?\])
+colours=bold blue, bold red
+count=more
+======
+# IPv4
+regexp=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}
+colours=bold yellow
+count=more
+======
+# Email address
+regexp=[a-zA-z0-9\.\-\+]+\@[\w\-\.]+
+colours=green
+EOF
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
