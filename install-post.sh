@@ -60,7 +60,7 @@ pveam update
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install wget nano pigz net-tools htop unzip zip software-properties-common curl dialog build-essential git ifupdown2
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install wget nano pigz net-tools htop unzip zip software-properties-common curl dialog build-essential git ifupdown2 grc
 #snmpd snmp-mibs-downloader
 
 ## Remove no longer required packages and purge old cached updates
