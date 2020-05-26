@@ -225,7 +225,7 @@ options zfs l2arc_write_max=524288000
 EOF
 fi
 
-cat <<EOF >> /root/.bashrc
+cat <<EOF >> $('pwd')/.bashrc
 export HISTTIMEFORMAT="%d/%m/%y %T "
 export PS1='\u@\h:\W \$ '
 alias l='ls -CF'
