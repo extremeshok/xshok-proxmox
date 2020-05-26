@@ -226,7 +226,6 @@ EOF
 fi
 
 cat <<EOF >> $('pwd')/.bashrc
-
 export HISTTIMEFORMAT="%d/%m/%y %T "
 export PS1='\u@\h:\W \$ '
 alias l='ls -CF'
