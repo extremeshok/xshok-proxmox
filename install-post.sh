@@ -24,8 +24,7 @@
 #
 ################################################################################
 
-set -euxo pipefail
-export NO_MOTD_BANNER=false
+export NO_MOTD_BANNER=true
 
 # Set the local
 export LANG="en_US.UTF-8"
