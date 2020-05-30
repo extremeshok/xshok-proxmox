@@ -35,18 +35,18 @@ echo -e "Acquire::ForceIPv4 \"true\";\\n" >/etc/apt/apt.conf.d/99force-ipv4
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-  echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\\n" >/etc/apt/sources.list.d/pve-enterprise.list
+  echo -e "#deb https://enterprise.proxmox.com/debian buster pve-enterprise\\n" >/etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ]; then
-  echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\\n" >/etc/apt/sources.list.d/pve-public-repo.list
+  echo -e "deb http://download.proxmox.com/debian buster pve-no-subscription\\n" >/etc/apt/sources.list.d/pve-public-repo.list
 fi
 
 ## Add non-free to sources
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
 ## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" >/etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-luminous buster main" >/etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
 apt-get update >/dev/null
@@ -61,9 +61,6 @@ apt-get update >/dev/null
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
 pveam update
 
-## Fix no public key error for debian repo
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
-
 ## Install openvswitch for a virtual internal network
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 
@@ -72,53 +69,9 @@ pveam update
 systemctl enable ksmtuned
 systemctl enable ksm
 
-## Install ceph support
-echo "Y" | pveceph install
-
 ## Install common system utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
-
-## Detect AMD EPYC CPU and install kernel 4.15
-if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
-  echo "AMD EPYC detected"
-  #Apply EPYC fix to kernel : Fixes random crashing and instability
-  if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait"; then
-    echo "Setting kernel idle=nomwait"
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
-    update-grub
-  fi
-  echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
-fi
-
-if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
-  ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
-  echo "options kvm ignore_msrs=Y" >>/etc/modprobe.d/kvm.conf
-  echo "options kvm report_ignored_msrs=N" >>/etc/modprobe.d/kvm.conf
-fi
-
-## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
-# use command 'reboot-quick'
-echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install kexec-tools
-
-cat <<'EOF' >/etc/systemd/system/kexec-pve.service
-[Unit]
-Description=boot into into the latest pve kernel set as primary in the boot-loader
-Documentation=man:kexec(8)
-DefaultDependencies=no
-Before=shutdown.target umount.target final.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/kexec -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
-
-[Install]
-WantedBy=kexec.target
-EOF
-systemctl enable kexec-pve.service
-echo "alias reboot-quick='systemctl kexec'" >>/root/.bash_profile
 
 ## Remove no longer required packages and purge old cached updates
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
