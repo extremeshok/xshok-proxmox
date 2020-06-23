@@ -25,7 +25,7 @@
 ################################################################################
 
 # Set the local
-export LANG="en_US.UTF-8"
+export LANG="fr_FR.UTF-8"
 export LC_ALL="C"
 
 ## Force APT to use IPv4
@@ -150,8 +150,8 @@ echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoclean
 
 ## Disable portmapper / rpcbind (security)
-systemctl disable rpcbind
-systemctl stop rpcbind
+# systemctl disable rpcbind
+# systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone UTC
@@ -200,13 +200,20 @@ enabled = true
 port = https,http,8006
 filter = proxmox
 logpath = /var/log/daemon.log
+bantime = 84600
+findtime = 600
 maxretry = 3
+destemail = support@getweby.et
+sendername = Fail2ban Octobay
 # 1 hour
 bantime = 3600
 EOF
 cat <<EOF > /etc/fail2ban/jail.local
 [DEFAULT]
 banaction = iptables-ipset-proto4
+# [sshd]
+# enabled = true
+# port = 30920
 EOF
 systemctl enable fail2ban
 ##testing
@@ -231,30 +238,10 @@ if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
   # create a daily cron to make sure the banner does not re-appear
   cat <<'EOF' > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
-# eXtremeSHOK.com Remove subscription banner
+# Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
   chmod 755 /etc/cron.daily/proxmox-nosub
-fi
-
-## Pretty MOTD BANNER
-if [ -z "${NO_MOTD_BANNER}" ] ; then
-  if ! grep -q https "/etc/motd" ; then
-    cat << 'EOF' > /etc/motd.new
-	   This system is optimised by:            https://eXtremeSHOK.com
-	     __   ___                            _____ _    _  ____  _  __
-	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
-	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
-	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
-
-
-EOF
-
-    cat /etc/motd >> /etc/motd.new
-    mv /etc/motd.new /etc/motd
-  fi
 fi
 
 ## Increase max user watches
@@ -265,7 +252,7 @@ sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
 cat <<EOF >> /etc/security/limits.conf
-# eXtremeSHOK.com Increase max FD limit / ulimit
+# Increase max FD limit / ulimit
 * soft     nproc          256000
 * hard     nproc          256000
 * soft     nofile         256000
@@ -278,7 +265,6 @@ EOF
 
 ## Enable TCP BBR congestion control
 cat <<EOF > /etc/sysctl.d/10-kernel-bbr.conf
-# eXtremeSHOK.com
 # TCP BBR congestion control
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
@@ -286,7 +272,6 @@ EOF
 
 ## Increase kernel max Key limit
 cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
-# eXtremeSHOK.com
 # Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
@@ -321,7 +306,7 @@ if [ "$(command -v zfs)" != "" ] ; then
     MY_ZFS_ARC_MAX=1073741824
   fi
   cat <<EOF > /etc/modprobe.d/zfs.conf
-# eXtremeSHOK.com ZFS tuning
+# ZFS tuning
 
 # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
 options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
