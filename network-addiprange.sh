@@ -31,7 +31,7 @@
 ##############################################################
 
 # Set the local
-export LANG="en_US.UTF-8"
+export LANG="fr_FR.UTF-8"
 export LC_ALL="C"
 
 #assign and check arguments
