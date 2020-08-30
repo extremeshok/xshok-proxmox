@@ -77,12 +77,12 @@ elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions)
 elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme3n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
   MY_RAID_SLAVE=",nvme3n1"
-elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sde$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme4n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sde"
-elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdf$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_SLAVE=",nvme4n1"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme5n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdf"
+  MY_RAID_SLAVE=",nvme5n1"
 else
   MY_RAID_ENABLE="no"
   MY_RAID_SLAVE=""

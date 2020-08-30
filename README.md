@@ -59,6 +59,12 @@ Recommeneded partitioning scheme:
 wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
 ./install-hetzner.sh
 ````
+
+NVME Disk
+
+wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner-nvme.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
+./install-hetzner.sh
+
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ## LVM to ZFS
