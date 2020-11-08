@@ -342,4 +342,10 @@ update-initramfs -u -k all
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
+
+## Set Timezone by IP
+
+timezone=$(curl https://ipapi.co/$(dig +short myip.opendns.com @resolver1.opendns.com)/timezone)
+echo "Got $timezone from $(dig +short myip.opendns.com @resolver1.opendns.com)"
+timedatectl set-timezone $timezone
 reboot now
