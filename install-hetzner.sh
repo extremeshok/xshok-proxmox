@@ -57,7 +57,7 @@ export LC_ALL="C"
 installimage_bin="/root/.oldroot/nfs/install/installimage"
 
 MY_HOSTNAME="$1"
-if [ "$MY_HOSTNAME" == "pve.schuzkyonline.invalid" ]; then
+if [ "$MY_HOSTNAME" == "pve.host.invalid" ]; then
   echo "Please set a hostname"
   echo "$0 host.name"
   exit 1
