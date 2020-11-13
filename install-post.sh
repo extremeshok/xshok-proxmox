@@ -109,9 +109,9 @@ echo "Y" | pveceph install
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install docker.io docker-compose 
 
 ## Install kernel source headers for nvidia
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers 
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers-$(uname -r) module-assistant
 
-## Detect AMD EPYC CPU and install kernel 4.15
+## Detect AMD EPYC CPU and install 4.15
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
