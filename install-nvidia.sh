@@ -2,7 +2,7 @@ xserver-xorg-dev dkms
 libgtk-3-0
 
 #!/bin/bash
-apt-get install build-essential pve-headers-$(uname -r) pkg-config 
+apt-get install build-essential pve-headers-$(uname -r) pkg-config libgtk-3-0
 update-grub
 reboot
 
@@ -41,7 +41,8 @@ apt-get update
 apt-get install -y nvidia-docker2
 pkill -SIGHUP dockerd
              
-             
+reboot !
+
 Unlock card with
 sudo nvidia-xconfig -a --cool-bits=31 --allow-empty-initial-configuration
 nvidia-smi -pl 200 -i 0
