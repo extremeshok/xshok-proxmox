@@ -1,10 +1,9 @@
 xserver-xorg-dev dkms
-libgtk-3-0
 
 #!/bin/bash
 apt-get install build-essential pve-headers-$(uname -r) pkg-config libgtk-3-0
 update-grub
-reboot
+REBOOT
 
 
 
@@ -46,6 +45,17 @@ reboot !
 Unlock card with
 sudo nvidia-xconfig -a --cool-bits=31 --allow-empty-initial-configuration
 nvidia-smi -pl 200 -i 0
+
+Now if you want to overclock you need a Xauthority/gdm
+
+tasksel > install gnome desktop
+then run this command
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+as gnome stupidly enables sleep by default!
+finally reboot...you should now have a folder
+/run/user/$SOMENUMBER/gdm/Xauthority
+
+replace $SOMENUBMER in lines below! :)
 
 DISPLAY=:0 XAUTHORITY=/run/user/121/gdm/Xauthority sudo nvidia-settings -a [gpu:0]/GPUFanControlState=1 -a [fan-0]/GPUTargetFanSpeed=80
 sleep 3
