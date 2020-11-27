@@ -102,7 +102,7 @@ systemctl enable ksm
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install htop whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install msr-tools htop whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
 
 ## Install Docker
@@ -356,4 +356,8 @@ echo -e '\033[1;33m Finished....please restart the system \033[0m'
 timezone=$(curl https://ipapi.co/$(dig +short myip.opendns.com @resolver1.opendns.com)/timezone)
 echo "Got $timezone from $(dig +short myip.opendns.com @resolver1.opendns.com)"
 timedatectl set-timezone $timezone
+
+#Add MSR to startup for XMRig
+echo "msr" >> /etc/modules
 reboot now
+
