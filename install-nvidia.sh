@@ -1,7 +1,7 @@
 xserver-xorg-dev dkms
 
 #!/bin/bash
-apt-get install build-essential pve-headers-$(uname -r) pkg-config libgtk-3-0
+apt-get install build-essential pve-headers-$(uname -r) pkg-config libgtk-3-0 libglvnd-dev
 update-grub
 REBOOT
 
