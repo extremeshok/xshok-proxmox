@@ -146,5 +146,3 @@ wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.s
 if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
   bash install-post.sh
 fi
-
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/floco/xshok-proxmox/master/lvm-2-zfs.sh)"
