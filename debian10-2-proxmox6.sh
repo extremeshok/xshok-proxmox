@@ -127,8 +127,8 @@ echo "Installing open-iscsi"
 echo "Installing proxmox-ve"
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install -y proxmox-ve
 
-echo "Remove legacy (4.9) kernel"
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-4.9.*
+echo "Remove legacy (4.19) kernel"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-4.19*
 
 echo "Force grub to update"
 update-grub
@@ -142,7 +142,9 @@ pveum useradd admin@pve -comment "Admin"
 pveum usermod admin@pve -group admin
 
 echo "Fetching postinstall script"
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
+wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
 if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
   bash install-post.sh
 fi
+
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/floco/xshok-proxmox/master/lvm-2-zfs.sh)"
