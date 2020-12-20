@@ -82,7 +82,7 @@ if [ -f /etc/cloud/cloud.cfg ] ; then
 fi
 cat <<EOF > /etc/hosts
 127.0.0.1 localhost.localdomain localhost
-${default_v4ip} $(hostname -f) $(hostname) pvelocalhost
+${default_v4ip} $(hostname -f) $(hostname -s) pvelocalhost
 
 # The following lines are desirable for IPv6 capable hosts
 
@@ -134,6 +134,12 @@ echo "Force grub to update"
 update-grub
 
 echo "Done installing Proxmox VE"
+
+echo "Creating admin user"
+pveum groupadd admin -comment "System Administrators"
+pveum aclmod / -group admin -role Administrator
+pveum useradd admin@pve -comment "Admin"
+pveum usermod admin@pve -group admin
 
 echo "Fetching postinstall script"
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
