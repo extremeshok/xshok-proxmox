@@ -23,7 +23,7 @@
 # Note: will automatically run the install-post.sh script
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
+# curl -O https://raw.githubusercontent.com/floco/xshok-proxmox/master/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
 # ./debian10-2-proxmox6.sh
 #
 ################################################################################
