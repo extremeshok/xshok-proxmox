@@ -65,32 +65,32 @@ pveam update
 ## Install openvswitch for a virtual internal network
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 
-## Install zfs support, appears to be missing on some Proxmox installs.
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
+# ## Install zfs support, appears to be missing on some Proxmox installs.
+# /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
 
-## Install zfs-auto-snapshot
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
-# make 5min snapshots , keep 12 5min snapshots
-if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
-  sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
-fi
-# keep 24 hourly snapshots
-if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
-fi
-# keep 7 daily snapshots
-if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
-fi
-# keep 4 weekly snapshots
-if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
-fi
-# keep 3 monthly snapshots
-if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
-fi
+# ## Install zfs-auto-snapshot
+# /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
+# # make 5min snapshots , keep 12 5min snapshots
+# if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
+#   sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
+# fi
+# # keep 24 hourly snapshots
+# if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
+# fi
+# # keep 7 daily snapshots
+# if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
+# fi
+# # keep 4 weekly snapshots
+# if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
+# fi
+# # keep 3 monthly snapshots
+# if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
+# fi
 
 ## Install missing ksmtuned
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
@@ -302,41 +302,41 @@ echo 'session required pam_limits.so' | tee -a /etc/pam.d/runuser-l
 ## Set ulimit for the shell user
 cd ~ && echo "ulimit -n 256000" >> .bashrc ; echo "ulimit -n 256000" >> .profile
 
-## Optimise ZFS arc size
-if [ "$(command -v zfs)" != "" ] ; then
-  RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
-  if [[ RAM_SIZE_GB -lt 16 ]] ; then
-    # 1GB/1GB
-    MY_ZFS_ARC_MIN=1073741824
-    MY_ZFS_ARC_MAX=1073741824
-  else
-    MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
-    MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
-  fi
-  # Enforce the minimum, incase of a faulty vmstat
-  if [[ MY_ZFS_ARC_MIN -lt 1073741824 ]] ; then
-    MY_ZFS_ARC_MIN=1073741824
-  fi
-  if [[ MY_ZFS_ARC_MAX -lt 1073741824 ]] ; then
-    MY_ZFS_ARC_MAX=1073741824
-  fi
-  cat <<EOF > /etc/modprobe.d/zfs.conf
-# eXtremeSHOK.com ZFS tuning
+# ## Optimise ZFS arc size
+# if [ "$(command -v zfs)" != "" ] ; then
+#   RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
+#   if [[ RAM_SIZE_GB -lt 16 ]] ; then
+#     # 1GB/1GB
+#     MY_ZFS_ARC_MIN=1073741824
+#     MY_ZFS_ARC_MAX=1073741824
+#   else
+#     MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
+#     MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
+#   fi
+#   # Enforce the minimum, incase of a faulty vmstat
+#   if [[ MY_ZFS_ARC_MIN -lt 1073741824 ]] ; then
+#     MY_ZFS_ARC_MIN=1073741824
+#   fi
+#   if [[ MY_ZFS_ARC_MAX -lt 1073741824 ]] ; then
+#     MY_ZFS_ARC_MAX=1073741824
+#   fi
+#   cat <<EOF > /etc/modprobe.d/zfs.conf
+# # eXtremeSHOK.com ZFS tuning
 
-# Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
-options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
-options zfs zfs_arc_max=$MY_ZFS_ARC_MAX
+# # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
+# options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
+# options zfs zfs_arc_max=$MY_ZFS_ARC_MAX
 
-# use the prefetch method
-options zfs l2arc_noprefetch=0
+# # use the prefetch method
+# options zfs l2arc_noprefetch=0
 
-# max write speed to l2arc
-# tradeoff between write/read and durability of ssd (?)
-# default : 8 * 1024 * 1024
-# setting here : 500 * 1024 * 1024
-options zfs l2arc_write_max=524288000
-EOF
-fi
+# # max write speed to l2arc
+# # tradeoff between write/read and durability of ssd (?)
+# # default : 8 * 1024 * 1024
+# # setting here : 500 * 1024 * 1024
+# options zfs l2arc_write_max=524288000
+# EOF
+# fi
 
 # propagate the setting into the kernel
 update-initramfs -u -k all
