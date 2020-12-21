@@ -99,7 +99,6 @@ echo "Add Proxmox repo to APT sources"
 cat <<EOF >> /etc/apt/sources.list.d/proxmox.list
 
 # PVE packages provided by proxmox.com"
-deb http://mirror.hetzner.de/debian/pve buster pve-no-subscription
 deb http://download.proxmox.com/debian/pve buster pve-no-subscription
 EOF
 wget -q "http://download.proxmox.com/debian/proxmox-ve-release-6.x.gpg" -O /etc/apt/trusted.gpg.d/proxmox-ve-release-6.x.gpg
@@ -141,13 +140,14 @@ pveum groupadd admin -comment "System Administrators"
 pveum aclmod / -group admin -role Administrator
 pveum useradd admin@pve -comment "Admin"
 pveum usermod admin@pve -group admin
+
+export NO_MOTD_BANNER=true
+
+echo "Fetching postinstall script"
+wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
+if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
+ bash install-post.sh
+fi
+
+echo "Setting admin user password"
 pveum passwd admin@pve
-
-## Script Finish
-echo -e '\033[1;33m Finished....please restart the system \033[0m'
-
-#echo "Fetching postinstall script"
-#wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
-#if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
-#  bash install-post.sh
-#fi
