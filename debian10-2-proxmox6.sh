@@ -35,6 +35,7 @@
 # Set the local
 export LANG="en_US.UTF-8"
 export LC_ALL="C"
+sh -c "echo -e 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8' > /etc/default/locale"
 
 #create lock dir for aptitude
 if [ -d "/run/lock" ] ; then
@@ -140,6 +141,7 @@ pveum groupadd admin -comment "System Administrators"
 pveum aclmod / -group admin -role Administrator
 pveum useradd admin@pve -comment "Admin"
 pveum usermod admin@pve -group admin
+pveum passwd admin@pve
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
