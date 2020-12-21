@@ -141,8 +141,11 @@ pveum aclmod / -group admin -role Administrator
 pveum useradd admin@pve -comment "Admin"
 pveum usermod admin@pve -group admin
 
-echo "Fetching postinstall script"
-wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
-if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
-  bash install-post.sh
-fi
+## Script Finish
+echo -e '\033[1;33m Finished....please restart the system \033[0m'
+
+#echo "Fetching postinstall script"
+#wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
+#if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
+#  bash install-post.sh
+#fi
