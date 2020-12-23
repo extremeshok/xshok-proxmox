@@ -149,5 +149,5 @@ pveum usermod admin@pve -group admin
 #  bash install-post.sh
 # fi
 
-echo "Setting admin user password"
-pveum passwd admin@pve
+# echo "Setting admin user password"
+# pveum passwd admin@pve
