@@ -141,13 +141,13 @@ pveum aclmod / -group admin -role Administrator
 pveum useradd admin@pve -comment "Admin"
 pveum usermod admin@pve -group admin
 
-export NO_MOTD_BANNER=true
+# export NO_MOTD_BANNER=true
 
-echo "Fetching postinstall script"
-wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
-if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
- bash install-post.sh
-fi
+# echo "Fetching postinstall script"
+# wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
+# if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
+#  bash install-post.sh
+# fi
 
 echo "Setting admin user password"
 pveum passwd admin@pve
