@@ -28,19 +28,7 @@ WARNING: nvidia-installer was forced to guess the X library path '/usr/lib' and 
 REBOOT
 nvidia-smi!
 
-# Add the package repositories
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
-  apt-key add -
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-  tee /etc/apt/sources.list.d/nvidia-docker.list
-apt-get update
-
-# Install nvidia-docker2 and reload the Docker daemon configuration
-apt-get install -y nvidia-docker2
-pkill -SIGHUP dockerd
-             
-reboot !
+Now run ./docker.sh to install nvidia-docker!
 
 Unlock card with
 sudo nvidia-xconfig -a --cool-bits=31 --allow-empty-initial-configuration
