@@ -74,15 +74,6 @@ if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $
 elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
   MY_RAID_SLAVE=",sdc"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
-  MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdd"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sde$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
-  MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sde"
-elif [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdf$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
-  MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",sdf"
 else
   MY_RAID_ENABLE="no"
   MY_RAID_SLAVE=""
@@ -91,7 +82,7 @@ fi
 if [ "$MY_RAID_ENABLE" == "yes" ]; then
   if [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdb$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/sda$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
     MY_RAID_LEVEL="10"
-    MY_RAID_SLAVE=",sdb,sdc,sdd"
+    MY_RAID_SLAVE=",sdb"
   else
     MY_RAID_LEVEL="1"
   fi
