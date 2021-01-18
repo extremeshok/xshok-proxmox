@@ -1,3 +1,33 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@investermedia 
+88plug
+/
+xshok
+forked from extremeshok/xshok-proxmox
+0
+0112
+Code
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+xshok/install-hetzner.sh
+@extremeshok
+extremeshok correctly detect the installimage to use
+Latest commit 4dd6739 on 26 Jun 2019
+ History
+ 1 contributor
+264 lines (243 sloc)  11 KB
+ 
 #!/usr/bin/env bash
 ################################################################################
 # This is property of eXtremeSHOK.com
@@ -71,9 +101,18 @@ fi
 if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme1n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
   MY_RAID_SLAVE=",nvme1n1"
-elif [[ $(awk '/snvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme2n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
   MY_RAID_ENABLE="yes"
-  MY_RAID_SLAVE=",nvme2n1"
+  MY_RAID_SLAVE=",sdc"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_ENABLE="yes"
+  MY_RAID_SLAVE=",sdd"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sde$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_ENABLE="yes"
+  MY_RAID_SLAVE=",sde"
+elif [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdf$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]]; then
+  MY_RAID_ENABLE="yes"
+  MY_RAID_SLAVE=",sdf"
 else
   MY_RAID_ENABLE="no"
   MY_RAID_SLAVE=""
@@ -82,7 +121,7 @@ fi
 if [ "$MY_RAID_ENABLE" == "yes" ]; then
   if [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/nvme1n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdc$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] && [[ $(awk '/nvme0n1$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) -eq $(awk '/sdd$/{printf "%i", $(NF-1) / 1000 / 1000}' /proc/partitions) ]] ; then
     MY_RAID_LEVEL="10"
-    MY_RAID_SLAVE=",nvme1n1"
+    MY_RAID_SLAVE=",nvme1n1,sdc,sdd"
   else
     MY_RAID_LEVEL="1"
   fi
@@ -144,7 +183,7 @@ elif [ "$(cat /sys/block/nvme0n1/queue/rotational)" == "1" ] ; then
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring slog partition"
   MY_SLOG=""
-elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme2n1/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/nvme3n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme4n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme5n1/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling slog partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -175,7 +214,7 @@ elif [ "$(cat /sys/block/nvme0n1/queue/rotational)" == "1" ] ; then
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring cache partition"
   MY_CACHE=""
-elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/nvme2n1/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/nvme1n1/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling cache partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -224,7 +263,7 @@ fi
 sleep 5
 
 # Detect the latest installimage file to use
-installimage_file=$(find root/images/ -iname 'Debian-*-105-buster-64-minimal.tar.gz' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
+installimage_file=$(find root/images/ -iname 'Debian-*-stretch-64-minimal.tar.gz' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
 if [ ! -f $installimage_file ] ; then
   echo "Error: Image file was not found: ${installimage_file}"
   echo "Please log an issue on the github repo with the following"
@@ -233,7 +272,7 @@ if [ ! -f $installimage_file ] ; then
 fi
 
 #fetching post install
-curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox6" --output /post-install
+curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox5" --output /post-install
 
 #Customising post install file
 echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
@@ -253,3 +292,15 @@ else
   echo "Failed to fetch post-install"
   exit 1
 fi
+© 2021 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
