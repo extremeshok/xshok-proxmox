@@ -59,7 +59,7 @@ installimage_bin="/root/.oldroot/nfs/install/installimage"
 MY_HOSTNAME="$1"
 if [ "$MY_HOSTNAME" == "" ]; then
   echo "Please set a hostname"
-  echo "proxmox.investermedia.cz"
+  echo "$0 proxmox.investermedia.cz"
   exit 1
 fi
 
