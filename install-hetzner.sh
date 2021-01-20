@@ -59,7 +59,7 @@ installimage_bin="/root/.oldroot/nfs/install/installimage"
 MY_HOSTNAME="$1"
 if [ "$MY_HOSTNAME" == "" ]; then
   echo "Please set a hostname"
-  echo "$0 proxmox.investermedia.cz"
+  echo "$0 host.name"
   exit 1
 fi
 
@@ -221,7 +221,7 @@ fi
 sleep 5
 
 # Detect the latest installimage file to use
-installimage_file=$(find root/images/ -iname 'Debian-*-buster-64-minimal.tar.gz ' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
+installimage_file=$(find /root/images/ -iname 'Debian-*-buster-64-minimal.tar.gz' | sort --version-sort --field-separator=- --key=2,2 -r | head -n1)
 if [ ! -f $installimage_file ] ; then
   echo "Error: Image file was not found: ${installimage_file}"
   echo "Please log an issue on the github repo with the following"
@@ -230,10 +230,10 @@ if [ ! -f $installimage_file ] ; then
 fi
 
 #fetching post install
-curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox6" --output /post-install
+curl "https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/hetzner-prox/proxmox6" --output /post-install
 
 #Customising post install file
-echo "wget https://raw.githubusercontent.com/investermedia/xshok-proxmox/master/install-hetzner.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
+echo "wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
