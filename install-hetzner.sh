@@ -59,7 +59,7 @@ installimage_bin="/root/.oldroot/nfs/install/installimage"
 MY_HOSTNAME="$1"
 if [ "$MY_HOSTNAME" == "" ]; then
   echo "Please set a hostname"
-  echo "$0 host.name"
+  echo "proxmox.investermedia.cz"
   exit 1
 fi
 
@@ -233,7 +233,7 @@ fi
 curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox6" --output /post-install
 
 #Customising post install file
-echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
+echo "wget https://raw.githubusercontent.com/investermedia/xshok-proxmox/master/install-hetzner.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
