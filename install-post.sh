@@ -249,4 +249,7 @@ timedatectl set-timezone $timezone
 
 #Add MSR to startup for XMRig
 echo "msr" >> /etc/modules
+
+#Install PVE-Edge-Kernel
+wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/pve-edge-kernel.sh; chmod +x pve-edge-kernel.sh; ./pve-edge-kernel.sh
 reboot now
