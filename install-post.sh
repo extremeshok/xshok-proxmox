@@ -9,7 +9,7 @@ sed -i "s/^deb/\#deb/" /etc/apt/sources.list.d/pve-enterprise.list && apt-get up
 
 
 ## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-nautilus buster main" > /etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
 apt-get update > /dev/null
@@ -51,7 +51,7 @@ systemctl enable ksmtuned
 systemctl enable ksm
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install dnsutils msr-tools htop whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
 
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
@@ -240,3 +240,13 @@ update-initramfs -u -k all
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
+
+## Set Timezone by IP
+
+timezone=$(curl https://ipapi.co/$(dig +short myip.opendns.com @resolver1.opendns.com)/timezone)
+echo "Got $timezone from $(dig +short myip.opendns.com @resolver1.opendns.com)"
+timedatectl set-timezone $timezone
+
+#Add MSR to startup for XMRig
+echo "msr" >> /etc/modules
+reboot now
