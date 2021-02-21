@@ -38,6 +38,7 @@ Reboot
 Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 
 ##NETWORKING (vmbr0 vmbr1)
+
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 
 ./network-configure.sh && rm network-configure.sh
