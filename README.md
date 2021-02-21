@@ -24,11 +24,13 @@
 
 
 ## Install for Hetzner
+
 wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
 ./install-hetzner.sh
 
 
 ##LVM to ZFS
+
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
  ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
  
