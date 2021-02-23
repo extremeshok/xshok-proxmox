@@ -24,7 +24,8 @@
 
 ## Install for Hetzner
 
-```wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
+```
+wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
 ./install-hetzner.sh (your FQDN)
 ```
 
