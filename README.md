@@ -25,23 +25,25 @@
 
 ## Install for Hetzner
 
-wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
+```wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
 ./install-hetzner.sh (your FQDN)
+```
 
 
 ##LVM to ZFS
 
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
- ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
+```wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh
+chmod +x lvm-2-zfs.sh; ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
+```
  
 Reboot
 Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 
 ##NETWORKING (vmbr0 vmbr1)
-
+```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 
 ./network-configure.sh && rm network-configure.sh
-
+```
 Reboot
 Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
