@@ -6,10 +6,14 @@ update-grub
 REBOOT
 
 
+#Old Driver
+#wget https://us.download.nvidia.com/XFree86/Linux-x86_64/455.38/NVIDIA-Linux-x86_64-455.38.run
+#chmod +x NVIDIA-Linux-x86_64-455.38.run
+#./NVIDIA-Linux-x86_64-455.38.run
 
-wget https://us.download.nvidia.com/XFree86/Linux-x86_64/455.38/NVIDIA-Linux-x86_64-455.38.run
-chmod +x NVIDIA-Linux-x86_64-455.38.run
-./NVIDIA-Linux-x86_64-455.38.run
+wget https://us.download.nvidia.com/XFree86/Linux-x86_64/460.56/NVIDIA-Linux-x86_64-460.56.run
+chmod +x NVIDIA-Linux-x86_64-460.56.run
+./NVIDIA-Linux-x86_64-460.56.run
 
 Installer will ask to create modeprobe file, say YES! 
 Reboot
