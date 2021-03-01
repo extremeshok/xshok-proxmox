@@ -2,8 +2,8 @@
 
 Note: This is a compilation of Github user made fixes for the original script. Installs edge PVE kernel as default. OVH related code has been removed, as I can't check it myself.
 
-### Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
-*not required if server setup with install-hetzner.sh*
+### Optimization / Post Install Script
+
 * 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
 * Force APT to use IPv4
 * Disable the enterprise repo, enable the public repo, Add non-free sources
