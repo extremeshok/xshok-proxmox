@@ -1,6 +1,8 @@
-# xshok-proxmox :: eXtremeSHOK.com Proxmox (pve)
+## xshok-proxmox :: eXtremeSHOK.com Proxmox (pve-edge)
 
-## Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
+Note: This is a compilation of Github user made fixes for the original script. Installs edge PVE kernel as default.
+
+### Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
 *not required if server setup with install-hetzner.sh*
 * 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
 * Force APT to use IPv4
@@ -10,7 +12,7 @@
 * Install ceph, ksmtuned, openvswitch-switch, zfsutils and common system utilities
 * Increase vzdump backup speed, enable pigz and fix ionice
 * Increase max Key limits,  max user watches, max File Discriptor Limits, ulimits
-* Detect AMD CPU and install kernel 5.11
+* Detect AMD CPU and install -edgekernel 5.xx
 * Detect AMD EPYC CPU and Apply EPYC fixes to kernel and KVM
 * Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
 * Disable portmapper / rpcbind (security)
@@ -22,7 +24,7 @@
 * Enable TCP BBR congestion control, improves overall network throughput
 
 
-## Install for Hetzner
+### Install for Hetzner
 
 ```
 wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
@@ -30,7 +32,7 @@ wget https://raw.githubusercontent.com/tinof/xshok-proxmox/master/install-hetzne
 ```
 
 
-##LVM to ZFS
+### LVM to ZFS
 
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh
@@ -40,10 +42,10 @@ chmod +x lvm-2-zfs.sh; ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
 Reboot
 Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 
-##NETWORKING (vmbr0 vmbr1)
+### NETWORKING (vmbr0 vmbr1)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
-
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh
+chmod +x network-configure.sh
 ./network-configure.sh && rm network-configure.sh
 ```
 Reboot
