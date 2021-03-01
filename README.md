@@ -1,6 +1,6 @@
 ## xshok-proxmox :: eXtremeSHOK.com Proxmox (pve-edge)
 
-Note: This is a compilation of Github user made fixes for the original script. Installs edge PVE kernel as default.
+Note: This is a compilation of Github user made fixes for the original script. Installs edge PVE kernel as default. OVH related code has been removed, as I can't check it myself.
 
 ### Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
 *not required if server setup with install-hetzner.sh*
