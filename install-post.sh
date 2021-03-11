@@ -23,7 +23,7 @@
 #    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
 #
 ################################################################################
-
+#
 # Set the local
 export LANG="en_US.UTF-8"
 export LC_ALL="C"
