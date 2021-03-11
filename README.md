@@ -27,13 +27,13 @@ Recommeneded partitioning scheme:
 ## For server with SATA Disk
 ````
 wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
-./install-hetzner.sh
+./install-hetzner.sh "PVE Hostname"
 ````
 
 ## For server with NVME Disk
 ````
 wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner-nvme.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
-./install-hetzner.sh
+./install-hetzner.sh "PVE Hostname"
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
