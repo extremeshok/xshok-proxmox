@@ -68,29 +68,34 @@ pveam update
 ## Install zfs support, appears to be missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
 
-## Install zfs-auto-snapshot
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
-# make 5min snapshots , keep 12 5min snapshots
-if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
-  sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
-fi
-# keep 24 hourly snapshots
-if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
-fi
-# keep 7 daily snapshots
-if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
-fi
-# keep 4 weekly snapshots
-if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
-fi
-# keep 3 monthly snapshots
-if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
-fi
+## Install ifupdown2 support, appears to be missing on some Proxmox installs.
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifupdown2
+
+
+# ## Disable zfs-auto-snapshot -- Not in user, "using Proxmox backupserver"
+# ## Install zfs-auto-snapshot
+# /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
+# # make 5min snapshots , keep 12 5min snapshots
+# if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
+#   sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
+# fi
+# # keep 24 hourly snapshots
+# if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
+# fi
+# # keep 7 daily snapshots
+# if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
+# fi
+# # keep 4 weekly snapshots
+# if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
+# fi
+# # keep 3 monthly snapshots
+# if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
+#   sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
+# fi
 
 ## Install missing ksmtuned
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
@@ -233,7 +238,7 @@ if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
   # create a daily cron to make sure the banner does not re-appear
   cat <<'EOF' > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
-# eXtremeSHOK.com Remove subscription banner
+# C-System.dk Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
   chmod 755 /etc/cron.daily/proxmox-nosub
@@ -243,15 +248,15 @@ fi
 # if [ -z "${NO_MOTD_BANNER}" ] ; then
 #   if ! grep -q https "/etc/motd" ; then
 #     cat << 'EOF' > /etc/motd.new
-# 	   This system is optimised by:            https://eXtremeSHOK.com
-# 	     __   ___                            _____ _    _  ____  _  __
-# 	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-# 	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
-# 	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-# 	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
-# 	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
-
-
+# 	  This system is optimised by:  https://c-system.dk
+#         _____      _____           _                 
+#        / ____|    / ____|         | |                
+#       | |   _____| (___  _   _ ___| |_ ___ _ __ ___  
+#       | |  |______\___ \| | | / __| __/ _ \ '_ ` _ \ 
+#       | |____     ____) | |_| \__ \ ||  __/ | | | | |
+#        \_____|   |_____/ \__, |___/\__\___|_| |_| |_|
+#                           __/ |                      
+#                          |___/   
 # EOF
 
 #     cat /etc/motd >> /etc/motd.new
@@ -267,7 +272,7 @@ sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
 cat <<EOF >> /etc/security/limits.conf
-# eXtremeSHOK.com Increase max FD limit / ulimit
+# C-System.dk Increase max FD limit / ulimit
 * soft     nproc          256000
 * hard     nproc          256000
 * soft     nofile         256000
@@ -280,7 +285,7 @@ EOF
 
 ## Enable TCP BBR congestion control
 cat <<EOF > /etc/sysctl.d/10-kernel-bbr.conf
-# eXtremeSHOK.com
+# C-System.dk
 # TCP BBR congestion control
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
@@ -288,7 +293,7 @@ EOF
 
 ## Increase kernel max Key limit
 cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
-# eXtremeSHOK.com
+# C-System.dk
 # Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
@@ -323,7 +328,7 @@ if [ "$(command -v zfs)" != "" ] ; then
     MY_ZFS_ARC_MAX=1073741824
   fi
   cat <<EOF > /etc/modprobe.d/zfs.conf
-# eXtremeSHOK.com ZFS tuning
+# C-System.dk ZFS tuning
 
 # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
 options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
