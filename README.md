@@ -26,7 +26,7 @@ Recommeneded partitioning scheme:
 
 ## For server with SATA Disk
 ````
-wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
+wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-hetzner-sata.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
 ./install-hetzner.sh "PVE Hostname"
 ````
 
