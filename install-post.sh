@@ -69,30 +69,6 @@ pveam update
 ## Install zfs support, appears to be missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
 
-## Install zfs-auto-snapshot
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
-# make 5min snapshots , keep 12 5min snapshots
-if [ -f "/etc/cron.d/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=12|g' /etc/cron.d/zfs-auto-snapshot
-  sed -i 's|*/[0-9]*|*/5|g' /etc/cron.d/zfs-auto-snapshot
-fi
-# keep 24 hourly snapshots
-if [ -f "/etc/cron.hourly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=24|g' /etc/cron.hourly/zfs-auto-snapshot
-fi
-# keep 7 daily snapshots
-if [ -f "/etc/cron.daily/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=7|g' /etc/cron.daily/zfs-auto-snapshot
-fi
-# keep 4 weekly snapshots
-if [ -f "/etc/cron.weekly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=4|g' /etc/cron.weekly/zfs-auto-snapshot
-fi
-# keep 3 monthly snapshots
-if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
-  sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
-fi
-
 ## Install missing ksmtuned
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
 systemctl enable ksmtuned
@@ -119,46 +95,6 @@ echo "Y" | pveceph install
 #make
 #make install
 
-## Detect AMD EPYC CPU and install 4.15
-if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
-  echo "AMD EPYC detected"
-  #Apply EPYC fix to kernel : Fixes random crashing and instability
-  if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
-    echo "Setting kernel idle=nomwait"
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
-    update-grub
-  fi
-  echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
-fi
-
-if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
-  ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
-  echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
-  echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
-fi
-
-## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
-# use command 'reboot-quick'
-echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install kexec-tools
-
-cat <<'EOF' > /etc/systemd/system/kexec-pve.service
-[Unit]
-Description=boot into into the latest pve kernel set as primary in the boot-loader
-Documentation=man:kexec(8)
-DefaultDependencies=no
-Before=shutdown.target umount.target final.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/kexec -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
-
-[Install]
-WantedBy=kexec.target
-EOF
-systemctl enable kexec-pve.service
-echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 
 ## Remove no longer required packages and purge old cached updates
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
