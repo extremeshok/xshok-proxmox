@@ -40,8 +40,8 @@
 vpn_ip_last=1
 vpn_connect_to=""
 vpn_port=655
-#my_default_v4ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0.' | grep -v '10.10.' | grep -v '127.0.0.' | tail -n 1)
-my_default_v4ip=""
+my_default_v4ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0.' | grep -v '10.10.' | grep -v '127.0.0.' | tail -n 1)
+#my_default_v4ip=""
 reset="no"
 
 
