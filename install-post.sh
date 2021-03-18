@@ -18,6 +18,10 @@
 # Notes:
 # to disable the MOTD banner, set the env NO_MOTD_BANNER to true (export NO_MOTD_BANNER=true)
 #
+#
+# Dev: disable openvswitch when ifupdown2 is used
+#
+#
 ################################################################################
 #
 #    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
@@ -33,7 +37,7 @@ echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-  echo -e "#deb https://enterprise.proxmox.com/debian/pve buster pve-enterprise\\n" > /etc/apt/sources.list.d/pve-enterprise.list
+  sed -i "s/deb /#deb /g" /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
@@ -50,7 +54,7 @@ echo "deb http://download.proxmox.com/debian/ceph-nautilus buster main" > /etc/a
 apt-get update > /dev/null
 
 ## Remove conflicting utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony ksm-control-daemon
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
 ## Fix no public key error for debian repo
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
@@ -64,6 +68,10 @@ pveam update
 
 ## Install openvswitch for a virtual internal network
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
+
+#todo
+## Install fupdown2 for a virtual internal network (not compatible with openvswitch-switch)
+#/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fupdown2
 
 ## Install zfs support, appears to be missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
@@ -92,16 +100,15 @@ if [ -f "/etc/cron.monthly/zfs-auto-snapshot" ] ; then
   sed -i 's|--keep=[0-9]*|--keep=3|g' /etc/cron.monthly/zfs-auto-snapshot
 fi
 
-## Install missing ksmtuned
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
+## Ensure ksmtuned (ksm-control-daemon) is enabled
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksm-control-daemon
 systemctl enable ksmtuned
-systemctl enable ksm
 
 ## Install ceph support
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset grc
 #snmpd snmp-mibs-downloader
 
 ## Detect AMD EPYC CPU and install kernel 4.15
@@ -303,6 +310,19 @@ echo 'session required pam_limits.so' | tee -a /etc/pam.d/runuser-l
 
 ## Set ulimit for the shell user
 cd ~ && echo "ulimit -n 256000" >> .bashrc ; echo "ulimit -n 256000" >> .profile
+
+## Customise bashrc (thanks broeckca)
+cat <<EOF >> /root/.bashrc
+export HISTTIMEFORMAT="%d/%m/%y %T "
+export PS1='\u@\h:\W \$ '
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias ls='ls --color=auto'
+source /etc/profile.d/bash_completion.sh
+export PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\]@\[\e[38;5;153m\]\h\[\e[m\] \[\e[38;5;214m\]\W\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
+EOF
+source /root/.bashrc
 
 ## Optimise ZFS arc size
 if [ "$(command -v zfs)" != "" ] ; then
