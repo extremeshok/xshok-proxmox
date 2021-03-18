@@ -37,7 +37,7 @@ echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-  sed -i "s/deb /#deb /g" /etc/apt/sources.list.d/pve-enterprise.list
+  sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
@@ -130,6 +130,7 @@ iperf \
 ipset \
 iptraf \
 mlocate \
+msr-tools \
 nano \
 net-tools \
 omping \
@@ -294,6 +295,10 @@ EOF
   chmod 755 /etc/cron.daily/proxmox-nosub
 fi
 
+# Remove nag @tinof
+echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/data.status/{s/\!//;s/Active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/no-nag-script && apt --reinstall install proxmox-widget-toolkit
+
+
 ## Pretty MOTD BANNER
 if [ -z "${NO_MOTD_BANNER}" ] ; then
   if ! grep -q https "/etc/motd" ; then
@@ -375,7 +380,12 @@ source /root/.bashrc
 ## Optimise ZFS arc size
 if [ "$(command -v zfs)" != "" ] ; then
   RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
-  if [[ RAM_SIZE_GB -lt 16 ]] ; then
+
+
+    if [[ RAM_SIZE_GB -ls 16 ]] ; then
+    MY_ZFS_ARC_MIN=536870912
+    MY_ZFS_ARC_MAX=536870912
+    elif [[ RAM_SIZE_GB -ls 32 ]] ; then
     # 1GB/1GB
     MY_ZFS_ARC_MIN=1073741824
     MY_ZFS_ARC_MAX=1073741824
@@ -384,11 +394,11 @@ if [ "$(command -v zfs)" != "" ] ; then
     MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
   fi
   # Enforce the minimum, incase of a faulty vmstat
-  if [[ MY_ZFS_ARC_MIN -lt 1073741824 ]] ; then
-    MY_ZFS_ARC_MIN=1073741824
+  if [[ MY_ZFS_ARC_MIN -lt 536870912 ]] ; then
+    MY_ZFS_ARC_MIN=536870912
   fi
-  if [[ MY_ZFS_ARC_MAX -lt 1073741824 ]] ; then
-    MY_ZFS_ARC_MAX=1073741824
+  if [[ MY_ZFS_ARC_MAX -lt 536870912 ]] ; then
+    MY_ZFS_ARC_MAX=536870912
   fi
   cat <<EOF > /etc/modprobe.d/zfs.conf
 # eXtremeSHOK.com ZFS tuning
