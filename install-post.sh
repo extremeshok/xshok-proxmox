@@ -70,7 +70,7 @@ pveam update
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 
 #todo
-## Install fupdown2 for a virtual internal network (not compatible with openvswitch-switch)
+## Install fupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
 #/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fupdown2
 
 ## Install zfs support, appears to be missing on some Proxmox installs.
@@ -102,6 +102,11 @@ fi
 
 ## Ensure ksmtuned (ksm-control-daemon) is enabled
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksm-control-daemon
+# todo optimisations according to ramsize
+# # 64GB ram
+# KSM_SLEEP_MSEC=40
+# #start working if RAM is 60% full (default would be 80%):
+# KSM_THRES_COEF=40
 systemctl enable ksmtuned
 
 ## Install ceph support
@@ -111,7 +116,7 @@ echo "Y" | pveceph install
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset grc
 #snmpd snmp-mibs-downloader
 
-## Detect AMD EPYC CPU and install kernel 4.15
+## Detect AMD EPYC CPU
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
@@ -120,8 +125,8 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
   fi
-  echo "Installing kernel 4.15"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
+  # echo "Installing kernel 4.15"
+  # /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
 fi
 
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
@@ -193,6 +198,7 @@ if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | ta
   wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
 fi
 
+#todo: add support for ssh
 ## Protect the web interface with fail2ban
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
 # shellcheck disable=1117
@@ -210,6 +216,7 @@ logpath = /var/log/daemon.log
 maxretry = 3
 # 1 hour
 bantime = 3600
+findtime = 600
 EOF
 cat <<EOF > /etc/fail2ban/jail.local
 [DEFAULT]
