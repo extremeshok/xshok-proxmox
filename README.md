@@ -10,7 +10,7 @@
 * Install ceph, ksmtuned, openvswitch-switch, zfsutils and common system utilities
 * Increase vzdump backup speed, enable pigz and fix ionice
 * Increase max Key limits,  max user watches, max File Discriptor Limits, ulimits
-* Detect AMD EPYC CPU and install kernel 4.15
+* Detect AMD CPU and install -edgekernel 5.xx
 * Detect AMD EPYC CPU and Apply EPYC fixes to kernel and KVM
 * Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
 * Disable portmapper / rpcbind (security)
