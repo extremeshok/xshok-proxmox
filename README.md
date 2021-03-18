@@ -57,7 +57,7 @@ Recommeneded partitioning scheme:
 * Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
-./install-hetzner.sh
+./install-hetzner.sh "your.hostname.here"
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
