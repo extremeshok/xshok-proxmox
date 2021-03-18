@@ -147,13 +147,13 @@ if [ "$MY_SLOG" == "0" ] ; then
 elif [ "$MY_SLOG" != "" ] && [[ ! $MY_SLOG =~ ^[0-9]+$ ]] ; then
   echo "error: MY_SLOG is Not a number, specify in GB"
   exit 1
-elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/sda/queue/rotational 2> /dev/null)" == "1" ] ; then
   echo "HDD Detected, ignoring slog partition"
   MY_SLOG=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring slog partition"
   MY_SLOG=""
-elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/sdb/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational 2> /dev/null)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational 2> /dev/null)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling slog partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -178,13 +178,13 @@ if [ "$MY_CACHE" == "0" ] ; then
 elif [ "$MY_CACHE" != "" ] && [[ ! $MY_CACHE =~ ^[0-9]+$ ]] ; then
   echo "error: ${MY_CACHE} is Not a number, specify in GB"
   exit 1
-elif [ "$(cat /sys/block/sda/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/sda/queue/rotational 2> /dev/null)" == "1" ] ; then
   echo "HDD Detected, ignoring cache partition"
   MY_CACHE=""
 elif [ "$MY_RAID_LEVEL" == "10" ]; then
   echo "SSD Detected, RAID 10 enabled, ignoring cache partition"
   MY_CACHE=""
-elif [ "$(cat /sys/block/sdb/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational)" == "1" ] ; then
+elif [ "$(cat /sys/block/sdb/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sdc/queue/rotational 2> /dev/null)" == "1" ]  || [ "$(cat /sys/block/sdd/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sde/queue/rotational 2> /dev/null)" == "1" ] || [ "$(cat /sys/block/sdf/queue/rotational 2> /dev/null)" == "1" ] ; then
   echo "HDD Detected with SSD, enabling cache partition"
   #### CONFIGURE CACHE
   # HDD more than 800gb = 120GB CACHE
@@ -238,7 +238,7 @@ if [ ! -f $installimage_file ] ; then
   echo "Error: Image file was not found: ${installimage_file}"
   echo "Please log an issue on the github repo with the following"
   ls -laFh root/images
-  exit 1  
+  exit 1
 fi
 
 #fetching post install
