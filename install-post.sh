@@ -113,7 +113,36 @@ systemctl enable ksmtuned
 echo "Y" | pveceph install
 
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset grc
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
+aptitude \
+axel \
+build-essential \
+curl \
+dialog \
+dnsutils \
+dos2unix \
+git \
+grc \
+htop \
+iftop \
+iotop \
+iperf \
+ipset \
+iptraf \
+mlocate \
+nano \
+net-tools \
+omping \
+pigz \
+software-properties-common \
+sshpass \
+tmux \
+unzip \
+vim \
+vim-nox \
+wget \
+whois \
+zip
 #snmpd snmp-mibs-downloader
 
 ## Detect AMD EPYC CPU
@@ -134,6 +163,12 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ 
   echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
   echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
 fi
+
+## Install Docker
+# /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install docker.io docker-compose
+
+## Install kernel source headers
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers-$(uname -r) module-assistant
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 # use command 'reboot-quick'
@@ -167,6 +202,12 @@ systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone UTC
+
+# ## Set Timezone by IP
+# timezone=$(curl https://ipapi.co/$(dig +short myip.opendns.com @resolver1.opendns.com)/timezone)
+# echo "Got $timezone from $(dig +short myip.opendns.com @resolver1.opendns.com)"
+# timedatectl set-timezone $timezone
+
 cat <<EOF > /etc/systemd/timesyncd.conf
 [Time]
 NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
