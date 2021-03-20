@@ -70,6 +70,7 @@ XS_TCPFASTOPEN="yes"
 XS_TESTREPO="no"
 XS_TIMESYNC="yes"
 XS_TIMEZONE="" #empty = set automatically by ip
+XS_UTILS="yes"
 XS_VZDUMP="yes"
 XS_ZFSARC="yes"
 XS_ZFSAUTOSNAPSHOT="yes"
@@ -153,37 +154,39 @@ fi
 ## Install packages which are sometimes missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
 
+if [ "$XS_UTILS" == "yes" ] ; then
 ## Install common system utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
-axel \
-build-essential \
-curl \
-dialog \
-dnsutils \
-dos2unix \
-git \
-gnupg-agent \
-grc \
-htop \
-iftop \
-iotop \
-iperf \
-ipset \
-iptraf \
-mlocate \
-msr-tools \
-nano \
-net-tools \
-omping \
-software-properties-common \
-sshpass \
-tmux \
-unzip \
-vim \
-vim-nox \
-wget \
-whois \
-zip
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
+    axel \
+    build-essential \
+    curl \
+    dialog \
+    dnsutils \
+    dos2unix \
+    git \
+    gnupg-agent \
+    grc \
+    htop \
+    iftop \
+    iotop \
+    iperf \
+    ipset \
+    iptraf \
+    mlocate \
+    msr-tools \
+    nano \
+    net-tools \
+    omping \
+    software-properties-common \
+    sshpass \
+    tmux \
+    unzip \
+    vim \
+    vim-nox \
+    wget \
+    whois \
+    zip
+fi
 
 if [ "$XS_CEPH" == "yes" ] ; then
     ## Add the latest ceph provided by proxmox
