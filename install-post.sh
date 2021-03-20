@@ -426,16 +426,16 @@ if [ "$XS_NOSUBBANNER" == "yes" ] ; then
       sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
       sed -i "s/checked_command: function(orig_cmd) {/checked_command: function() {} || function(orig_cmd) {/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
       # create a daily cron to make sure the banner does not re-appear
-  cat <<'EOF' > /etc/cron.daily/proxmox-nosub
+  cat <<'EOF' > /etc/cron.daily/xs-pve-nosub
 #!/bin/sh
 # eXtremeSHOK.com Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 sed -i "s/checked_command: function(orig_cmd) {/checked_command: function() {} || function(orig_cmd) {/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
-      chmod 755 /etc/cron.daily/proxmox-nosub
+      chmod 755 /etc/cron.daily/xs-pve-nosub
     fi
     # Remove nag @tinof
-    echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/data.status/{s/\!//;s/Active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/no-nag-script && apt --reinstall install proxmox-widget-toolkit
+    echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/data.status/{s/\!//;s/Active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/xs-pve-no-nag && apt --reinstall install proxmox-widget-toolkit
 fi
 
 if [ "$XS_MOTD" == "yes" ] ; then
@@ -712,7 +712,7 @@ if [ "$XS_ZFSARC" == "yes" ] ; then
       if [[ MY_ZFS_ARC_MAX -lt 536870912 ]] ; then
         MY_ZFS_ARC_MAX=536870912
       fi
-      cat <<EOF > /etc/modprobe.d/zfs.conf
+      cat <<EOF > /etc/modprobe.d/99-xs-zfsarc.conf
 # eXtremeSHOK.com ZFS tuning
 
 # Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
