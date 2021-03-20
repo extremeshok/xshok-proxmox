@@ -53,6 +53,7 @@ XS_KEXEC="yes"
 XS_KSMTUNED="yes"
 XS_LANG="en_US.UTF-8"
 XS_LIMITS="yes"
+XS_LYNIS="yes"
 XS_LOGROTATE="yes"
 XS_MAXFS="yes"
 XS_MEMORYFIXES="yes"
@@ -118,8 +119,6 @@ if [ "$XS_NOENTREPO" == "yes" ] ; then
       echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
 fi
-## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
 
 # rebuild and add non-free to /etc/apt/sources.list
 echo "deb http://ftp.debian.org/debian ${OS_CODENAME} main contrib" > /etc/apt/sources.list
@@ -180,6 +179,26 @@ vim-nox \
 wget \
 whois \
 zip
+
+if [ "$XS_CEPH" == "yes" ] ; then
+    ## Add the latest ceph provided by proxmox
+    echo "deb http://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
+    ## Refresh the package lists
+    apt-get update > /dev/null 2>&1
+    ## Install ceph support
+    echo "Y" | pveceph install
+fi
+
+if [ "$XS_LYNIS" == "yes" ] ; then
+    # Lynis security scan tool by Cisofy
+    wget -O - https://packages.cisofy.com/keys/cisofy-software-public.key | apt-key add -
+    ## Add the latest lynis
+    echo "deb https://packages.cisofy.com/community/lynis/deb/ stable main" > /etc/apt/sources.list.d/cisofy-lynis.list
+    ## Refresh the package lists
+    apt-get update > /dev/null 2>&1
+    ## Install ceph support
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef'  install lynis
+fi
 
 if [ "$XS_OPENVSWITCH" == "yes" ] && [ "$XS_IFUPDOWN2" == "no" ] ; then
     ## Install openvswitch for a virtual internal network
@@ -246,11 +265,6 @@ if [ "$XS_KSMTUNED" == "yes" ] ; then
     sed -i -e "s/\# KSM_THRES_COEF=.*/KSM_THRES_COEF=${KSM_THRES_COEF}/g" /tmp/ksmtuned.conf
     sed -i -e "s/\# KSM_SLEEP_MSEC=.*/KSM_SLEEP_MSEC=${KSM_SLEEP_MSEC}/g" /tmp/ksmtuned.conf
     systemctl enable ksmtuned
-fi
-
-if [ "$XS_CEPH" == "yes" ] ; then
-    ## Install ceph support
-    echo "Y" | pveceph install
 fi
 
 if [ "$XS_AMDFIXES" == "yes" ] ; then
