@@ -21,8 +21,8 @@
 # openvswitch will be disabled (removed) when ifupdown2 is enabled
 # ifupdown2 will be disabled (removed) when openvswitch is enabled
 #
-# Todo:
-# Docker ?
+# Docker : not advisable to run docker on the Hypervisor(proxmox) directly.
+# Correct way is to create a VM which will be used exclusively for docker.
 #
 ################################################################################
 #
