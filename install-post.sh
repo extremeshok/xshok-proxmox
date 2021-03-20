@@ -39,6 +39,7 @@ XS_DISABLERPC="yes"
 XS_DISENTREPO="yes"
 XS_FAIL2BAN="yes"
 XS_IFUPDOWN2="yes"
+XS_JOURNALD="yes"
 XS_KERNELHEADERS="yes"
 XS_KEXEC="yes"
 XS_KSMTUNED="yes"
@@ -416,6 +417,42 @@ EOF
     echo "ulimit -n 256000" >> /root/.bashrc
     echo "ulimit -n 256000" >> /root/.profile
 fi
+
+if [ "$XS_JOURNALD" == "yes" ] ; then
+    ## Limit the size and optimise journald
+    cat <<EOF > /etc/systemd/journald.conf
+# eXtremeSHOK.com
+[Journal]
+# Store on disk
+Storage=persistent
+# Don't split Journald logs by user
+SplitMode=none
+# Disable rate limits
+RateLimitInterval=0
+RateLimitIntervalSec=0
+RateLimitBurst=0
+# Disable Journald forwarding to syslog
+ForwardToSyslog=no
+# Journald forwarding to wall /var/log/kern.log
+ForwardToWall=yes
+# Disable signing of the logs, save cpu resources.
+Seal=no
+Compress=yes
+# Fix the log size
+SystemMaxUse=64M
+RuntimeMaxUse=60M
+# Optimise the logging and speed up tasks
+MaxLevelStore=warning
+MaxLevelSyslog=warning
+MaxLevelKMsg=warning
+MaxLevelConsole=notice
+MaxLevelWall=crit
+EOF
+    systemctl restart systemd-journald.service
+    journalctl --vacuum-size=64M --vacuum-time=1d;
+    journalctl --rotate
+fi
+
 
 if [ "$XS_VZDUMP" == "yes" ] ; then
     ## Increase vzdump backup speed, ix ionice
