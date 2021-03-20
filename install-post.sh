@@ -36,43 +36,81 @@
 #####  D O   N O T   E D I T   B E L O W  ######
 
 #### VARIABLES / options
+# Detect AMD EPYC CPU and Apply Fixes
 XS_AMDFIXES="yes"
+# Force APT to use IPv4
+XS_APTIPV4="yes"
+# update proxmox and install various system utils
 XS_APTUPGRADE="yes"
+# Customise bashrc
 XS_BASHRC="yes"
+# add the latest ceph provided by proxmox
 XS_CEPH="yes"
+# Disable portmapper / rpcbind (security)
 XS_DISABLERPC="yes"
+# Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
 XS_ENTROPY="yes"
+# Protect the web interface with fail2ban
 XS_FAIL2BAN="yes"
+# Detect if is running in a virtual machine and install the relavant guest agent
 XS_GUESTAGENT="yes"
+# Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
 XS_IFUPDOWN2="yes"
+# Limit the size and optimise journald
 XS_JOURNALD="yes"
+# Install kernel source headers
 XS_KERNELHEADERS="yes"
+# Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 XS_KEXEC="yes"
+# Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
 XS_KSMTUNED="yes"
+# Set language, if chnaged will disable XS_NOAPTLANG
 XS_LANG="en_US.UTF-8"
+# Increase max user watches, FD limit, FD ulimit, max key limit, ulimits
 XS_LIMITS="yes"
+# Optimise logrotate
 XS_LOGROTATE="yes"
+# Lynis security scan tool by Cisofy
 XS_LYNIS="yes"
+# Increase Max FS open files
 XS_MAXFS="yes"
+Optimise Memory
 XS_MEMORYFIXES="yes"
+# Pretty MOTD BANNER
 XS_MOTD="yes"
+# Enable Network optimising
 XS_NET="yes"
+# save bandwidth and skip downloading additional languages, requires XS_LANG="en_US.UTF-8"
 XS_NOAPTLANG="yes"
+# disable enterprise proxmox repo
 XS_NOENTREPO="yes"
+# Remove subscription banner
 XS_NOSUBBANNER="yes"
+# Install openvswitch for a virtual internal network
 XS_OPENVSWITCH="no"
+# Detect if this is an OVH server and install OVH Real Time Monitoring
 XS_OVHRTM="yes"
+# Set pigz to replace gzip, 2x faster gzip compression
 XS_PIGZ="yes"
+# Bugfix: high swap usage with low memory usage
 XS_SWAPPINESS="yes"
+# Enable TCP BBR congestion control
 XS_TCPBBR="yes"
+# Enable TCP fastopen
 XS_TCPFASTOPEN="yes"
-XS_TCPFASTOPEN="yes"
+# enable testing proxmox repo
 XS_TESTREPO="no"
+# Automatically Synchronize the time
 XS_TIMESYNC="yes"
-XS_TIMEZONE="" #empty = set automatically by ip
+# Set Timezone, empty = set automatically by IP
+XS_TIMEZONE=""
+# Install common system utilities
 XS_UTILS="yes"
+# Increase vzdump backup speed
 XS_VZDUMP="yes"
+# Optimise ZFS arc size accoring to memory size
 XS_ZFSARC="yes"
+# Install zfs-auto-snapshot
 XS_ZFSAUTOSNAPSHOT="yes"
 
 #################  D O   N O T   E D I T  ######################################
@@ -85,6 +123,9 @@ if [ -f "xs-install-post.env" ] ; then
 fi
 
 # Set the local
+if [ "$XS_LANG" == "" ] ; then
+    XS_LANG="en_US.UTF-8"
+fi
 export LANG="$XS_LANG"
 export LC_ALL="C"
 
@@ -105,24 +146,26 @@ OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 | xargs
 RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
 
 if [ "$XS_LANG" == "en_US.UTF-8" ] && [ "$XS_NOAPTLANG" == "yes" ] ; then
-    #save bandwidth and skip downloading additional languages
+    # save bandwidth and skip downloading additional languages
     echo -e "Acquire::Languages \"none\";\\n" > /etc/apt/apt.conf.d/99-xs-disable-translations
 fi
 
-## Force APT to use IPv4
-echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99-xs-force-ipv4
+if [ "$XS_APTIPV4" == "yes" ] ; then
+    # force APT to use IPv4
+    echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99-xs-force-ipv4
+fi
 
 if [ "$XS_NOENTREPO" == "yes" ] ; then
-    ## disable enterprise proxmox repo
+    # disable enterprise proxmox repo
     if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
       sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
     fi
-    ## enable public proxmox repo
+    # enable free public proxmox repo
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
       echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
     if [ "$XS_TESTREPO" == "yes" ] ; then
-        ## enable testing proxmox repo
+        # enable testing proxmox repo
         echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest\\n" > /etc/apt/sources.list.d/pve-testing-repo.list
     fi
 fi
@@ -137,26 +180,26 @@ deb https://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free
 deb https://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib
 EOF
 
-## Refresh the package lists
+# Refresh the package lists
 apt-get update > /dev/null 2>&1
 
-## Remove conflicting utilities
+# Remove conflicting utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
-## Fixes for common apt repo errors
+# Fixes for common apt repo errors
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates curl
 
 if [ "$XS_APTUPGRADE" == "yes" ] ; then
-    ## Update proxmox and install various system utils
+    # update proxmox and install various system utils
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
     pveam update
 fi
 
-## Install packages which are sometimes missing on some Proxmox installs.
+# Install packages which are sometimes missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
 
 if [ "$XS_UTILS" == "yes" ] ; then
-## Install common system utilities
+# Install common system utilities
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
     axel \
     build-essential \
@@ -189,7 +232,7 @@ if [ "$XS_UTILS" == "yes" ] ; then
 fi
 
 if [ "$XS_CEPH" == "yes" ] ; then
-    ## Add the latest ceph provided by proxmox
+    # Add the latest ceph provided by proxmox
     echo "deb https://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
@@ -247,7 +290,7 @@ if [ "$XS_ZFSAUTOSNAPSHOT" == "yes" ] ; then
 fi
 
 if [ "$XS_KSMTUNED" == "yes" ] ; then
-    ## Ensure ksmtuned (ksm-control-daemon) is enabled
+    ## Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksm-control-daemon
     if [[ RAM_SIZE_GB -le 16 ]] ; then
         # start at 50% full
@@ -276,7 +319,7 @@ if [ "$XS_KSMTUNED" == "yes" ] ; then
 fi
 
 if [ "$XS_AMDFIXES" == "yes" ] ; then
-    ## Detect AMD EPYC CPU
+    ## Detect AMD EPYC CPU and Apply Fixes
     if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
       echo "AMD EPYC detected"
       #Apply EPYC fix to kernel : Fixes random crashing and instability
@@ -331,7 +374,7 @@ if [ "$XS_DISABLERPC" == "yes" ] ; then
 fi
 
 if [ "$XS_TIMEZONE" == "" ] ; then
-    ## Set Timezone by IP
+    ## Set Timezone, empty = set automatically by ip
     this_ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
     timezone="$(curl "https://ipapi.co/${this_ip}/timezone")"
     if [ "$timezone" != "" ] ; then
@@ -347,6 +390,7 @@ else
 fi
 
 if [ "$XS_TIMESYNC" == "yes" ] ; then
+    ## Automatically Synchronize the time
     cat <<EOF > /etc/systemd/timesyncd.conf
 [Time]
 NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
@@ -360,7 +404,7 @@ EOF
 fi
 
 if [ "$XS_GUESTAGENT" == "yes" ] ; then
-    ## Detect if virtual machine and install guest agent
+    ## Detect if is running in a virtual machine and install the relavant guest agent
     if [ "$(dmidecode -s system-manufacturer | xargs)" == "QEMU" ] || [ "$(systemd-detect-virt | xargs)" == "kvm" ] ; then
       echo "QEMU Detected, installing guest agent"
       /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install qemu-guest-agent
@@ -391,7 +435,7 @@ EOF
 fi
 
 if [ "$XS_OVHRTM" == "yes" ] ; then
-    ## Detect if this is an OVH server by getting the global IP and checking the ASN
+    ## Detect if this is an OVH server by getting the global IP and checking the ASN, then install OVH RTM (real time monitoring)"
     if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
       echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
       # http://help.ovh.co.uk/RealTimeMonitoring
@@ -575,13 +619,13 @@ EOF
 fi
 
 if [ "$XS_VZDUMP" == "yes" ] ; then
-    ## Increase vzdump backup speed, ix ionice
+    ## Increase vzdump backup speed
     sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
     sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 fi
 
 if [ "$XS_MEMORYFIXES" == "yes" ] ; then
-    ## Memory Optimising
+    ## Optimise Memory
 cat <<EOF > /etc/sysctl.d/99-xs-memory.conf
 # eXtremeSHOK.com
 # Memory Optimising
@@ -605,7 +649,7 @@ EOF
 fi
 
 if [ "$XS_TCPFASTOPEN" == "yes" ] ; then
-## TCP fastopen
+## Enable TCP fastopen
 cat <<EOF > /etc/sysctl.d/99-xs-tcp-fastopen.conf
 # eXtremeSHOK.com
 # TCP fastopen
@@ -614,7 +658,7 @@ EOF
 fi
 
 if [ "$XS_NET" == "yes" ] ; then
-## Net optimising
+## Enable Network optimising
 cat <<EOF > /etc/sysctl.d/99-xs-net.conf
 # eXtremeSHOK.com
 net.core.netdev_max_backlog=8192
@@ -674,10 +718,10 @@ EOF
 fi
 
 if [ "$XS_MAXFS" == "yes" ] ; then
-    ## FS Optimising
+    ## Increase Max FS open files
     cat <<EOF > /etc/sysctl.d/99-xs-fs.conf
 # eXtremeSHOK.com
-# MAS FS Optimising
+# Max FS Optimising
 fs.nr_open=12000000
 fs.file-max=9000000
 EOF
@@ -699,7 +743,7 @@ EOF
 fi
 
 if [ "$XS_ZFSARC" == "yes" ] ; then
-    ## Optimise ZFS arc size
+    ## Optimise ZFS arc size accoring to memory size
     if [ "$(command -v zfs)" != "" ] ; then
       if [[ RAM_SIZE_GB -le 16 ]] ; then
         MY_ZFS_ARC_MIN=536870912
