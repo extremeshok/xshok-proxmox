@@ -37,6 +37,7 @@ XS_BASHRC="yes"
 XS_CEPH="yes"
 XS_DISABLERPC="yes"
 XS_DISENTREPO="yes"
+XS_ENTROPY="yes"
 XS_FAIL2BAN="yes"
 XS_IFUPDOWN2="yes"
 XS_JOURNALD="yes"
@@ -453,6 +454,18 @@ EOF
     journalctl --rotate
 fi
 
+if [ "$XS_ENTROPY" == "yes" ] ; then
+## Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install haveged
+    ## Net optimising
+    cat <<EOF > /etc/default/haveged
+# eXtremeSHOK.com
+#   -w sets low entropy watermark (in bits)
+DAEMON_ARGS="-w 1024"
+EOF
+    systemctl daemon-reload
+    systemctl enable haveged
+fi
 
 if [ "$XS_VZDUMP" == "yes" ] ; then
     ## Increase vzdump backup speed, ix ionice
