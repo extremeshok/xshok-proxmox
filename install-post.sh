@@ -105,7 +105,7 @@ RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) /
 
 if [ "$XS_LANG" == "en_US.UTF-8" ] && [ "$XS_NOAPTLANG" == "yes" ] ; then
     #save bandwidth and skip downloading additional languages
-    echo -e "Acquire::Languages \"none\";\\n" > tee /etc/apt/apt.conf.d/99-xs-disable-translations
+    echo -e "Acquire::Languages \"none\";\\n" > /etc/apt/apt.conf.d/99-xs-disable-translations
 fi
 
 ## Force APT to use IPv4
