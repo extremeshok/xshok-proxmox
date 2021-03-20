@@ -459,15 +459,20 @@ EOF
 fi
 
 if [ "$XS_LIMITS" == "yes" ] ; then
+    /etc/sysctl.d/99-xs-maxkeys.conf
     ## Increase max user watches
     # BUG FIX : No space left on device
-    echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
-    echo "fs.inotify.max_user_instances=1048576" >> /etc/sysctl.conf
-    echo "fs.inotify.max_queued_events=1048576" >> /etc/sysctl.conf
-    sysctl -p /etc/sysctl.conf
+    cat <<EOF > /etc/sysctl.d/99-xs-maxwatches.conf
+# eXtremeSHOK.com
+# Increase max user watches
+fs.inotify.max_user_watches=1048576
+fs.inotify.max_user_instances=1048576
+fs.inotify.max_queued_events=1048576
+EOF
     ## Increase max FD limit / ulimit
-cat <<EOF >> /etc/security/limits.conf
-# eXtremeSHOK.com Increase max FD limit / ulimit
+    cat <<EOF >> /etc/security/limits.conf
+# eXtremeSHOK.com
+# Increase max FD limit / ulimit
 * soft     nproc          256000
 * hard     nproc          256000
 * soft     nofile         256000
@@ -478,7 +483,7 @@ root soft     nofile         256000
 root hard     nofile         256000
 EOF
     ## Increase kernel max Key limit
-cat <<EOF > /etc/sysctl.d/99-xs-maxkeys.conf
+    cat <<EOF > /etc/sysctl.d/99-xs-maxkeys.conf
 # eXtremeSHOK.com
 # Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
@@ -494,7 +499,6 @@ EOF
     ## Set ulimit for the shell user
     echo "ulimit -n 256000" >> /root/.profile
 fi
-
 
 if [ "$XS_LOGROTATE" == "yes" ] ; then
     ## Optimise logrotate
