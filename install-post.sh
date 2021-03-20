@@ -379,6 +379,7 @@ if [ "$XS_PIGZ" == "yes" ] ; then
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pigz
     cat  <<EOF > /bin/pigzwrapper
 #!/bin/sh
+# eXtremeSHOK.com
 PATH=/bin:\$PATH
 GZIP="-1"
 exec /usr/bin/pigz "\$@"
@@ -432,8 +433,6 @@ fi
 if [ "$XS_NOSUBBANNER" == "yes" ] ; then
     ## Remove subscription banner
     if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
-      sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-      sed -i "s/checked_command: function(orig_cmd) {/checked_command: function() {} || function(orig_cmd) {/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
       # create a daily cron to make sure the banner does not re-appear
   cat <<'EOF' > /etc/cron.daily/xs-pve-nosub
 #!/bin/sh
@@ -442,6 +441,7 @@ sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget
 sed -i "s/checked_command: function(orig_cmd) {/checked_command: function() {} || function(orig_cmd) {/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
       chmod 755 /etc/cron.daily/xs-pve-nosub
+      bash /etc/cron.daily/xs-pve-nosub
     fi
     # Remove nag @tinof
     echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/data.status/{s/\!//;s/Active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/xs-pve-no-nag && apt --reinstall install proxmox-widget-toolkit
@@ -468,7 +468,6 @@ EOF
 fi
 
 if [ "$XS_LIMITS" == "yes" ] ; then
-    /etc/sysctl.d/99-xs-maxkeys.conf
     ## Increase max user watches
     # BUG FIX : No space left on device
     cat <<EOF > /etc/sysctl.d/99-xs-maxwatches.conf
@@ -579,7 +578,7 @@ if [ "$XS_VZDUMP" == "yes" ] ; then
     ## Increase vzdump backup speed, ix ionice
     sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
     sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
-    fi
+fi
 
 if [ "$XS_MEMORYFIXES" == "yes" ] ; then
     ## Memory Optimising
@@ -613,7 +612,6 @@ cat <<EOF > /etc/sysctl.d/99-xs-tcp-fastopen.conf
 net.ipv4.tcp_fastopen=3
 EOF
 fi
-
 
 if [ "$XS_NET" == "yes" ] ; then
 ## Net optimising
@@ -667,8 +665,8 @@ EOF
 fi
 
 if [ "$XS_SWAPPINESS" == "yes" ] ; then
-## Bugfix: high swap usage with low memory usage
-cat <<EOF > /etc/sysctl.d/99-xs-swap.conf
+    ## Bugfix: high swap usage with low memory usage
+    cat <<EOF > /etc/sysctl.d/99-xs-swap.conf
 # eXtremeSHOK.com
 # Bugfix: high swap usage with low memory usage
 vm.swappiness=10
@@ -676,8 +674,8 @@ EOF
 fi
 
 if [ "$XS_MAXFS" == "yes" ] ; then
-## FS Optimising
-cat <<EOF > /etc/sysctl.d/99-xs-fs.conf
+    ## FS Optimising
+    cat <<EOF > /etc/sysctl.d/99-xs-fs.conf
 # eXtremeSHOK.com
 # MAS FS Optimising
 fs.nr_open=12000000
@@ -687,7 +685,7 @@ fi
 
 if [ "$XS_BASHRC" == "yes" ] ; then
     ## Customise bashrc (thanks broeckca)
-cat <<EOF >> /root/.bashrc
+    cat <<EOF >> /root/.bashrc
 export HISTTIMEFORMAT="%d/%m/%y %T "
 export PS1='\u@\h:\W \$ '
 alias l='ls -CF'
