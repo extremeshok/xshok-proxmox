@@ -144,7 +144,7 @@ apt-get update > /dev/null 2>&1
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
 ## Fixes for common apt repo errors
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates curl
 
 if [ "$XS_APTUPGRADE" == "yes" ] ; then
     ## Update proxmox and install various system utils
@@ -160,7 +160,6 @@ if [ "$XS_UTILS" == "yes" ] ; then
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
     axel \
     build-essential \
-    curl \
     dialog \
     dnsutils \
     dos2unix \
