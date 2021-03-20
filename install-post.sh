@@ -41,7 +41,7 @@ XS_APTUPGRADE="yes"
 XS_BASHRC="yes"
 XS_CEPH="yes"
 XS_DISABLERPC="yes"
-XS_DISENTREPO="yes"
+XS_NOENTREPO="yes"
 XS_ENTROPY="yes"
 XS_FAIL2BAN="yes"
 XS_GUESTAGENT="yes"
@@ -74,6 +74,7 @@ XS_ZFSAUTOSNAPSHOT="yes"
 
 # VARIABLES are overrideen with xs-install-post.env
 if [ -f "xs-install-post.env" ] ; then
+    echo "Loading variables from xs-install-post.env ..."
     source xs-install-post.env;
 fi
 
@@ -94,30 +95,34 @@ fi
 
 # SET VARIBLES
 
-OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 )"
+OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 | xargs )"
 RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
 
 
 ## Force APT to use IPv4
 echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
 
-if [ "$XS_DISENTREPO" == "yes" ] ; then
+if [ "$XS_NOENTREPO" == "yes" ] ; then
     ## disable enterprise proxmox repo
     if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
       sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
     fi
-else
     ## enable public proxmox repo
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
       echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
 fi
 ## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-nautilus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
 
-## Add non-free and contrib to sources
-sed -i "s/main /main non-free/g" /etc/apt/sources.list
-sed -i "s/main /main contrib/g" /etc/apt/sources.list
+# rebuild and add non-free to /etc/apt/sources.list
+echo "deb http://ftp.debian.org/debian ${OS_CODENAME} main contrib" > /etc/apt/sources.list
+echo "deb http://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib" >> /etc/apt/sources.list
+echo "deb http://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free" >> /etc/apt/sources.list
+echo "# security updates" >> /etc/apt/sources.list
+echo "deb http://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib" >> /etc/apt/sources.list
+#echo "# testing updates" >> /etc/apt/sources.list
+#echo "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest" >> /etc/apt/sources.list
 
 ## Refresh the package lists
 apt-get update > /dev/null 2>&1
@@ -135,7 +140,7 @@ if [ "$XS_APTUPGRADE" == "yes" ] ; then
 fi
 
 ## Install packages which are sometimes missing on some Proxmox installs.
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
 
 ## Install common system utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
@@ -260,7 +265,7 @@ fi
 
 if [ "$XS_KERNELHEADERS" == "yes" ] ; then
     ## Install kernel source headers
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers-$(uname -r) module-assistant
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers module-assistant
 fi
 
 if [ "$XS_KEXEC" == "yes" ] ; then
@@ -455,9 +460,10 @@ EOF
     ## Set systemd ulimits
     echo "DefaultLimitNOFILE=256000" >> /etc/systemd/system.conf
     echo "DefaultLimitNOFILE=256000" >> /etc/systemd/user.conf
-    echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session-noninteractive
-    echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session
-    echo 'session required pam_limits.so' | tee -a /etc/pam.d/runuser-l
+
+    echo 'session required pam_limits.so' >> /etc/pam.d/common-session
+    echo 'session required pam_limits.so' >> /etc/pam.d/runuser-l
+
     ## Set ulimit for the shell user
     echo "ulimit -n 256000" >> /root/.bashrc
     echo "ulimit -n 256000" >> /root/.profile
@@ -512,7 +518,6 @@ MaxLevelKMsg=warning
 MaxLevelConsole=notice
 MaxLevelWall=crit
 EOF
-    systemctl enable systemd-journald.service
     systemctl restart systemd-journald.service
     journalctl --vacuum-size=64M --vacuum-time=1d;
     journalctl --rotate
