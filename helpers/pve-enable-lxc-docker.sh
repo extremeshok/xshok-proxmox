@@ -15,6 +15,8 @@
 #
 # Note:
 # There can be security implications as the LXC container is running in a higher privileged mode.
+# Not advisable to run docker inside a LXC container.
+# Correct way is to create a VM (qemu/kvm) which will be used exclusively for docker.
 #
 # Usage:
 # curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
