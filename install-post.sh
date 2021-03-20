@@ -44,6 +44,7 @@ XS_JOURNALD="yes"
 XS_KERNELHEADERS="yes"
 XS_KEXEC="yes"
 XS_KSMTUNED="yes"
+XS_LANG="en_US.UTF-8"
 XS_LIMITS="yes"
 XS_MEMORYFIXES="yes"
 XS_MOTD="yes"
@@ -64,11 +65,25 @@ if [ -f xs.env ] ; then
 fi
 
 # Set the local
-export LANG="en_US.UTF-8"
+export LANG="$XS_LANG"
 export LC_ALL="C"
 
+# enforce proxmox
+if [ ! -f "/etc/pve/.version" ] ; then
+  echo "ERROR: This script only supports Proxmox"
+  exit 1
+fi
+
+if [ -f "/etc/extremeshok" ] ; then
+  echo "ERROR: Script can only be run once"
+  exit 1
+fi
+
 # SET VARIBLES
+
+OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 )"
 RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
+
 
 ## Force APT to use IPv4
 echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
@@ -81,24 +96,24 @@ if [ "$XS_DISENTREPO" == "yes" ] ; then
 else
     ## enable public proxmox repo
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-      echo -e "deb http://download.proxmox.com/debian/pve buster pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
+      echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
 fi
 ## Add the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-nautilus buster main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-nautilus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
 
 ## Add non-free and contrib to sources
 sed -i "s/main /main non-free/g" /etc/apt/sources.list
 sed -i "s/main /main contrib/g" /etc/apt/sources.list
 
 ## Refresh the package lists
-apt-get update > /dev/null
+apt-get update > /dev/null 2>&1
 
 ## Remove conflicting utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
-## Fix no public key error for debian repo
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
+## Fix no public key or cert errors for debian repo
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring ca-certificates
 
 if [ "$XS_APTUPGRADE" == "yes" ] ; then
     ## Update proxmox and install various system utils
@@ -111,7 +126,7 @@ fi
 
 ## Install common system utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
-aptitude \
+apt-transport-https \
 axel \
 build-essential \
 curl \
@@ -119,6 +134,7 @@ dialog \
 dnsutils \
 dos2unix \
 git \
+gnupg-agent \
 grc \
 htop \
 iftop \
@@ -554,6 +570,9 @@ update-initramfs -u -k all
 ## Remove no longer required packages and purge old cached updates
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoclean
+
+echo "# eXtremeSHOK.com" > /etc/extremeshok
+date >> /etc/extremeshok
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
