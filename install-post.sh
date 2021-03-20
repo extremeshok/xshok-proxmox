@@ -47,9 +47,11 @@ XS_KEXEC="yes"
 XS_KSMTUNED="yes"
 XS_LANG="en_US.UTF-8"
 XS_LIMITS="yes"
+XS_LOGROTATE="yes"
 XS_MAXFS="yes"
 XS_MEMORYFIXES="yes"
 XS_MOTD="yes"
+XS_NET="yes"
 XS_NOSUBBANNER="yes"
 XS_OPENVSWITCH="no"
 XS_OVHRTM="yes"
@@ -63,7 +65,7 @@ XS_TIMEZONE="" #set auto by ip
 XS_VZDUMP="yes"
 XS_ZFSARC="yes"
 XS_ZFSAUTOSNAPSHOT="yes"
-XS_NET="yes"
+
 
 # varibles/options are overrideen with xs.env
 if [ -f xs.env ] ; then
@@ -456,6 +458,25 @@ EOF
     echo "ulimit -n 256000" >> /root/.profile
 fi
 
+
+if [ "$XS_LOGROTATE" == "yes" ] ; then
+    ## Optimise logrotate
+    cat <<EOF > /etc/logrotate.conf
+# eXtremeSHOK.com
+daily
+su root adm
+rotate 7
+create
+compress
+size=10M
+delaycompress
+copytruncate
+
+include /etc/logrotate.d
+EOF
+    systemctl restart logrotate
+fi
+
 if [ "$XS_JOURNALD" == "yes" ] ; then
     ## Limit the size and optimise journald
     cat <<EOF > /etc/systemd/journald.conf
@@ -486,6 +507,7 @@ MaxLevelKMsg=warning
 MaxLevelConsole=notice
 MaxLevelWall=crit
 EOF
+    systemctl enable systemd-journald.service
     systemctl restart systemd-journald.service
     journalctl --vacuum-size=64M --vacuum-time=1d;
     journalctl --rotate
