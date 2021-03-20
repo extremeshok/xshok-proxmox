@@ -460,10 +460,10 @@ fi
 if [ "$XS_ZFSARC" == "yes" ] ; then
     ## Optimise ZFS arc size
     if [ "$(command -v zfs)" != "" ] ; then
-      if [[ RAM_SIZE_GB -ls 16 ]] ; then
+      if [[ RAM_SIZE_GB -le 16 ]] ; then
         MY_ZFS_ARC_MIN=536870912
         MY_ZFS_ARC_MAX=536870912
-     elif [[ RAM_SIZE_GB -ls 32 ]] ; then
+    elif [[ RAM_SIZE_GB -le 32 ]] ; then
         # 1GB/1GB
         MY_ZFS_ARC_MIN=1073741824
         MY_ZFS_ARC_MAX=1073741824
