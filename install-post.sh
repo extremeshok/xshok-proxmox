@@ -39,6 +39,7 @@ XS_DISABLERPC="yes"
 XS_DISENTREPO="yes"
 XS_ENTROPY="yes"
 XS_FAIL2BAN="yes"
+XS_GUESTAGENT="yes"
 XS_IFUPDOWN2="yes"
 XS_JOURNALD="yes"
 XS_KERNELHEADERS="yes"
@@ -46,18 +47,23 @@ XS_KEXEC="yes"
 XS_KSMTUNED="yes"
 XS_LANG="en_US.UTF-8"
 XS_LIMITS="yes"
+XS_MAXFS="yes"
 XS_MEMORYFIXES="yes"
 XS_MOTD="yes"
 XS_NOSUBBANNER="yes"
 XS_OPENVSWITCH="no"
 XS_OVHRTM="yes"
 XS_PIGZ="yes"
+XS_SWAPPINESS="yes"
 XS_TCPBBR="yes"
+XS_TCPFASTOPEN="yes"
+XS_TCPFASTOPEN="yes"
 XS_TIMESYNC="yes"
 XS_TIMEZONE="" #set auto by ip
 XS_VZDUMP="yes"
 XS_ZFSARC="yes"
 XS_ZFSAUTOSNAPSHOT="yes"
+XS_NET="yes"
 
 # varibles/options are overrideen with xs.env
 if [ -f xs.env ] ; then
@@ -305,6 +311,20 @@ EOF
     timedatectl set-ntp true
 fi
 
+if [ "$XS_GUESTAGENT" == "yes" ] ; then
+    ## Detect if virtual machine and install guest agent
+    if [ "$(dmidecode -s system-manufacturer | xargs)" == "QEMU" ] || [ "$(systemd-detect-virt | xargs)" == "kvm" ] ; then
+      echo "QEMU Detected, installing guest agent"
+      /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install qemu-guest-agent
+    elif [ "$(systemd-detect-virt | xargs)" == "vmware" ] ; then
+      echo "VMware Detected, installing vm-tools"
+      /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install open-vm-tools
+    elif [ "$(systemd-detect-virt | xargs)" == "oracle" ] ; then
+      echo "Virtualbox Detected, installing guest-utils"
+      /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install virtualbox-guest-utils
+    fi
+fi
+
 if [ "$XS_PIGZ" == "yes" ] ; then
     ## Set pigz to replace gzip, 2x faster gzip compression
     sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
@@ -402,8 +422,9 @@ fi
 if [ "$XS_LIMITS" == "yes" ] ; then
     ## Increase max user watches
     # BUG FIX : No space left on device
-    echo 1048576 > /proc/sys/fs/inotify/max_user_watches
     echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
+    echo "fs.inotify.max_user_instances=1048576" >> /etc/sysctl.conf
+    echo "fs.inotify.max_queued_events=1048576" >> /etc/sysctl.conf
     sysctl -p /etc/sysctl.conf
     ## Increase max FD limit / ulimit
 cat <<EOF >> /etc/security/limits.conf
@@ -418,7 +439,7 @@ root soft     nofile         256000
 root hard     nofile         256000
 EOF
     ## Increase kernel max Key limit
-cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
+cat <<EOF > /etc/sysctl.d/99-xs-maxkeys.conf
 # eXtremeSHOK.com
 # Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
@@ -490,21 +511,106 @@ if [ "$XS_VZDUMP" == "yes" ] ; then
     fi
 
 if [ "$XS_MEMORYFIXES" == "yes" ] ; then
-    ## Bugfix: pve 5.1 high swap usage with low memory usage
-    echo "vm.swappiness=10" >> /etc/sysctl.conf
-    sysctl -p
-    ## Bugfix: reserve 512MB memory for system
-    echo "vm.min_free_kbytes = 524288" >> /etc/sysctl.conf
-    sysctl -p
+    ## Memory Optimising
+cat <<EOF > /etc/sysctl.d/99-xs-memory.conf
+# eXtremeSHOK.com
+# Memory Optimising
+## Bugfix: reserve 512MB memory for system
+vm.min_free_kbytes=524288
+vm.nr_hugepages=72
+# (Redis/MongoDB)
+vm.max_map_count=262144
+vm.overcommit_memory = 1
+EOF
 fi
 
 if [ "$XS_TCPBBR" == "yes" ] ; then
 ## Enable TCP BBR congestion control
-cat <<EOF > /etc/sysctl.d/10-kernel-bbr.conf
+cat <<EOF > /etc/sysctl.d/99-xs-kernel-bbr.conf
 # eXtremeSHOK.com
 # TCP BBR congestion control
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
+EOF
+fi
+
+if [ "$XS_TCPFASTOPEN" == "yes" ] ; then
+## TCP fastopen
+cat <<EOF > /etc/sysctl.d/99-xs-tcp-fastopen.conf
+# eXtremeSHOK.com
+# TCP fastopen
+net.ipv4.tcp_fastopen=3
+EOF
+fi
+
+
+if [ "$XS_NET" == "yes" ] ; then
+## Net optimising
+cat <<EOF > /etc/sysctl.d/99-xs-net.conf
+# eXtremeSHOK.com
+net.core.netdev_max_backlog=8192
+net.core.optmem_max=8192
+net.core.rmem_max=16777216
+net.core.somaxconn=8151
+net.core.wmem_max=16777216
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.conf.default.log_martians = 1
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+net.ipv4.ip_local_port_range=1024 65535
+net.ipv4.tcp_base_mss = 1024
+net.ipv4.tcp_challenge_ack_limit = 999999999
+net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_keepalive_intvl=30
+net.ipv4.tcp_keepalive_probes=3
+net.ipv4.tcp_keepalive_time=240
+net.ipv4.tcp_limit_output_bytes=65536
+net.ipv4.tcp_max_syn_backlog=8192
+net.ipv4.tcp_max_tw_buckets = 1440000
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_rfc1337=1
+net.ipv4.tcp_rmem=8192 87380 16777216
+net.ipv4.tcp_sack=1
+net.ipv4.tcp_slow_start_after_idle=0
+net.ipv4.tcp_syn_retries=3
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_tw_recycle = 0
+net.ipv4.tcp_tw_reuse = 0
+net.ipv4.tcp_wmem=8192 65536 16777216
+net.netfilter.nf_conntrack_generic_timeout = 60
+net.netfilter.nf_conntrack_helper=0
+net.netfilter.nf_conntrack_max = 524288
+net.netfilter.nf_conntrack_tcp_timeout_established = 28800
+net.unix.max_dgram_qlen = 4096
+EOF
+fi
+
+if [ "$XS_SWAPPINESS" == "yes" ] ; then
+## Bugfix: high swap usage with low memory usage
+cat <<EOF > /etc/sysctl.d/99-xs-swap.conf
+# eXtremeSHOK.com
+# Bugfix: high swap usage with low memory usage
+vm.swappiness=10
+EOF
+fi
+
+if [ "$XS_MAXFS" == "yes" ] ; then
+## FS Optimising
+cat <<EOF > /etc/sysctl.d/99-xs-fs.conf
+# eXtremeSHOK.com
+# MAS FS Optimising
+fs.nr_open=12000000
+fs.file-max=9000000
 EOF
 fi
 
