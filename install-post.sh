@@ -30,7 +30,12 @@
 #
 ################################################################################
 
-#### VARIBLES / options
+#####  T O   S E T   Y O U R   O P T I O N S  ######
+# User Defined Options for (install-post.sh) post-installation script for Proxmox
+# are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
+#####  D O   N O T   E D I T   B E L O W  ######
+
+#### VARIABLES / options
 XS_AMDFIXES="yes"
 XS_APTUPGRADE="yes"
 XS_BASHRC="yes"
@@ -61,15 +66,15 @@ XS_TCPBBR="yes"
 XS_TCPFASTOPEN="yes"
 XS_TCPFASTOPEN="yes"
 XS_TIMESYNC="yes"
-XS_TIMEZONE="" #set auto by ip
+XS_TIMEZONE="" #empty = set automatically by ip
 XS_VZDUMP="yes"
 XS_ZFSARC="yes"
 XS_ZFSAUTOSNAPSHOT="yes"
 
 
-# varibles/options are overrideen with xs.env
-if [ -f xs.env ] ; then
-    source xs.env;
+# VARIABLES are overrideen with xs-install-post.env
+if [ -f "xs-install-post.env" ] ; then
+    source xs-install-post.env;
 fi
 
 # Set the local
