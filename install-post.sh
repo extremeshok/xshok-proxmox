@@ -178,12 +178,14 @@ zip
 
 if [ "$XS_OPENVSWITCH" == "yes" ] && [ "$XS_IFUPDOWN2" == "no" ] ; then
     ## Install openvswitch for a virtual internal network
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge fupdown2
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifenslave
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ifupdown2
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 else
     ## Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge openvswitch-switch
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fupdown2
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifupdown2
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ifenslave
 fi
 
 if [ "$XS_ZFSAUTOSNAPSHOT" == "yes" ] ; then
@@ -466,7 +468,6 @@ EOF
     echo 'session required pam_limits.so' >> /etc/pam.d/runuser-l
 
     ## Set ulimit for the shell user
-    echo "ulimit -n 256000" >> /root/.bashrc
     echo "ulimit -n 256000" >> /root/.profile
 fi
 
@@ -659,7 +660,7 @@ alias ls='ls --color=auto'
 source /etc/profile.d/bash_completion.sh
 export PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\]@\[\e[38;5;153m\]\h\[\e[m\] \[\e[38;5;214m\]\W\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
 EOF
-    source /root/.bashrc
+    echo "source /root/.bashrc" >> /root/.bash_profile
 fi
 
 if [ "$XS_ZFSARC" == "yes" ] ; then
