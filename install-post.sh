@@ -37,12 +37,11 @@
 
 #### VARIABLES / options
 XS_AMDFIXES="yes"
-XS_NOAPTLANG="yes"
+XS_APTHTTPS="yes"
 XS_APTUPGRADE="yes"
 XS_BASHRC="yes"
 XS_CEPH="yes"
 XS_DISABLERPC="yes"
-XS_NOENTREPO="yes"
 XS_ENTROPY="yes"
 XS_FAIL2BAN="yes"
 XS_GUESTAGENT="yes"
@@ -53,12 +52,14 @@ XS_KEXEC="yes"
 XS_KSMTUNED="yes"
 XS_LANG="en_US.UTF-8"
 XS_LIMITS="yes"
-XS_LYNIS="yes"
 XS_LOGROTATE="yes"
+XS_LYNIS="yes"
 XS_MAXFS="yes"
 XS_MEMORYFIXES="yes"
 XS_MOTD="yes"
 XS_NET="yes"
+XS_NOAPTLANG="yes"
+XS_NOENTREPO="yes"
 XS_NOSUBBANNER="yes"
 XS_OPENVSWITCH="no"
 XS_OVHRTM="yes"
@@ -116,18 +117,18 @@ if [ "$XS_NOENTREPO" == "yes" ] ; then
     fi
     ## enable public proxmox repo
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-      echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
+      echo -e "deb https://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
 fi
 
 # rebuild and add non-free to /etc/apt/sources.list
-echo "deb http://ftp.debian.org/debian ${OS_CODENAME} main contrib" > /etc/apt/sources.list
-echo "deb http://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib" >> /etc/apt/sources.list
-echo "deb http://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free" >> /etc/apt/sources.list
+echo "deb https://ftp.debian.org/debian ${OS_CODENAME} main contrib" > /etc/apt/sources.list
+echo "deb https://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib" >> /etc/apt/sources.list
+echo "deb https://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free" >> /etc/apt/sources.list
 echo "# security updates" >> /etc/apt/sources.list
-echo "deb http://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib" >> /etc/apt/sources.list
+echo "deb https://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib" >> /etc/apt/sources.list
 #echo "# testing updates" >> /etc/apt/sources.list
-#echo "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest" >> /etc/apt/sources.list
+#echo "deb https://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest" >> /etc/apt/sources.list
 
 ## Refresh the package lists
 apt-get update > /dev/null 2>&1
@@ -135,8 +136,8 @@ apt-get update > /dev/null 2>&1
 ## Remove conflicting utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
 
-## Fix no public key or cert errors for debian repo
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring ca-certificates
+## Fixes for common apt repo errors
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates
 
 if [ "$XS_APTUPGRADE" == "yes" ] ; then
     ## Update proxmox and install various system utils
@@ -149,7 +150,6 @@ fi
 
 ## Install common system utilities
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
-apt-transport-https \
 axel \
 build-essential \
 curl \
@@ -182,7 +182,7 @@ zip
 
 if [ "$XS_CEPH" == "yes" ] ; then
     ## Add the latest ceph provided by proxmox
-    echo "deb http://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
+    echo "deb https://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
     ## Install ceph support
