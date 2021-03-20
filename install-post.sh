@@ -23,7 +23,7 @@
 #
 # Docker : not advisable to run docker on the Hypervisor(proxmox) directly.
 # Correct way is to create a VM which will be used exclusively for docker.
-#
+# ie. fresh ubuntu lts server with https://github.com/extremeshok/xshok-docker
 ################################################################################
 #
 #    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
@@ -71,6 +71,7 @@ XS_VZDUMP="yes"
 XS_ZFSARC="yes"
 XS_ZFSAUTOSNAPSHOT="yes"
 
+#################  D O   N O T   E D I T  ######################################
 
 # VARIABLES are overrideen with xs-install-post.env
 if [ -f "xs-install-post.env" ] ; then
