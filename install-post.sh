@@ -13,7 +13,7 @@
 #
 ################################################################################
 #
-# Version: 2.0-beta
+# Version: 2.0
 #
 # Assumptions: proxmox installed
 #
@@ -445,7 +445,6 @@ if [ "$XS_OVHRTM" == "yes" ] ; then
 fi
 
 if [ "$XS_FAIL2BAN" == "yes" ] ; then
-    #todo: add support for ssh
     ## Protect the web interface with fail2ban
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
     # shellcheck disable=1117
