@@ -332,12 +332,18 @@ fi
 
 if [ "$XS_TIMEZONE" == "" ] ; then
     ## Set Timezone by IP
-    timezone="$(curl https://ipapi.co/$(dig +short myip.opendns.com @resolver1.opendns.com)/timezone)"
-    echo "Got $timezone from $(dig +short myip.opendns.com @resolver1.opendns.com)"
-    timedatectl set-timezone $timezone
+    this_ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+    timezone="$(curl https://ipapi.co/${this_ip}/timezone)"
+    if [ "$timezone" != "" ] ; then
+        echo "Found $timezone for ${this_ip}"
+        timedatectl set-timezone $timezone
+    else
+        echo "WARNING: Timezone not found for ${this_ip}, set to UTC"
+        timedatectl set-timezone UTC
+    fi
 else
-    ## Set Timezone to UTC and enable NTP
-    timedatectl set-timezone UTC
+    ## Set Timezone to XS_TIMEZONE
+    timedatectl set-timezone $XS_TIMEZONE
 fi
 
 if [ "$XS_TIMESYNC" == "yes" ] ; then
