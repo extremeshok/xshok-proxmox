@@ -19,7 +19,7 @@
 # Correct way is to create a VM (qemu/kvm) which will be used exclusively for docker.
 #
 # Usage:
-# curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
+# curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/helpers/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
 # pve-enable-lxc-docker container_id
 #
 ################################################################################
