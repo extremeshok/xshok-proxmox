@@ -270,8 +270,8 @@ if [ "$XS_KSMTUNED" == "yes" ] ; then
         KSM_THRES_COEF=10
         KSM_SLEEP_MSEC=10
     fi
-    sed -i -e "s/\# KSM_THRES_COEF=.*/KSM_THRES_COEF=${KSM_THRES_COEF}/g" /tmp/ksmtuned.conf
-    sed -i -e "s/\# KSM_SLEEP_MSEC=.*/KSM_SLEEP_MSEC=${KSM_SLEEP_MSEC}/g" /tmp/ksmtuned.conf
+    sed -i -e "s/\# KSM_THRES_COEF=.*/KSM_THRES_COEF=${KSM_THRES_COEF}/g" /etc/ksmtuned.conf
+    sed -i -e "s/\# KSM_SLEEP_MSEC=.*/KSM_SLEEP_MSEC=${KSM_SLEEP_MSEC}/g" /etc/ksmtuned.conf
     systemctl enable ksmtuned
 fi
 
