@@ -37,6 +37,7 @@
 
 #### VARIABLES / options
 XS_AMDFIXES="yes"
+XS_NOAPTLANG="yes"
 XS_APTUPGRADE="yes"
 XS_BASHRC="yes"
 XS_CEPH="yes"
@@ -99,9 +100,13 @@ fi
 OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 | xargs )"
 RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
 
+if [ "$XS_LANG" == "en_US.UTF-8" ] && [ "$XS_NOAPTLANG" == "yes" ] ; then
+    #save bandwidth and skip downloading additional languages
+    echo -e "Acquire::Languages \"none\";\\n" > tee /etc/apt/apt.conf.d/99-xs-disable-translations
+fi
 
 ## Force APT to use IPv4
-echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99force-ipv4
+echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99-xs-force-ipv4
 
 if [ "$XS_NOENTREPO" == "yes" ] ; then
     ## disable enterprise proxmox repo
