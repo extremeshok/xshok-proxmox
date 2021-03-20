@@ -37,7 +37,6 @@
 
 #### VARIABLES / options
 XS_AMDFIXES="yes"
-XS_APTHTTPS="yes"
 XS_APTUPGRADE="yes"
 XS_BASHRC="yes"
 XS_CEPH="yes"
@@ -68,6 +67,7 @@ XS_SWAPPINESS="yes"
 XS_TCPBBR="yes"
 XS_TCPFASTOPEN="yes"
 XS_TCPFASTOPEN="yes"
+XS_TESTREPO="no"
 XS_TIMESYNC="yes"
 XS_TIMEZONE="" #empty = set automatically by ip
 XS_VZDUMP="yes"
@@ -117,18 +117,23 @@ if [ "$XS_NOENTREPO" == "yes" ] ; then
     fi
     ## enable public proxmox repo
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-      echo -e "deb https://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
+      echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
+    fi
+    if [ "$XS_TESTREPO" == "yes" ] ; then
+        ## enable testing proxmox repo
+        echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest\\n" > /etc/apt/sources.list.d/pve-testing-repo.list
     fi
 fi
 
 # rebuild and add non-free to /etc/apt/sources.list
-echo "deb https://ftp.debian.org/debian ${OS_CODENAME} main contrib" > /etc/apt/sources.list
-echo "deb https://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib" >> /etc/apt/sources.list
-echo "deb https://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free" >> /etc/apt/sources.list
-echo "# security updates" >> /etc/apt/sources.list
-echo "deb https://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib" >> /etc/apt/sources.list
-#echo "# testing updates" >> /etc/apt/sources.list
-#echo "deb https://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest" >> /etc/apt/sources.list
+cat <<EOF > /etc/apt/sources.list
+deb https://ftp.debian.org/debian ${OS_CODENAME} main contrib
+deb https://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib
+# non-free
+deb https://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free
+# security updates
+deb https://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib
+EOF
 
 ## Refresh the package lists
 apt-get update > /dev/null 2>&1
