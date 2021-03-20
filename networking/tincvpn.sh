@@ -12,7 +12,7 @@
 # License: BSD (Berkeley Software Distribution)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
 #
 # Example for 3 node Cluster

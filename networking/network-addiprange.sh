@@ -17,7 +17,7 @@
 # NOTE: WILL APPLY CHANGES TO /etc/network/interfaces
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh && chmod +x network-addiprange.sh
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-addiprange.sh && chmod +x network-addiprange.sh
 # ./network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
 # ./network-addiprange.sh ip.xx.xx.xx / cidr interface_optional
 # ./network-addiprange.sh ip.xx.xx.xx interface_optional

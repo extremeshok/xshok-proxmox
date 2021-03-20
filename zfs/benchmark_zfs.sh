@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# https://blog.programster.org/zfs-add-intent-log-device
+################################################################################
+# This is property of eXtremeSHOK.com
+# You are free to use, modify and distribute, however you may not remove this notice.
+# Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
+################################################################################
+# Based on https://blog.programster.org/zfs-add-intent-log-device
 
 # Set the local
 export LANG="en_US.UTF-8"
