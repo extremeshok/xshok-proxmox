@@ -1,35 +1,74 @@
 # xshok-proxmox :: eXtremeSHOK.com Proxmox (pve)
 
+Scripts for working with and optimizing proxmox
+
+## Maintained and provided by <https://eXtremeSHOK.com>
+
+### Please Submit Patches / Pull requests
+
 ## Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
+Turns a fresh proxmox install into an optimised proxmox host
 *not required if server setup with hetzner-install-proxmox.sh*
-* 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
-* Force APT to use IPv4
+
+'reboot-quick' command which uses kexec to boot the latest kernel, its a fast method of rebooting, without needing to do a hardware reboot
+
 * Disable the enterprise repo, enable the public repo, Add non-free sources
 * Fixes known bugs (public key missing, max user watches, etc)
 * Update the system
-* Install ceph, ksmtuned, openvswitch-switch, zfsutils and common system utilities
-* Increase vzdump backup speed, enable pigz and fix ionice
-* Increase max Key limits,  max user watches, max File Discriptor Limits, ulimits
-* Detect AMD CPU and install -edgekernel 5.xx
-* Detect AMD EPYC CPU and Apply EPYC fixes to kernel and KVM
-* Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
+* Detect AMD EPYC CPU and Apply Fixes
+* Force APT to use IPv4
+* Update proxmox and install various system utils
+* Customise bashrc
+* add the latest ceph provided by proxmox
 * Disable portmapper / rpcbind (security)
-* set-timezone UTC and enable timesyncd as nntp client
+* Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
+* Protect the web interface with fail2ban
+* Detect if is running in a virtual machine and install the relavant guest agent
+* Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
+* Limit the size and optimise journald
+* Install kernel source headers
+* Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
+* Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
+* Set language, if chnaged will disable XS_NOAPTLANG
+* Increase max user watches, FD limit, FD ulimit, max key limit, ulimits
+* Optimise logrotate
+* Lynis security scan tool by Cisofy
+* Increase Max FS open files
+* Optimise Memory
+* Pretty MOTD BANNER
+* Enable Network optimising
+* Save bandwidth and skip downloading additional languages, requires XS_LANG="en_US.UTF-8"
+* Disable enterprise proxmox repo
+* Remove subscription banner
+* Install openvswitch for a virtual internal network
+* Detect if this is an OVH server and install OVH Real Time Monitoring
 * Set pigz to replace gzip, 2x faster gzip compression
-* Detect OVH Server and install OVH RTM (real time monitoring)"
-* Protect the webinterface with fail2ban (security)
-* Optimize ZFS arc size depending on installed memory, Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
-* ZFS Tuning, set prefetch method and max write speed to l2arc
-* Enable TCP BBR congestion control, improves overall network throughput
+* Bugfix: high swap usage with low memory usage
+* Enable TCP BBR congestion control
+* Enable TCP fastopen
+* Enable testing proxmox repo
+* Automatically Synchronize the time
+* Set Timezone, empty = set automatically by IP
+* Install common system utilities
+* Increase vzdump backup speed
+* Optimise ZFS arc size accoring to memory size
+* Install zfs-auto-snapshot
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
 
 return value is 0
 
-Or run *install-post.sh* after installation
-
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
+```
+
+##  TO SET AND USE YOUR OWN OPTIONS
+User Defined Options for (install-post.sh) post-installation script for Proxmox are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xs-install-post.env.sample -c -O xs-install-post.env
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh
+nano xs-install-post.env
+bash install-post.sh
 ```
 
 ## Install Proxmox Recommendations
