@@ -115,6 +115,8 @@ XS_ZFSAUTOSNAPSHOT="yes"
 
 #################  D O   N O T   E D I T  ######################################
 
+echo "Processing .... "
+
 # VARIABLES are overrideen with xs-install-post.env
 if [ -f "xs-install-post.env" ] ; then
     echo "Loading variables from xs-install-post.env ..."
@@ -253,14 +255,14 @@ fi
 
 if [ "$XS_OPENVSWITCH" == "yes" ] && [ "$XS_IFUPDOWN2" == "no" ] ; then
     ## Install openvswitch for a virtual internal network
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifenslave
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifenslave ifupdown
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ifupdown2
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install openvswitch-switch
 else
     ## Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge openvswitch-switch
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifupdown2
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ifenslave
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ifenslave ifupdown
 fi
 
 if [ "$XS_ZFSAUTOSNAPSHOT" == "yes" ] ; then
@@ -794,3 +796,4 @@ date >> /etc/extremeshok
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
+echo "Optimisations by https://eXtremeSHOK.com"
