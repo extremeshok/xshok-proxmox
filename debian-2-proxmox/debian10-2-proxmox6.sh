@@ -7,13 +7,13 @@
 #
 # Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
 #
-# Debian 9 to Proxmox 5 conversion script
+# Debian 10 to Proxmox 6 conversion script
 #
 # License: BSD (Berkeley Software Distribution)
 #
 ################################################################################
 #
-# Assumptions: Debian9 installed with a valid FQDN hostname set
+# Assumptions: Debian10 installed with a valid FQDN hostname set
 #
 # Tested on KVM, VirtualBox and Dedicated Server
 #
@@ -22,9 +22,12 @@
 #
 # Note: will automatically run the install-post.sh script
 #
+# Thank you @floco
+#
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
-# ./debian9-2-proxmox5.sh
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
+# ./debian10-2-proxmox6.sh
+#
 #
 ################################################################################
 #
@@ -32,9 +35,12 @@
 #
 ################################################################################
 
+#todo : verify and check
+
 # Set the local
 export LANG="en_US.UTF-8"
 export LC_ALL="C"
+sh -c "echo -e 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8' > /etc/default/locale"
 
 #create lock dir for aptitude
 if [ -d "/run/lock" ] ; then
@@ -80,12 +86,11 @@ echo "Configure /etc/hosts"
 if [ -f /etc/cloud/cloud.cfg ] ; then
   echo 'manage_etc_hosts: False' | tee --append /etc/cloud/cloud.cfg
 fi
+sed -i "s/^ - update_etc_hosts/# - update_etc_hosts/" /etc/cloud/cloud.cfg
 cat <<EOF > /etc/hosts
 127.0.0.1 localhost.localdomain localhost
-${default_v4ip} $(hostname -f) $(hostname) pvelocalhost
-
+${default_v4ip} $(hostname -f) $(hostname -s) pvelocalhost
 # The following lines are desirable for IPv6 capable hosts
-
 ::1     ip6-localhost ip6-loopback
 fe00::0 ip6-localnet
 ff00::0 ip6-mcastprefix
@@ -96,12 +101,10 @@ EOF
 
 echo "Add Proxmox repo to APT sources"
 cat <<EOF >> /etc/apt/sources.list.d/proxmox.list
-
 # PVE packages provided by proxmox.com"
-deb http://mirror.hetzner.de/debian/pve stretch pve-no-subscription
-deb http://download.proxmox.com/debian/pve stretch pve-no-subscription
+deb http://download.proxmox.com/debian/pve buster pve-no-subscription
 EOF
-wget -q "http://download.proxmox.com/debian/proxmox-ve-release-5.x.gpg" -O /etc/apt/trusted.gpg.d/proxmox-ve-release-5.x.gpg
+wget -q "http://download.proxmox.com/debian/proxmox-ve-release-6.x.gpg" -O /etc/apt/trusted.gpg.d/proxmox-ve-release-6.x.gpg
 apt-get update > /dev/null
 
 echo "Upgrading system"
@@ -127,16 +130,27 @@ echo "Installing open-iscsi"
 echo "Installing proxmox-ve"
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install -y proxmox-ve
 
-echo "Remove legacy (4.9) kernel"
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-4.9.*
+echo "Remove legacy (4.19) kernel"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge linux-image-4.19*
 
 echo "Force grub to update"
 update-grub
 
 echo "Done installing Proxmox VE"
 
-echo "Fetching postinstall script"
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
-if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
-  bash install-post.sh
-fi
+echo "Creating admin user"
+pveum groupadd admin -comment "System Administrators"
+pveum aclmod / -group admin -role Administrator
+pveum useradd admin@pve -comment "Admin"
+pveum usermod admin@pve -group admin
+
+# export NO_MOTD_BANNER=true
+
+# echo "Fetching postinstall script"
+# wget https://raw.githubusercontent.com/floco/xshok-proxmox/master/install-post.sh -c -O install-post.sh && chmod +x install-post.sh
+# if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
+#  bash install-post.sh
+# fi
+
+# echo "Setting admin user password"
+# pveum passwd admin@pve

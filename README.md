@@ -1,35 +1,74 @@
 # xshok-proxmox :: eXtremeSHOK.com Proxmox (pve)
 
+Scripts for working with and optimizing proxmox
+
+## Maintained and provided by <https://eXtremeSHOK.com>
+
+### Please Submit Patches / Pull requests
+
 ## Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
-*not required if server setup with install-hetzner.sh*
-* 'reboot-quick' command which uses kexec to boot the latest kernel set in the boot loader
-* Force APT to use IPv4
+Turns a fresh proxmox install into an optimised proxmox host
+*not required if server setup with hetzner-install-proxmox.sh*
+
+'reboot-quick' command which uses kexec to boot the latest kernel, its a fast method of rebooting, without needing to do a hardware reboot
+
 * Disable the enterprise repo, enable the public repo, Add non-free sources
 * Fixes known bugs (public key missing, max user watches, etc)
 * Update the system
-* Install ceph, ksmtuned, openvswitch-switch, zfsutils and common system utilities
-* Increase vzdump backup speed, enable pigz and fix ionice
-* Increase max Key limits,  max user watches, max File Discriptor Limits, ulimits
-* Detect AMD EPYC CPU and install kernel 4.15
-* Detect AMD EPYC CPU and Apply EPYC fixes to kernel and KVM
-* Install and configure ZFS-auto-snapshots (12x5min, 7daily, 4weekly, 3monthly)
+* Detect AMD EPYC CPU and Apply Fixes
+* Force APT to use IPv4
+* Update proxmox and install various system utils
+* Customise bashrc
+* add the latest ceph provided by proxmox
 * Disable portmapper / rpcbind (security)
-* set-timezone UTC and enable timesyncd as nntp client
+* Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
+* Protect the web interface with fail2ban
+* Detect if is running in a virtual machine and install the relavant guest agent
+* Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
+* Limit the size and optimise journald
+* Install kernel source headers
+* Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
+* Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
+* Set language, if chnaged will disable XS_NOAPTLANG
+* Increase max user watches, FD limit, FD ulimit, max key limit, ulimits
+* Optimise logrotate
+* Lynis security scan tool by Cisofy
+* Increase Max FS open files
+* Optimise Memory
+* Pretty MOTD BANNER
+* Enable Network optimising
+* Save bandwidth and skip downloading additional languages, requires XS_LANG="en_US.UTF-8"
+* Disable enterprise proxmox repo
+* Remove subscription banner
+* Install openvswitch for a virtual internal network
+* Detect if this is an OVH server and install OVH Real Time Monitoring
 * Set pigz to replace gzip, 2x faster gzip compression
-* Detect OVH Server and install OVH RTM (real time monitoring)"
-* Protect the webinterface with fail2ban (security)
-* Optimize ZFS arc size depending on installed memory, Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
-* ZFS Tuning, set prefetch method and max write speed to l2arc
-* Enable TCP BBR congestion control, improves overall network throughput
+* Bugfix: high swap usage with low memory usage
+* Enable TCP BBR congestion control
+* Enable TCP fastopen
+* Enable testing proxmox repo
+* Automatically Synchronize the time
+* Set Timezone, empty = set automatically by IP
+* Install common system utilities
+* Increase vzdump backup speed
+* Optimise ZFS arc size accoring to memory size
+* Install zfs-auto-snapshot
 
 https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
 
 return value is 0
 
-Or run *install-post.sh* after installation
-
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
+```
+
+##  TO SET AND USE YOUR OWN OPTIONS
+User Defined Options for (install-post.sh) post-installation script for Proxmox are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xs-install-post.env.sample -c -O xs-install-post.env
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh
+nano xs-install-post.env
+bash install-post.sh
 ```
 
 ## Install Proxmox Recommendations
@@ -44,98 +83,23 @@ Recommeneded partitioning scheme:
 * Remaining for lv	xfs	/var/lib/vz (LVM)
 
 # Hetzner Proxmox Installation Guide #
-*includes and runs the  (install-post.sh) script*
-* Select the Rescue tab for the specific server, via the hetzner robot manager
-* * Operating system=Linux
-* * Architecture=64 bit
-* * Public key=*optional*
-* --> Activate rescue system
-* Select the Reset tab for the specific server,
-* Check: Execute an automatic hardware reset
-* --> Send
-* Wait a few mins
-* Connect via ssh/terminal to the rescue system running on your server and run the following
-````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-hetzner.sh -c -O install-hetzner.sh && chmod +x install-hetzner.sh
-./install-hetzner.sh
-````
-* Reboot
-* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
-## LVM to ZFS
-````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
- ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
-````
-* Reboot
-* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
-## NETWORKING (vmbr0 vmbr1)
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
-./network-configure.sh && rm network-configure.sh
-```
-* Reboot
-* Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
+see *hetzner* folder
 
 # OVH Proxmox Installation Guide #
-Select install for the specific server, via the ovh manager
-* --INSTALL-->
-* Install from an OVH template
-* --NEXT-->
-* Type of OS: Ready-to-go (graphical user interface)
-* VPS Proxmox VE *(pick the latest non zfs version)*
-* Language: EN
-* Target disk arrray: *(always select the SSD array if you have ssd and hdd arrays)*
-* Enable/Tick: Customise the partition configuration
-* --NEXT-->
-* Disks used for this installation: *(All of them)*
-* (Remove all the partitions and do the following)
-* Type: Filesystem: Mount Point: LVM Name: RAID: Size:
-* * 1	primary	Ext4	/	 -	1	20.0 GB
-* * 2	primary	Swap	swap -	-	2 x 8.0 GB	*(minimum 16GB total, set recommended swap size)*
-* * 3	LV	xfs	/var/lib/vz	data	1	REMAINING GB *(use all the remaining space)*
-* --NEXT-->
-* Hostname: server.fqdn.com
-* Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
-* Script return value: 0
-* SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
-* --CONFIRM-->
-After installation, Connect via ssh/terminal to the new Proxmox system running on your server and run the following
-## LVM to ZFS
-````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
- ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
-````
-* Reboot
-* Connect via ssh/terminal to the new Proxmox system running on your server and run the following
-## NETWORKING (vmbr0 vmbr1)
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
-./network-configure.sh && rm network-configure.sh
-```
-* Reboot
-* Post Install: Now login via ssh as root and create a password, which will be used for the webinterface when logging in with pam authentication
-
-# Advance Installation Options #
-Assumptions: Proxmox installed, SSD raid1 partitions mounted as /xshok/zfs-slog and /xshok/zfs-cache, 1+ unused hdd which will be made into a zfspool
-
-* Connect via ssh/terminal to the new Proxmox system running on your server and run the follow
-## Create ZFS from unused devices (createzfs.sh)
-
-**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
-./createzfs.sh poolname /dev/device1 /dev/device2
-```
-## Create ZFS cache and slog from /xshok/zfs-cache and /xshok/zfs-slog partitions and adds them to a zpool (xshok_slog_cache-2-zfs.sh) *optional*
-
-**NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
-```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
-./xshok_slog_cache-2-zfs.sh poolname
-```
-* Reboot
+see *ovh* folder
 
 # ------- SCRIPTS ------
+
+## Convert from Debian 10 to Proxmox 6 (debian10-2-proxmox6.sh) *optional*
+Assumptions: Debian9 installed with a valid FQDN hostname set
+* Tested on KVM, VirtualBox and Dedicated Server
+* Will automatically detect cloud-init and disable.
+* Will automatically generate a correct /etc/hosts
+* Note: will automatically run the install-post.sh script
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
+./debian10-2-proxmox6.sh
+```
 
 ## Convert from Debian 9 to Proxmox 5 (debian9-2-proxmox5.sh) *optional*
 Assumptions: Debian9 installed with a valid FQDN hostname set
@@ -144,14 +108,14 @@ Assumptions: Debian9 installed with a valid FQDN hostname set
 * Will automatically generate a correct /etc/hosts
 * Note: will automatically run the install-post.sh script
 ```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
 ./debian9-2-proxmox5.sh
 ```
 
 ## Enable Docker support for an LXC container (pve-enable-lxc-docker.sh) *optional*
 There can be security implications as the LXC container is running in a higher privileged mode.
 ```
-curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
+curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/helpers/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
 pve-enable-lxc-docker container_id
 ```
 
@@ -173,7 +137,7 @@ Converts the a MDADM BASED LVM into a ZFS raid 1 (mirror)
 
 **NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm-2-zfs.sh -c -O lvm-2-zfs.sh && chmod +x lvm-2-zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh && chmod +x lvm-2-zfs.sh
 ./lvm-2-zfs.sh
 ```
 
@@ -188,7 +152,7 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
 ./createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
@@ -198,7 +162,7 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 ./xshok_slog_cache-2-zfs.sh poolname
 ```
 
@@ -223,21 +187,21 @@ ALSO CREATES A NAT Private Network as vmbr1
  NOTE: WILL OVERWRITE /etc/network/interfaces
  A backup will be created as /etc/network/interfaces.timestamp
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 ./network-configure.sh && rm network-configure.sh
 ```
 
 ##  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
 If no interface is specified the default gateway interface will be detected and used.
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/network-addiprange.sh -c -O network-addiprange.sh && chmod +x network-addiprange.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-addiprange.sh -c -O network-addiprange.sh && chmod +x network-addiprange.sh
 ./network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
 ```
 
 ## Create Private mesh vpn/network (tincvpn.sh)
 tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh -c -O tincvpn.sh && chmod +x tincvpn.sh
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/tincvpn.sh -c -O tincvpn.sh && chmod +x tincvpn.sh
 ./tincvpn.sh -h
 ```
 ### Example for 3 node Cluster

@@ -12,7 +12,7 @@
 # License: BSD (Berkeley Software Distribution)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/tincvpn.sh && chmod +x tincvpn.sh
+# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
 #
 # Example for 3 node Cluster
@@ -40,8 +40,8 @@
 vpn_ip_last=1
 vpn_connect_to=""
 vpn_port=655
-#my_default_v4ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0.' | grep -v '10.10.' | grep -v '127.0.0.' | tail -n 1)
-my_default_v4ip=""
+my_default_v4ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '192.168.' | grep -v '10.0.' | grep -v '10.10.' | grep -v '127.0.0.' | tail -n 1)
+#my_default_v4ip=""
 reset="no"
 
 
