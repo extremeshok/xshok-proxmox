@@ -60,6 +60,8 @@ XS_IFUPDOWN2="yes"
 XS_JOURNALD="yes"
 # Install kernel source headers
 XS_KERNELHEADERS="yes"
+# Install Latest Kernel
+XS_LATESTKERNEL="yes"
 # Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 XS_KEXEC="yes"
 # Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
@@ -345,6 +347,12 @@ fi
 if [ "$XS_KERNELHEADERS" == "yes" ] ; then
     ## Install kernel source headers
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers module-assistant
+fi
+
+
+if [ "$XS_LATESTKERNEL" == "yes" ] ; then
+    ## Install latest kernel
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.11
 fi
 
 if [ "$XS_KEXEC" == "yes" ] ; then

@@ -27,6 +27,7 @@ Turns a fresh proxmox install into an optimised proxmox host
 * Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
 * Limit the size and optimise journald
 * Install kernel source headers
+* Install Latest Kernel (5.11)
 * Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
 * Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
 * Set language, if chnaged will disable XS_NOAPTLANG
