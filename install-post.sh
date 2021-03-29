@@ -334,7 +334,6 @@ if [ "$XS_AMDFIXES" == "yes" ] ; then
       if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
         echo "Setting kernel idle=nomwait"
         sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
-        update-grub
       fi
     fi
     if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
@@ -795,8 +794,10 @@ EOF
     fi
 fi
 
-# propagate the setting into the kernel
+# propagate the settings into the kernel and update grub
 update-initramfs -u -k all
+update-grub
+pve-efiboot-tool refresh
 
 # cleanup
 ## Remove no longer required packages and purge old cached updates
