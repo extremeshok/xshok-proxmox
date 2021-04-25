@@ -747,19 +747,19 @@ if [ "$XS_ZFSARC" == "yes" ] ; then
     ## Optimise ZFS arc size accoring to memory size
     if [ "$(command -v zfs)" != "" ] ; then
       if [[ RAM_SIZE_GB -le 16 ]] ; then
-        MY_ZFS_ARC_MIN=536870912
+        MY_ZFS_ARC_MIN=536870911
         MY_ZFS_ARC_MAX=536870912
     elif [[ RAM_SIZE_GB -le 32 ]] ; then
         # 1GB/1GB
-        MY_ZFS_ARC_MIN=1073741824
+        MY_ZFS_ARC_MIN=1073741823
         MY_ZFS_ARC_MAX=1073741824
       else
         MY_ZFS_ARC_MIN=$((RAM_SIZE_GB * 1073741824 / 16))
         MY_ZFS_ARC_MAX=$((RAM_SIZE_GB * 1073741824 / 8))
       fi
       # Enforce the minimum, incase of a faulty vmstat
-      if [[ MY_ZFS_ARC_MIN -lt 536870912 ]] ; then
-        MY_ZFS_ARC_MIN=536870912
+      if [[ MY_ZFS_ARC_MIN -lt 536870911 ]] ; then
+        MY_ZFS_ARC_MIN=536870911
       fi
       if [[ MY_ZFS_ARC_MAX -lt 536870912 ]] ; then
         MY_ZFS_ARC_MAX=536870912
