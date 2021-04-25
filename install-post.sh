@@ -779,6 +779,7 @@ options zfs l2arc_noprefetch=0
 # default : 8 * 1024 * 1024
 # setting here : 500 * 1024 * 1024
 options zfs l2arc_write_max=524288000
+options zfs zfs_txg_timeout=60
 EOF
     fi
 fi
