@@ -1,4 +1,4 @@
-# eXtremeSHOK.com Proxmox (pve) only for Hetzner
+# NO-System - Proxmox (pve) only for Hetzner
 
 ## Install Proxmox Recommendations
 Recommeneded partitioning scheme:

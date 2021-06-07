@@ -25,7 +25,7 @@ firmware="$(dpkg -l | grep -i 'firmware-')"
 if [ -n "$firmware" ]; then
   aptitude -q -y purge firmware-bnx2x firmware-realtek firmware-linux firmware-linux-free firmware-linux-nonfree
 else
-  echo "kein firmware Paket vorhanden"
+  echo "no firmware package available"
 fi
 
 echo -e "\n----------------- Deinstalling the Debian standard kernel packages ------------------\n"
