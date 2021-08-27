@@ -186,12 +186,12 @@ chmod +x /bin/pigzwrapper
 chmod +x /bin/gzip
 
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
-if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
-  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
-  # http://help.ovh.co.uk/RealTimeMonitoring
-  # https://docs.ovh.com/gb/en/dedicated/install-rtm/
-  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
-fi
+#if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
+#  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
+#  # http://help.ovh.co.uk/RealTimeMonitoring
+#  # https://docs.ovh.com/gb/en/dedicated/install-rtm/
+#  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
+#fi
 
 ## Protect the web interface with fail2ban
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
@@ -225,8 +225,8 @@ sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
 sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
-#echo "vm.swappiness=10" >> /etc/sysctl.conf
-#sysctl -p
+echo "vm.swappiness=10" >> /etc/sysctl.conf
+sysctl -p
 
 ## Bugfix: reserve 512MB memory for system
 echo "vm.min_free_kbytes = 524288" >> /etc/sysctl.conf
