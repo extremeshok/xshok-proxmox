@@ -242,10 +242,10 @@ if [ ! -f $installimage_file ] ; then
 fi
 
 #fetching post install
-curl "https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/hetzner-prox/proxmox6" --output /post-install
+curl "https://raw.githubusercontent.com/CasCas2/proxmox-hetzner/master/hetzner-prox/proxmox7" --output /post-install
 
 #Customising post install file
-echo "wget https://raw.githubusercontent.com/CasCas2/proxmox6-hetzner/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
+echo "wget https://raw.githubusercontent.com/CasCas2/proxmox-hetzner/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install
