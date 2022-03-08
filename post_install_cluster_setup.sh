@@ -4,7 +4,3 @@ sed -i.backup -z "s/res === null || res === undefined || \!res || res\n\t\t\t.da
 cd /usr/share/javascript/proxmox-widget-toolkit
 cp proxmoxlib.js proxmoxlib.js.backup
 nano proxmoxlib.js
-
-
-Måske denne:
-https://github.com/foundObjects/pve-nag-buster
