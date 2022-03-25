@@ -50,7 +50,7 @@ sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 apt-get update > /dev/null
 
 ## Remove conflicting utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony ksm-control-daemon
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd ksm-control-daemon
 
 ## Fix no public key error for debian repo
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
@@ -70,6 +70,9 @@ pveam update
 
 ## Install ifupdown2 support, appears to be missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifupdown2
+
+## Install KVM file restore.
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' proxmox-backup-restore-image
 
 
 # ## Disable zfs-auto-snapshot -- Not in user, "using Proxmox backupserver"
@@ -109,7 +112,7 @@ echo "Y" | pveceph install
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 #snmpd snmp-mibs-downloader
 
-## Detect AMD EPYC CPU and install kernel 5.4
+## Detect AMD EPYC CPU and install kernel 5.13
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
@@ -118,16 +121,16 @@ if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
   fi
-  echo "Installing kernel 5.4"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.4
+  echo "Installing kernel 5.13"
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.13
 fi
 
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
   ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
   echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
   echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
-  echo "Installing kernel 5.4"
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.4
+  echo "Installing kernel 5.13"
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.13
 fi
 
 ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
@@ -170,7 +173,7 @@ RootDistanceMaxSec=5
 PollIntervalMinSec=32
 PollIntervalMaxSec=2048
 EOF
-service systemd-timesyncd start
+# service systemd-timesyncd start
 timedatectl set-ntp true
 
 ## Set pigz to replace gzip, 2x faster gzip compression
