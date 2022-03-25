@@ -71,6 +71,8 @@ pveam update
 ## Install ifupdown2 support, appears to be missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifupdown2
 
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install chrony
+
 ## Install KVM file restore.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' proxmox-backup-restore-image
 
