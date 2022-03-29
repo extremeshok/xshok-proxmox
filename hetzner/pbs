@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Proxmox Backup Server installer script based on Debian Bullseye
+
+echo -e "\n----- Update and upgrade system, please wait ... -----\n"
+
+export LANG="en_US.UTF-8"
+export LC_ALL="C"
+
+#create lock dir for apt
+mkdir /run/lock
+chmod a+rwxt /run/lock
+
+apt update >/dev/null
+apt upgrade -y
+
+echo -e "\n----------------- Deinstalling any linux firmware packages ------------------\n"
+
+firmware="$(dpkg -l | grep -i 'firmware-')"
+
+if [ -n "$firmware" ]; then
+  apt -q -y purge firmware-bnx2x firmware-realtek firmware-linux firmware-linux-free firmware-linux-nonfree
+else
+  echo "no firmware packages installed"
+fi
+
+echo -e "\n----- Add Proxmox repo to APT sources -----\n"
+
+echo -e "\n\n# PBS packages provided by proxmox.com" >/etc/apt/sources.list.d/proxmox.list
+echo -e "deb http://download.proxmox.com/debian/pbs bullseye pbs-no-subscription\n" >>/etc/apt/sources.list.d/proxmox.list
+wget -q "http://download.proxmox.com/debian/proxmox-release-bullseye.gpg" -O /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+
+
+apt update >/dev/null
+
+echo -e "\n----- Install Proxmox packages -----\n"
+
+cat <<EOF | debconf-set-selections
+postfix postfix/mailname           string $(cat /etc/hostname)
+postfix postfix/destinations       string $(cat /etc/hostname), proxmox, localhost.localdomain, localhost
+postfix postfix/chattr             boolean false
+postfix postfix/mailbox_limit      string 0
+postfix postfix/main_mailer_type   select Local only
+postfix postfix/mynetworks         string 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+postfix postfix/protocols          select all
+postfix postfix/recipient_delim    string +
+postfix postfix/rfc1035_violation  boolean false
+samba-common samba-common/dhcp     boolean false
+EOF
+
+RUNLEVEL=1 apt install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew postfix proxmox-backup
+
+echo -e "\n----------------- Deinstalling the Debian standard kernel packages ------------------\n"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 apt purge -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew linux-image-5.10*
+
+if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
+  echo -e "\n----- Removing Proxmox Enterprise repo -----\n"
+  rm /etc/apt/sources.list.d/pve-enterprise.list
+fi
+
+echo -e "\n----- Upgrading remaining packages -----\n"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt -y -o Dpkg::Options::='--force-confdef' upgrade
+
+echo -e "\n----- Autoremove and clean packages -----\n"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt -y -o Dpkg::Options::='--force-confdef' autoremove
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt -y -o Dpkg::Options::='--force-confdef' autoclean
+
+echo -e "\n----- Update Grub -----\n"
+update-grub
+
+echo -e "\n----- Done installing Proxmox VE -----\n"
+sync
+
+sleep 30
