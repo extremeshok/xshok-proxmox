@@ -88,6 +88,22 @@ see *hetzner* folder
 # OVH Proxmox Installation Guide #
 see *ovh* folder
 
+# VNC Install (Native install Proxmox from ISO  on systems without ipmi)
+Assumptions: fresh rescue system, Operating system=Linux, Architecture=64 bit
+*  Will automatically detect nvme, ssd and hdd and configure accordingly.
+* sata ssd is used (boot and root) instead of nvme
+* will use nvme, if sda is a spinning disk
+Proxmox VE (PVE)
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
+./vnc-install-proxmox.sh
+```
+Proxmox Backup Server (PBS)
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
+./vnc-install-proxmox.sh pbs
+```
+
 # ------- SCRIPTS ------
 
 ## Convert from Debian 10 to Proxmox 6 (debian10-2-proxmox6.sh) *optional*
