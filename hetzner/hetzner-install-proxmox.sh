@@ -39,8 +39,11 @@
 #   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
 #
 ################################################################################
-
-#todo: add nvme support /nvme0n1 and /dev/nvme1n1
+# Ensure NVME devices use 4K block size and not 512 block size, can cause problems with some devices
+NVME_FORCE_4K="FALSE"
+# Will create a new GPT partition table on the install target drives.
+# this will wipe all patition information on the drives
+WIPE_PARTITION_TABLE="TRUE"
 # FQDN Hostname
 MY_HOSTNAME=""
 # Select the OS to install "PVE" "PBS", default is PVE
@@ -55,10 +58,6 @@ MY_SWAP=""
 MY_ZFS_L2ARC=""
 #set size of slog partition or leave blank for autoconfig, USE NUMBER ONLY, will be in gbytes, 0 to disable
 MY_ZFS_SLOG=""
-#### DEFAULTS
-# Ensure NVME devices use 4K block size and not 512 block size, performance
-NVME_FORCE_4K="TRUE"
-
 ################################################################################
 
 # Set the local
@@ -99,7 +98,7 @@ if [[ "$MY_HOSTNAME" != *.* ]] ; then
   echo "Hostname: ${MY_HOSTNAME}"
 fi
 
-if [ "$MY_USE_LVM" != "" ] && [ "$MY_USE_LVM" != "TRUE" ] && [ "$MY_USE_LVM" != "true" ]  ; then
+if [ "$MY_USE_LVM" != "" ] && [ "${MY_USE_LVM,,}" != "true" ] && [ "${MY_USE_LVM,,}" != "yes" ]  ; then
   LVM="FALSE"
 else
   LVM="TRUE"
@@ -139,9 +138,9 @@ fi
 if [ "$MY_OS" == "" ]; then
   OS="$2"
 fi
-if [ "$OS" == "PVE" ] || [ "$OS" == "pve" ] ; then
+if [ "${OS,,}" == "pve" ] ; then
   OS="PVE"
-elif [ "$OS" == "PBS" ] || [ "$OS" == "pbs" ] ; then
+elif [ "${OS,,}" == "pbs" ] ; then
   OS="PBS"
 else
   OS="PVE"
@@ -156,12 +155,12 @@ NVME_TARGET_COUNT=0
 if [[ $NVME_COUNT -ge 1 ]] ; then
   for nvme_device in "${NVME_ARRAY[@]}"; do
     if [ "$NVME_FORCE_4K" == "yes" ] ; then
-      if  [[ $(nvme id-ns "${nvme_device}" -H | grep "LBA Format" | grep "(in use)" | grep -oP "Data Size\K.*" | cut -d" " -f 2) -ne 4096 ]] ; then
+      if  [[ $(nvme id-ns "/dev/${nvme_device}" -H | grep "LBA Format" | grep "(in use)" | grep -oP "Data Size\K.*" | cut -d" " -f 2) -ne 4096 ]] ; then
         echo "Appling 4K block size to NVME: ${nvme_device}"
-        nvme format "${nvme_device}" -b 4096 -f || exit 1
+        nvme format "/dev/${nvme_device}" -b 4096 -f || exit 1
         sleep 5
         echo "Reset NVME controller: ${nvme_device::-2}"
-        nvme reset "${nvme_device::-2}" || exit 1
+        nvme reset "/dev/${nvme_device::-2}" || exit 1
         sleep 5
       fi
     fi
@@ -337,7 +336,7 @@ fi
 #### CONFIGURE SWAP PARTITION SIZE&
 if [ "$MY_SWAP" != "" ] ; then
   SWAP="${MY_SWAP}"
-elif [ "$SWAP" == "yes" ] ; then
+elif [ "${SWAP,,}" == "yes" ] || [ "${SWAP,,}" == "true" ] ; then
   if [[ $TARGET_SIZE_GB -gt 800 ]] ; then
     SWAP=128
   elif [[ $TARGET_SIZE_GB -gt 400 ]] ; then
@@ -358,7 +357,7 @@ fi
 #### CONFIGURE ZFS SLOG PARTITION SIZE&
 if [ "$MY_ZFS_SLOG" != "" ] ; then
   ZFS_SLOG="${MY_ZFS_SLOG}"
-elif [ "$ZFS_SLOG" == "yes" ] ; then
+elif [ "${ZFS_SLOG,,}" == "yes" ] || [ "${ZFS_SLOG,,}" == "true" ] ; then
   if [[ $TARGET_SIZE_GB -gt 800 ]] ; then
     ZFS_SLOG=64
   elif [[ $TARGET_SIZE_GB -gt 400 ]] ; then
@@ -379,7 +378,7 @@ fi
 #### CONFIGURE ZFS SLOG PARTITION SIZE&
 if [ "$MY_ZFS_L2ARC" != "" ] ; then
   ZFS_SLOG="${MY_ZFS_L2ARC}"
-elif [ "$ZFS_L2ARC" == "yes" ] ; then
+elif [ "${ZFS_L2ARC,,}" == "yes" ] || [ "${ZFS_L2ARC,,}" == "true" ] ; then
   if [[ $TARGET_SIZE_GB -gt 800 ]] ; then
     ZFS_L2ARC=128
   elif [[ $TARGET_SIZE_GB -gt 400 ]] ; then
@@ -471,6 +470,17 @@ if [ ! -f "$postinstall_file" ] ; then
 fi
 cp -f "$postinstall_file" /post-install-proxmox
 chmod 777 /post-install-proxmox
+
+
+if [ "${WIPE_PARTITION_TABLE,,}" == "yes" ] || [ "${WIPE_PARTITION_TABLE,,}" == "true" ] ; then
+  IFS=', ' read -r -a INSTALL_TARGET_ARRAY <<< "${INSTALL_TARGET}"
+  for install_device in "${INSTALL_TARGET_ARRAY[@]}"; do
+    echo "Creating NEW GPT table: ${install_device}"
+    parted "/dev/${install_device}" mklabel gpt || exit 1
+    sleep 5
+  done
+fi
+
 
 # INSTALL
 if [ "$OS" == "PBS"  ]; then
