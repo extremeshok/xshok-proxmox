@@ -8,7 +8,7 @@ Scripts for working with and optimizing proxmox
 
 ## Optimization / Post Install Script (install-post.sh aka postinstall.sh) *run once*
 Turns a fresh proxmox install into an optimised proxmox host
-*not required if server setup with hetzner-install-proxmox.sh*
+*not required if server setup with installimage-proxmox.sh*
 
 'reboot-quick' command which uses kexec to boot the latest kernel, its a fast method of rebooting, without needing to do a hardware reboot
 
@@ -87,22 +87,6 @@ see *hetzner* folder
 
 # OVH Proxmox Installation Guide #
 see *ovh* folder
-
-# VNC Install (Native install Proxmox from ISO  on systems without ipmi)
-Assumptions: fresh rescue system, Operating system=Linux, Architecture=64 bit
-*  Will automatically detect nvme, ssd and hdd and configure accordingly.
-* sata ssd is used (boot and root) instead of nvme
-* will use nvme, if sda is a spinning disk
-Proxmox VE (PVE)
-```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
-./vnc-install-proxmox.sh
-```
-Proxmox Backup Server (PBS)
-```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
-./vnc-install-proxmox.sh pbs
-```
 
 # ------- SCRIPTS ------
 

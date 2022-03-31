@@ -30,8 +30,14 @@
 #
 ################################################################################
 #
-#   THERE ARE NO CONFIGURATION OPTIONS BELOW THIS MESSAGE
+#   ALL CONFIGURATION OPTIONS ARE LOCATED BELOW THIS MESSAGE
 #
+################################################################################
+# Ensure NVME devices use 4K block size and not 512 block size, can cause problems with some devices
+NVME_FORCE_4K="FALSE"
+# Will create a new GPT partition table on the install target drives.
+# this will wipe all patition information on the drives
+WIPE_PARTITION_TABLE="TRUE"
 ################################################################################
 
 # Set the local
@@ -42,9 +48,9 @@ export LC_ALL="C"
 if [ "$MY_OS" == "" ]; then
   OS="$2"
 fi
-if [ "$OS" == "PVE" ] || [ "$OS" == "pve" ] ; then
+if [ "${OS,,}" == "pve" ] ; then
   OS="PVE"
-elif [ "$OS" == "PBS" ] || [ "$OS" == "pbs" ] ; then
+elif [ "${OS,,}" == "pbs" ] ; then
   OS="PBS"
 else
   OS="PVE"
@@ -80,13 +86,13 @@ NVME_TARGET_FIRST=""
 NVME_TARGET_COUNT=0
 if [[ $NVME_COUNT -ge 1 ]] ; then
   for nvme_device in "${NVME_ARRAY[@]}"; do
-    if [ "$NVME_FORCE_4K" == "yes" ] ; then
-      if  [[ $(nvme id-ns "${nvme_device}" -H | grep "LBA Format" | grep "(in use)" | grep -oP "Data Size\K.*" | cut -d" " -f 2) -ne 4096 ]] ; then
+    if [ "${NVME_FORCE_4K,,}" == "yes" ] || [ "${NVME_FORCE_4K,,}" == "true" ] ; then
+      if  [[ $(nvme id-ns "/dev/${nvme_device}" -H | grep "LBA Format" | grep "(in use)" | grep -oP "Data Size\K.*" | cut -d" " -f 2) -ne 4096 ]] ; then
         echo "Appling 4K block size to NVME: ${nvme_device}"
-        nvme format "${nvme_device}" -b 4096 -f || exit 1
+        nvme format "/dev/${nvme_device}" -b 4096 -f || exit 1
         sleep 5
         echo "Reset NVME controller: ${nvme_device::-2}"
-        nvme reset "${nvme_device::-2}" || exit 1
+        nvme reset "/dev/${nvme_device::-2}" || exit 1
         sleep 5
       fi
     fi
@@ -147,10 +153,12 @@ fi
 # Calculate Install Target
 INSTALL_TARGET=""
 INSTALL_COUNT=0
+INSTALL_NVME="no"
 #NVME only
 if [[ $NVME_TARGET_COUNT -ge 1 ]] && [[ $SSD_TARGET_COUNT -eq 0 ]] && [[ $HDD_TARGET_COUNT -eq 0 ]]; then
   INSTALL_TARGET="${NVME_TARGET}"
   INSTALL_COUNT=$NVME_TARGET_COUNT
+  INSTALL_NVME="yes"
 #SSD Only
 elif [[ $NVME_TARGET_COUNT -eq 0 ]] && [[ $SSD_TARGET_COUNT -ge 1 ]] && [[ $HDD_TARGET_COUNT -eq 0 ]] ; then
   INSTALL_TARGET="${SSD_TARGET}"
@@ -175,16 +183,45 @@ elif [[ $NVME_TARGET_COUNT -ge 1 ]] && [[ $SSD_TARGET_COUNT -ge 1 ]] && [[ $HDD_
 elif [[ $NVME_TARGET_COUNT -ge 1 ]] && [[ $SSD_TARGET_COUNT -eq 0 ]] && [[ $HDD_TARGET_COUNT -ge 1 ]] ; then
   INSTALL_TARGET="${NVME_TARGET}"
   INSTALL_COUNT=$NVME_TARGET_COUNT
+  INSTALL_NVME="yes"
+fi
+
+# Generate DISK config for VM
+#alpha=({a..z})
+#yc=0
+IFS=', ' read -r -a INSTALL_TARGET_ARRAY <<< "${INSTALL_TARGET}"
+DISKS=""
+for install_device in "${INSTALL_TARGET_ARRAY[@]}"; do
+  if [ "${INSTALL_NVME,,}" == "yes" ]; then
+    install_device_serial="$(nvme id-ctrl "/dev/${install_device}" | grep "^sn" | xargs | cut -d":" -f 2 | xargs)"
+    if [ "$install_device_serial" != "" ] ; then
+      DISKS="${DISKS} -device nvme,drive=${install_device::-2},serial=${install_device_serial} -drive file=/dev/${install_device},format=raw,if=none,id=${install_device::-2}"
+    else
+      DISKS="${DISKS} -device nvme,drive=${install_device::-2} -drive file=/dev/${install_device},format=raw,if=none,id=${install_device::-2}"
+    fi
+  else
+    DISKS="${DISKS} -drive file=/dev/${install_device},format=raw,media=disk,if=virtio"
+  fi
+done
+if [ "${WIPE_PARTITION_TABLE,,}" == "yes" ] || [ "${WIPE_PARTITION_TABLE,,}" == "true" ] ; then
+  for install_device in "${INSTALL_TARGET_ARRAY[@]}"; do
+    echo "Creating NEW GPT table: ${install_device}"
+    printf "Yes\n" | parted "/dev/${install_device}" mklabel gpt ---pretend-input-tty
+    sleep 1
+  done
 fi
 
 echo "--------------------------------"
-echo "MY_IFACE=${MY_IFACE}"
-echo "MY_IP4_AND_NETMASK=${MY_IP4_AND_NETMASK}"
-echo "MY_IP4_GATEWAY=${MY_IP4_GATEWAY}"
-echo "MY_IP6_AND_NETMASK=${MY_IP6_AND_NETMASK}"
-echo "MY_DNS_SERVER=${MY_DNS_SERVER}"
+echo "NVME_FORCE_4K: ${NVME_FORCE_4K}"
+echo "WIPE_PARTITION_TABLE: ${WIPE_PARTITION_TABLE}"
+echo "MY_IFACE: ${MY_IFACE}"
+echo "MY_IP4_AND_NETMASK: ${MY_IP4_AND_NETMASK}"
+echo "MY_IP4_GATEWAY: ${MY_IP4_GATEWAY}"
+echo "MY_IP6_AND_NETMASK: ${MY_IP6_AND_NETMASK}"
+echo "MY_DNS_SERVER: ${MY_DNS_SERVER}"
 echo "INSTALL_TARGET: ${INSTALL_TARGET}"
 echo "INSTALL_COUNT: ${INSTALL_COUNT}"
+echo "INSTALL_NVME: ${INSTALL_NVME}"
 echo "NVME_COUNT: ${NVME_COUNT}"
 echo "NVME_TARGET: ${NVME_TARGET}"
 echo "NVME_TARGET_COUNT: ${NVME_TARGET_COUNT}"
@@ -196,45 +233,54 @@ echo "HDD_TARGET: ${HDD_TARGET}"
 echo "HDD_TARGET_COUNT: ${HDD_TARGET_COUNT}"
 echo "--------------------------------"
 
-# Generate DISK config for VM
-#alpha=({a..z})
-#yc=0
-IFS=', ' read -r -a INSTALL_TARGET_ARRAY <<< "${INSTALL_TARGET}"
-DISKS=""
-for install_device in "${INSTALL_TARGET_ARRAY[@]}"; do
-  #DISKS="${DISKS} -hd${alpha[yc++]} /dev/${install_device},format=raw,media=disk,if=virtio"
-  DISKS="${DISKS} -drive file=/dev/${install_device},format=raw,media=disk,if=virtio"
-done
-
 #GENERATE A RANDOM 32CHAR VNC PASSWORD
 MY_RANDOM_PASS="$(tr -dc 'a-zA-Z0-9' < "/dev/urandom" | fold -w 32 | head -n 1 | xargs)"
 
 echo ""
 echo ">> CONNECT VIA VNC TO ${MY_IP4_AND_NETMASK%/*} WITH PASSWORD ${MY_RANDOM_PASS}"
-echo ""
+echo "** Please use the following, install options **"
+echo "Target Harddisk: [OPTIONS]"
+if [[ $INSTALL_COUNT -ge 8 ]] ; then
+  echo "Filesystem: zfs (RAIDZ-2)"
+elif [[ $INSTALL_COUNT -ge 3 ]] ; then
+  echo "Filesystem: zfs (RAIDZ-1)"
+elif [[ $INSTALL_COUNT -ge 2 ]] ; then
+  echo "Filesystem: zfs (RAID1)"
+fi
+echo "Keyboard Layout: U.S. English"
 
-echo "IP and Netmask: ${MY_IP4_AND_NETMASK}"
+echo "IP Address (CIDR): ${MY_IP4_AND_NETMASK}"
 echo "Gateway: ${MY_IP4_GATEWAY}"
 echo "DNS Server: ${MY_DNS_SERVER}"
-if [[ $INSTALL_COUNT -ge 8 ]] ; then
-  echo "Recommended: ZFS Raidz 2"
-elif [[ $INSTALL_COUNT -ge 3 ]] ; then
-  echo "Recommended: ZFS Raidz 1"
-elif [[ $INSTALL_COUNT -ge 2 ]] ; then
-  echo "Recommended: ZFS Mirror"
-fi
+echo "********************************"
 
-printf "change vnc password\n%s\n" ${MY_RANDOM_PASS} | qemu-system-x86_64 -enable-kvm -smp 4 -m 4096 -boot d -cdrom proxmox-ve.iso $DISKS -vnc :0,password -monitor stdio -no-reboot
+echo ">> CONNECT VIA VNC TO ${MY_IP4_AND_NETMASK%/*} WITH PASSWORD ${MY_RANDOM_PASS}"
 
-echo ">> SERVER SHOULD BE INSTALLED, RESTARTING <<"
-echo ""
-echo ">>  RE-CONNECT VIA VNC TO ${MY_IP4_AND_NETMASK%/*} WITH PASSWORD ${MY_RANDOM_PASS}"
-echo ""
-echo "Login as root, with the password which was set during install"
-echo "run the following command below"
-echo ">> nano /etc/network/interfaces <<"
-echo "** edit the file to have the following **"
-echo "
+printf "change vnc password\n%s\n" ${MY_RANDOM_PASS} | qemu-system-x86_64 -machine type=q35,accel=kvm -cpu host -enable-kvm -smp 4 -m 4096 -boot d -cdrom ${INSTALL_IMAGE} ${DISKS} -vnc :0,password -monitor stdio -no-reboot
+
+#https://blogs.oracle.com/linux/post/how-to-emulate-block-devices-with-qemu
+
+printf "n\n" | zfsonlinux_install 2&> /dev/null
+retVal=$?
+if [ $retVal -eq 1 ]; then
+  echo "Installing zfsonlinux"
+  printf "y\n" | zfsonlinux_install
+  echo "Correcting network config"
+  zpool import -f -R /mnt rpool
+  sed -i -e "s/enp[0-9]s[0-9]/${MY_IFACE}/g" /mnt/etc/network/interfaces
+  #cat /mnt/etc/network/interfaces
+  zpool export -f rpool
+else
+  echo "zfsonlinux_install not detected, launching vnc to complete networking config."
+  echo ">> SERVER SHOULD BE INSTALLED, RESTARTING <<"
+  echo ""
+  echo ">>  RE-CONNECT VIA VNC TO ${MY_IP4_AND_NETMASK%/*} WITH PASSWORD ${MY_RANDOM_PASS}"
+  echo ""
+  echo "Login as root, with the password which was set during install"
+  echo ">> run the following command below"
+  echo "nano /etc/network/interfaces"
+  echo "** edit the file to have the following **"
+  echo "
 auto lo
 iface lo inet loopback
 
@@ -247,11 +293,15 @@ iface vmbr0 inet static
     bridge_ports ${MY_IFACE}
     bridge_stp off
     bridge_fd 0
-"
-echo ">> save the file and reboot <<"
+  "
+  echo ">> save the file <<"
+  echo "export the zfs pool, so the machine will boot correctly "
+  echo ">> run the following command below"
+  echo "zpool export -f rpool"
+  printf "change vnc password\n%s\n" ${MY_RANDOM_PASS} | qemu-system-x86_64 -enable-kvm -smp 4 -m 4096 $DISKS -vnc :0,password -monitor stdio -no-reboot -serial telnet:localhost:4321,server,nowait
 
-printf "change vnc password\n%s\n" ${MY_RANDOM_PASS} | qemu-system-x86_64 -enable-kvm -smp 4 -m 4096 $DISKS -vnc :0,password -monitor stdio -no-reboot -serial telnet:localhost:4321,server,nowait
+fi
 
-echo ">> SERVER SHOULD BE INSTALLED, RESTARTING <<"
+echo ">> COMPLETED PROXMOX IS NOW INSTALLED"
 echo ""
-echo ">> PLEASE REBOOT and connect to https://${MY_IP4_AND_NETMASK%/*}:8006 <<"
+echo ">> PLEASE REBOOT and connect to https://${MY_IP4_AND_NETMASK%/*}:8006"

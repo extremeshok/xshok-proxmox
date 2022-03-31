@@ -6,6 +6,28 @@ Operating system=Linux, Architecture=64 bit, Public key=*optional*
 
 Will automatically detect nvme, ssd and hdd and configure accordingly.
 
+# Semi-Automated Using VNC
+
+## VNC Install (Native install Proxmox from ISO  on systems without ipmi)
+## Notes:
+Will automatically detect nvme, ssd and hdd and configure accordingly.
+sata ssd is used (boot and root) instead of nvme
+will use nvme, if sda is a spinning disk
+
+### Proxmox VE (PVE)
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
+./vnc-install-proxmox.sh
+```
+
+### Proxmox Backup Server (PBS)
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/vnc-install-proxmox.sh && chmod +x vnc-install-proxmox.sh
+./vnc-install-proxmox.sh pbs
+```
+
+# Automated Using Installimage
+
 ## Notes:
 ext3 boot partition of 1GB
 ext4 root partition adjusted according to available drive space, upto 128GB
@@ -14,7 +36,6 @@ sata ssd is used (boot and root) instead of nvme
 will use nvme as target, if sda is a spinning disk
 slog and L2ARC if nvme is present, no ssd and hdd is present
 slog and L2ARC if ssd is present, no nvme and hdd is present
-
 
 *includes and runs the  (install-post.sh) script*
 * Select the Rescue tab for the specific server, via the hetzner robot manager
