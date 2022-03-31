@@ -29,13 +29,13 @@ slog and L2ARC if ssd is present, no nvme and hdd is present
 * Connect via ssh/terminal to the rescue system running on your server and run either of the following
 * To Install Proxmox VE (PVE)
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/hetzner-install-proxmox.sh -c -O hetzner-install-proxmox.sh && chmod +x hetzner-install-proxmox.sh
-./hetzner-install-proxmox.sh "your.hostname.here"
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/installimage-proxmox.sh -c -O installimage-proxmox.sh && chmod +x installimage-proxmox.sh
+./installimage-proxmox.sh "your.hostname.here"
 ````
 * To Install Proxmox Backup Server (PBS)
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/hetzner-install-proxmox.sh -c -O hetzner-install-proxmox.sh && chmod +x hetzner-install-proxmox.sh
-./hetzner-install-proxmox.sh "your.hostname.here" pbs
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/installimage-proxmox.sh -c -O installimage-proxmox.sh && chmod +x installimage-proxmox.sh
+./installimage-proxmox.sh "your.hostname.here" pbs
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
