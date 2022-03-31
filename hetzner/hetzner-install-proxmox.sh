@@ -476,7 +476,7 @@ if [ "${WIPE_PARTITION_TABLE,,}" == "yes" ] || [ "${WIPE_PARTITION_TABLE,,}" == 
   IFS=', ' read -r -a INSTALL_TARGET_ARRAY <<< "${INSTALL_TARGET}"
   for install_device in "${INSTALL_TARGET_ARRAY[@]}"; do
     echo "Creating NEW GPT table: ${install_device}"
-    parted "/dev/${install_device}" mklabel gpt || exit 1
+    printf "Yes\n" | parted "/dev/${install_device}" mklabel gpt ---pretend-input-tty || exit 1
     sleep 5
   done
 fi
