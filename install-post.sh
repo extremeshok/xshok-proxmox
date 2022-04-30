@@ -252,7 +252,7 @@ if [ "$XS_LYNIS" == "yes" ] ; then
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
     ## Install ceph support
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef'  install lynis
+    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install lynis
 fi
 
 if [ "$XS_OPENVSWITCH" == "yes" ] && [ "$XS_IFUPDOWN2" == "no" ] ; then
@@ -784,7 +784,7 @@ if [ "$XS_ZFSARC" == "yes" ] ; then
       cat <<EOF > /etc/modprobe.d/99-xs-zfsarc.conf
 # eXtremeSHOK.com ZFS tuning
 
-# Use 1/16 RAM for MAX cache, 1/8 RAM for MIN cache, or 1GB
+# Use 1/8 RAM for MAX cache, 1/16 RAM for MIN cache, or 1GB
 options zfs zfs_arc_min=$MY_ZFS_ARC_MIN
 options zfs zfs_arc_max=$MY_ZFS_ARC_MAX
 
