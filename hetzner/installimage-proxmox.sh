@@ -147,6 +147,7 @@ else
 fi
 
 # Generate NVME Device Arrays
+# shellcheck disable=SC2010
 mapfile -t NVME_ARRAY < <( ls -1 /sys/block | grep ^nvme | sort -d )
 NVME_COUNT=${#NVME_ARRAY[@]}
 NVME_TARGET=""
@@ -178,6 +179,7 @@ if [[ $NVME_COUNT -ge 1 ]] ; then
 fi
 
 # Generate SCSI (HDD/SSD) Device Arrays
+# shellcheck disable=SC2010
 mapfile -t SCSI_ARRAY < <( ls -1 /sys/block | grep ^sd | sort -d )
 SCSI_COUNT=${#SCSI_ARRAY[@]}
 SSD_COUNT=0
@@ -483,7 +485,7 @@ fi
 
 
 # INSTALL
-if [ "$OS" == "PBS"  ]; then
+if [ "$OS" == "PVE"  ]; then
   INSTALL_COMMAND="${installimage_bin} -a -t yes -i ${installimage_file} -g -s en -x /post-install-proxmox -n ${MY_HOSTNAME} -b grub -d ${INSTALL_TARGET} ${RAID} -p /boot:ext3:${BOOT}G,/:ext4:${ROOT}G${SWAP}${ZFS_L2ARC}${ZFS_SLOG},lvm:pve:all -v pve:data:/var/lib/vz:xfs:all"
 else
   INSTALL_COMMAND="${installimage_bin} -a -t yes -i ${installimage_file} -g -s en -x /post-install-proxmox -n ${MY_HOSTNAME} -b grub -d ${INSTALL_TARGET} ${RAID} -p /boot:ext3:${BOOT}G,/:ext4:${ROOT}G${SWAP}${ZFS_L2ARC}${ZFS_SLOG},/backup:xfs:all"
