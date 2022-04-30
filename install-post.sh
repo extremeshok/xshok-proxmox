@@ -66,6 +66,8 @@ XS_KEXEC="yes"
 XS_KSMTUNED="yes"
 # Set language, if chnaged will disable XS_NOAPTLANG
 XS_LANG="en_US.UTF-8"
+# Enable restart on kernel panic, kernel oops and hardlockup
+XS_KERNELPANIC="yes"
 # Increase max user watches, FD limit, FD ulimit, max key limit, ulimits
 XS_LIMITS="yes"
 # Optimise logrotate
@@ -510,6 +512,21 @@ EOF
     cat /etc/motd >> /etc/motd.new
     mv /etc/motd.new /etc/motd
   fi
+fi
+
+if [ "$XS_KERNELPANIC" == "yes" ] ; then
+    # Enable restart on kernel panic
+    cat <<EOF > /etc/sysctl.d/99-xs-kernelpanic.conf
+# eXtremeSHOK.com
+# Enable restart on kernel panic, kernel oops and hardlockup
+kernel.core_pattern=/var/crash/core.%t.%p
+# Reboot on kernel panic afetr 10s
+kernel.panic=10
+# Panic on kernel oops, kernel exploits generally create an oops
+kernel.panic_on_oops=1
+# Panic on a hardlockup
+kernel.hardlockup_panic=1
+EOF
 fi
 
 if [ "$XS_LIMITS" == "yes" ] ; then
