@@ -70,7 +70,17 @@ fi
 
 # Auto detect the existing network settings... this is all for ipv4
 echo "Auto detecting existing network settings"
-default_interface="$(ip route | awk '/default/ { print $5 }' | grep -v "vmbr")"
+# Detect primary interface using the default route
+default_interface="$(ip -o route get 8/32 | grep -o 'dev [^ ]*' | xargs | cut -d' ' -f 2)"
+if [[ $default_interface == eth* ]] ; then
+  # Search for the alt name, ie enp0s1 instead of eth0
+  default_interface_altname="$(ip link show "${default_interface}" | grep -o 'altname [^ ]*' | xargs | cut -d' ' -f 2)"
+  # Assign the alt name if present
+  if [ -n "$default_interface_altname" ] && [ "$default_interface_altname" != " " ]; then
+    default_interface="$default_interface_altname"
+  fi
+fi
+
 if [ "$default_interface" == "" ]; then
   #filter the interfaces to get the default interface and which is not down and not a virtual bridge
   default_interface="$(ip link | sed -e '/state DOWN / { N; d; }' | sed -e '/veth[0-9].*:/ { N; d; }' | sed -e '/vmbr[0-9].*:/ { N; d; }' | sed -e '/tap[0-9].*:/ { N; d; }' | sed -e '/lo:/ { N; d; }' | head -n 1 | cut -d':' -f 2 | xargs)"
