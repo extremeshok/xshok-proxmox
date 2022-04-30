@@ -90,23 +90,22 @@ see *ovh* folder
 
 # ------- SCRIPTS ------
 
-## Convert from Debian 10 to Proxmox 6 (debian10-2-proxmox6.sh) *optional*
-Assumptions: Debian9 installed with a valid FQDN hostname set
+## Convert from Debian 11 to Proxmox 7 (debian11-2-proxmox7.sh) *optional*
+Assumptions: Debian11 installed with a valid FQDN hostname set
 * Tested on KVM, VirtualBox and Dedicated Server
 * Will automatically detect cloud-init and disable.
 * Will automatically generate a correct /etc/hosts
 * Note: will automatically run the install-post.sh script
+```
+curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian11-2-proxmox7.sh && chmod +x debian11-2-proxmox7.sh
+./debian11-2-proxmox7.sh
+```
+## Convert from Debian 10 to Proxmox 6 (debian10-2-proxmox6.sh) *optional*
 ```
 curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
 ./debian10-2-proxmox6.sh
 ```
-
 ## Convert from Debian 9 to Proxmox 5 (debian9-2-proxmox5.sh) *optional*
-Assumptions: Debian9 installed with a valid FQDN hostname set
-* Tested on KVM, VirtualBox and Dedicated Server
-* Will automatically detect cloud-init and disable.
-* Will automatically generate a correct /etc/hosts
-* Note: will automatically run the install-post.sh script
 ```
 curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
 ./debian9-2-proxmox5.sh

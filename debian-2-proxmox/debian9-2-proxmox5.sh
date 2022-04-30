@@ -140,3 +140,6 @@ wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-
 if grep -q '#!/usr/bin/env bash' "install-post.sh"; then
   bash install-post.sh
 fi
+
+echo "Setting admin user password"
+pveum passwd admin@pve
