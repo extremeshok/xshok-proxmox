@@ -36,7 +36,7 @@
 #####  D O   N O T   E D I T   B E L O W  ######
 
 #### VARIABLES / options
-# Detect AMD EPYC CPU and Apply Fixes
+# Detect AMD EPYC and Ryzen CPU and Apply Fixes
 XS_AMDFIXES="yes"
 # Force APT to use IPv4
 XS_APTIPV4="yes"
@@ -323,20 +323,26 @@ if [ "$XS_KSMTUNED" == "yes" ] ; then
 fi
 
 if [ "$XS_AMDFIXES" == "yes" ] ; then
-    ## Detect AMD EPYC CPU and Apply Fixes
+    ## Detect AMD EPYC and Ryzen CPU and Apply Fixes
     if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
       echo "AMD EPYC detected"
-      #Apply EPYC fix to kernel : Fixes random crashing and instability
-      if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
-        echo "Setting kernel idle=nomwait"
-        sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
-        update-grub
-      fi
+    elif [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
+      echo "AMD Ryzen detected"
+    else
+        XS_AMDFIXES="no"
     fi
-    if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ] || [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "Ryzen")" != "" ]; then
-      ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
-      echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
-      echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
+
+    if [ "$XS_AMDFIXES" == "yes" ] ; then
+      #Apply fix to kernel : Fixes random crashing and instability
+        if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
+            echo "Setting kernel idle=nomwait"
+            sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
+            update-grub
+        fi
+        ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
+        echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
+        echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
+        fi
     fi
 fi
 
