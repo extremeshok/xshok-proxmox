@@ -45,14 +45,14 @@ XS_APTUPGRADE="yes"
 # Customise bashrc
 XS_BASHRC="yes"
 # Add the latest ceph provided by proxmox
-XS_CEPH="yes"
+XS_CEPH="no"
 # Disable portmapper / rpcbind (security)
 XS_DISABLERPC="yes"
 # Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
 XS_ENTROPY="yes"
 # Protect the web interface with fail2ban
 XS_FAIL2BAN="yes"
-# Detect if is running in a virtual machine and install the relavant guest agent
+# Detect if is a virtual machine and install the relavant guest agent
 XS_GUESTAGENT="yes"
 # Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
 XS_IFUPDOWN2="yes"
@@ -62,7 +62,7 @@ XS_JOURNALD="yes"
 XS_KERNELHEADERS="yes"
 # Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
 XS_KSMTUNED="yes"
-# Set language, if chnaged will disable XS_NOAPTLANG
+# Set language, if changed will disable XS_NOAPTLANG
 XS_LANG="en_US.UTF-8"
 # Enable restart on kernel panic, kernel oops and hardlockup
 XS_KERNELPANIC="yes"
@@ -149,17 +149,17 @@ fi
 OS_CODENAME="$(grep "VERSION_CODENAME=" /etc/os-release | cut -d"=" -f 2 | xargs )"
 RAM_SIZE_GB=$(( $(vmstat -s | grep -i "total memory" | xargs | cut -d" " -f 1) / 1024 / 1000))
 
-if [ "$XS_LANG" == "en_US.UTF-8" ] && [ "$XS_NOAPTLANG" == "yes" ] ; then
+if [ "${XS_LANG}" == "en_US.UTF-8" ] && [ "${XS_NOAPTLANG,,}" == "yes" ] ; then
     # save bandwidth and skip downloading additional languages
     echo -e "Acquire::Languages \"none\";\\n" > /etc/apt/apt.conf.d/99-xs-disable-translations
 fi
 
-if [ "$XS_APTIPV4" == "yes" ] ; then
+if [ "${XS_APTIPV4,,}" == "yes" ] ; then
     # force APT to use IPv4
     echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99-xs-force-ipv4
 fi
 
-if [ "$XS_NOENTREPO" == "yes" ] ; then
+if [ "${XS_NOENTREPO,,}" == "yes" ] ; then
     # disable enterprise proxmox repo
     if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
       sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
@@ -168,7 +168,7 @@ if [ "$XS_NOENTREPO" == "yes" ] ; then
     if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
       echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pve-no-subscription\\n" > /etc/apt/sources.list.d/pve-public-repo.list
     fi
-    if [ "$XS_TESTREPO" == "yes" ] ; then
+    if [ "${XS_TESTREPO,,}" == "yes" ] ; then
         # enable testing proxmox repo
         echo -e "deb http://download.proxmox.com/debian/pve ${OS_CODENAME} pvetest\\n" > /etc/apt/sources.list.d/pve-testing-repo.list
     fi
@@ -193,7 +193,7 @@ apt-get update > /dev/null 2>&1
 # Fixes for common apt repo errors
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates curl
 
-if [ "$XS_APTUPGRADE" == "yes" ] ; then
+if [ "${XS_APTUPGRADE,,}" == "yes" ] ; then
     # update proxmox and install various system utils
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
     pveam update
@@ -202,7 +202,7 @@ fi
 # Install packages which are sometimes missing on some Proxmox installs.
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux proxmox-backup-restore-image chrony
 
-if [ "$XS_UTILS" == "yes" ] ; then
+if [ "${XS_UTILS,,}" == "yes" ] ; then
 # Install common system utilities
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
     axel \
@@ -236,27 +236,26 @@ if [ "$XS_UTILS" == "yes" ] ; then
     zip
 fi
 
-if [ "$XS_CEPH" == "yes" ] ; then
+if [ "${XS_CEPH,,}" == "yes" ] ; then
     # Add the latest ceph provided by proxmox
-    echo "deb http://download.proxmox.com/debian/ceph-pacific ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
+    echo "deb http://download.proxmox.com/debian/ceph-pacific ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph-pacific.list
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
     ## Install ceph support
     echo "Y" | pveceph install
 fi
 
-if [ "$XS_LYNIS" == "yes" ] ; then
+if [ "${XS_LYNIS,,}" == "yes" ] ; then
     # Lynis security scan tool by Cisofy
     wget -O - https://packages.cisofy.com/keys/cisofy-software-public.key | apt-key add -
     ## Add the latest lynis
     echo "deb https://packages.cisofy.com/community/lynis/deb/ stable main" > /etc/apt/sources.list.d/cisofy-lynis.list
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
-    ## Install ceph support
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install lynis
 fi
 
-if [ "$XS_OPENVSWITCH" == "yes" ] && [ "$XS_IFUPDOWN2" == "no" ] ; then
+if [ "${XS_OPENVSWITCH,,}" == "yes" ] && [ "${XS_IFUPDOWN2}" == "no" ] ; then
     ## Install openvswitch for a virtual internal network
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ifenslave ifupdown
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' remove ifupdown2
@@ -268,7 +267,7 @@ else
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' remove ifenslave ifupdown
 fi
 
-if [ "$XS_ZFSAUTOSNAPSHOT" == "yes" ] ; then
+if [ "${XS_ZFSAUTOSNAPSHOT,,}" == "yes" ] ; then
     ## Install zfs-auto-snapshot
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfs-auto-snapshot
     # make 5min snapshots , keep 12 5min snapshots
@@ -294,7 +293,7 @@ if [ "$XS_ZFSAUTOSNAPSHOT" == "yes" ] ; then
     fi
 fi
 
-if [ "$XS_KSMTUNED" == "yes" ] ; then
+if [ "${XS_KSMTUNED,,}" == "yes" ] ; then
     ## Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksm-control-daemon
     if [[ RAM_SIZE_GB -le 16 ]] ; then
@@ -323,7 +322,7 @@ if [ "$XS_KSMTUNED" == "yes" ] ; then
     systemctl enable ksmtuned
 fi
 
-if [ "$XS_AMDFIXES" == "yes" ] ; then
+if [ "${XS_AMDFIXES,,}" == "yes" ] ; then
     ## Detect AMD EPYC and Ryzen CPU and Apply Fixes
     if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
       echo "AMD EPYC detected"
@@ -333,7 +332,7 @@ if [ "$XS_AMDFIXES" == "yes" ] ; then
         XS_AMDFIXES="no"
     fi
 
-    if [ "$XS_AMDFIXES" == "yes" ] ; then
+    if [ "${XS_AMDFIXES,,}" == "yes" ] ; then
       #Apply fix to kernel : Fixes random crashing and instability
         if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
             echo "Setting kernel idle=nomwait"
@@ -350,7 +349,7 @@ if [ "$XS_AMDFIXES" == "yes" ] ; then
     fi
 fi
 
-if [ "$XS_KERNELHEADERS" == "yes" ] ; then
+if [ "${XS_KERNELHEADERS,,}" == "yes" ] ; then
     ## Install kernel source headers
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers module-assistant
 fi
@@ -381,13 +380,13 @@ fi
 #     echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
 # fi
 
-if [ "$XS_DISABLERPC" == "yes" ] ; then
+if [ "${XS_DISABLERPC,,}" == "yes" ] ; then
     ## Disable portmapper / rpcbind (security)
     systemctl disable rpcbind
     systemctl stop rpcbind
 fi
 
-if [ "$XS_TIMEZONE" == "" ] ; then
+if [ "${XS_TIMEZONE}" == "" ] ; then
     ## Set Timezone, empty = set automatically by ip
     this_ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
     timezone="$(curl "https://ipapi.co/${this_ip}/timezone")"
@@ -403,11 +402,11 @@ else
     timedatectl set-timezone "$XS_TIMEZONE"
 fi
 
-if [ "$XS_TIMESYNC" == "yes" ] ; then
+if [ "${XS_TIMESYNC,,}" == "yes" ] ; then
     timedatectl set-ntp true
 fi
 
-if [ "$XS_GUESTAGENT" == "yes" ] ; then
+if [ "${XS_GUESTAGENT,,}" == "yes" ] ; then
     ## Detect if is running in a virtual machine and install the relavant guest agent
     if [ "$(dmidecode -s system-manufacturer | xargs)" == "QEMU" ] || [ "$(systemd-detect-virt | xargs)" == "kvm" ] ; then
       echo "QEMU Detected, installing guest agent"
@@ -421,7 +420,7 @@ if [ "$XS_GUESTAGENT" == "yes" ] ; then
     fi
 fi
 
-if [ "$XS_PIGZ" == "yes" ] ; then
+if [ "${XS_PIGZ,,}" == "yes" ] ; then
     ## Set pigz to replace gzip, 2x faster gzip compression
     sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pigz
@@ -438,7 +437,7 @@ EOF
     chmod +x /bin/gzip
 fi
 
-if [ "$XS_OVHRTM" == "yes" ] ; then
+if [ "${XS_OVHRTM,,}" == "yes" ] ; then
     ## Detect if this is an OVH server by getting the global IP and checking the ASN, then install OVH RTM (real time monitoring)"
     if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
       echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
@@ -448,7 +447,7 @@ if [ "$XS_OVHRTM" == "yes" ] ; then
     fi
 fi
 
-if [ "$XS_FAIL2BAN" == "yes" ] ; then
+if [ "${XS_FAIL2BAN,,}" == "yes" ] ; then
     ## Protect the web interface with fail2ban
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
     # shellcheck disable=1117
@@ -457,10 +456,11 @@ cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
 ignoreregex =
 EOF
+
 cat <<EOF > /etc/fail2ban/jail.d/proxmox.conf
 [proxmox]
 enabled = true
-port = https,http,8006
+port = https,http,8006,8007
 filter = proxmox
 logpath = /var/log/daemon.log
 maxretry = 3
@@ -468,16 +468,19 @@ maxretry = 3
 bantime = 3600
 findtime = 600
 EOF
-cat <<EOF > /etc/fail2ban/jail.local
-[DEFAULT]
-banaction = iptables-ipset-proto4
-EOF
+
+# cat <<EOF > /etc/fail2ban/jail.local
+# [DEFAULT]
+# banaction = iptables-ipset-proto4
+# EOF
+
     systemctl enable fail2ban
-    ##testing
-    #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
+
+    #     ##testing
+    #     #fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 fi
 
-if [ "$XS_NOSUBBANNER" == "yes" ] ; then
+if [ "${XS_NOSUBBANNER,,}" == "yes" ] ; then
     ## Remove subscription banner
     if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
       # create a daily cron to make sure the banner does not re-appear
@@ -494,19 +497,11 @@ EOF
     echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/data.status/{s/\!//;s/Active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/xs-pve-no-nag && apt --reinstall install proxmox-widget-toolkit
 fi
 
-if [ "$XS_MOTD" == "yes" ] ; then
+if [ "${XS_MOTD,,}" == "yes" ] ; then
 ## Pretty MOTD BANNER
   if ! grep -q https "/etc/motd" ; then
     cat << 'EOF' > /etc/motd.new
-	   This system is optimised by:            https://eXtremeSHOK.com
-	     __   ___                            _____ _    _  ____  _  __
-	     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-	  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
-	 / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-	|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
-	 \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
-
-
+	   This system is optimised by: eXtremeSHOK.com
 EOF
 
     cat /etc/motd >> /etc/motd.new
@@ -514,7 +509,7 @@ EOF
   fi
 fi
 
-if [ "$XS_KERNELPANIC" == "yes" ] ; then
+if [ "${XS_KERNELPANIC,,}" == "yes" ] ; then
     # Enable restart on kernel panic
     cat <<EOF > /etc/sysctl.d/99-xs-kernelpanic.conf
 # eXtremeSHOK.com
@@ -529,7 +524,7 @@ kernel.hardlockup_panic=1
 EOF
 fi
 
-if [ "$XS_LIMITS" == "yes" ] ; then
+if [ "${XS_LIMITS,,}" == "yes" ] ; then
     ## Increase max user watches
     # BUG FIX : No space left on device
     cat <<EOF > /etc/sysctl.d/99-xs-maxwatches.conf
@@ -571,7 +566,7 @@ EOF
     echo "ulimit -n 256000" >> /root/.profile
 fi
 
-if [ "$XS_LOGROTATE" == "yes" ] ; then
+if [ "${XS_LOGROTATE,,}" == "yes" ] ; then
     ## Optimise logrotate
     cat <<EOF > /etc/logrotate.conf
 # eXtremeSHOK.com
@@ -589,7 +584,7 @@ EOF
     systemctl restart logrotate
 fi
 
-if [ "$XS_JOURNALD" == "yes" ] ; then
+if [ "${XS_JOURNALD,,}" == "yes" ] ; then
     ## Limit the size and optimise journald
     cat <<EOF > /etc/systemd/journald.conf
 # eXtremeSHOK.com
@@ -624,7 +619,7 @@ EOF
     journalctl --rotate
 fi
 
-if [ "$XS_ENTROPY" == "yes" ] ; then
+if [ "${XS_ENTROPY,,}" == "yes" ] ; then
 ## Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install haveged
     ## Net optimising
@@ -637,13 +632,13 @@ EOF
     systemctl enable haveged
 fi
 
-if [ "$XS_VZDUMP" == "yes" ] ; then
+if [ "${XS_VZDUMP,,}" == "yes" ] ; then
     ## Increase vzdump backup speed
     sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
     sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 fi
 
-if [ "$XS_MEMORYFIXES" == "yes" ] ; then
+if [ "${XS_MEMORYFIXES,,}" == "yes" ] ; then
     ## Optimise Memory
 cat <<EOF > /etc/sysctl.d/99-xs-memory.conf
 # eXtremeSHOK.com
@@ -657,7 +652,7 @@ vm.overcommit_memory = 1
 EOF
 fi
 
-if [ "$XS_TCPBBR" == "yes" ] ; then
+if [ "${XS_TCPBBR,,}" == "yes" ] ; then
 ## Enable TCP BBR congestion control
 cat <<EOF > /etc/sysctl.d/99-xs-kernel-bbr.conf
 # eXtremeSHOK.com
@@ -667,7 +662,7 @@ net.ipv4.tcp_congestion_control=bbr
 EOF
 fi
 
-if [ "$XS_TCPFASTOPEN" == "yes" ] ; then
+if [ "${XS_TCPFASTOPEN,,}" == "yes" ] ; then
 ## Enable TCP fastopen
 cat <<EOF > /etc/sysctl.d/99-xs-tcp-fastopen.conf
 # eXtremeSHOK.com
@@ -676,7 +671,7 @@ net.ipv4.tcp_fastopen=3
 EOF
 fi
 
-if [ "$XS_NET" == "yes" ] ; then
+if [ "${XS_NET,,}" == "yes" ] ; then
 ## Enable Network optimising
 cat <<EOF > /etc/sysctl.d/99-xs-net.conf
 # eXtremeSHOK.com
@@ -727,7 +722,7 @@ net.unix.max_dgram_qlen = 4096
 EOF
 fi
 
-if [ "$XS_SWAPPINESS" == "yes" ] ; then
+if [ "${XS_SWAPPINESS,,}" == "yes" ] ; then
     ## Bugfix: high swap usage with low memory usage
     cat <<EOF > /etc/sysctl.d/99-xs-swap.conf
 # eXtremeSHOK.com
@@ -736,7 +731,7 @@ vm.swappiness=10
 EOF
 fi
 
-if [ "$XS_MAXFS" == "yes" ] ; then
+if [ "${XS_MAXFS,,}" == "yes" ] ; then
     ## Increase Max FS open files
     cat <<EOF > /etc/sysctl.d/99-xs-fs.conf
 # eXtremeSHOK.com
@@ -746,7 +741,7 @@ fs.file-max=9000000
 EOF
 fi
 
-if [ "$XS_BASHRC" == "yes" ] ; then
+if [ "${XS_BASHRC,,}" == "yes" ] ; then
     ## Customise bashrc (thanks broeckca)
     cat <<EOF >> /root/.bashrc
 export HISTTIMEFORMAT="%d/%m/%y %T "
@@ -761,7 +756,7 @@ EOF
     echo "source /root/.bashrc" >> /root/.bash_profile
 fi
 
-if [ "$XS_ZFSARC" == "yes" ] ; then
+if [ "${XS_ZFSARC,,}" == "yes" ] ; then
     ## Optimise ZFS arc size accoring to memory size
     if [ "$(command -v zfs)" != "" ] ; then
       if [[ RAM_SIZE_GB -le 16 ]] ; then
@@ -809,7 +804,7 @@ if ! grep -q 'source /etc/network/interfaces.d/*' "/etc/network/interfaces" ; th
     echo "source /etc/network/interfaces.d/*" >> /etc/network/interfaces
 fi
 
-if [ "$XS_VFIO_IOMMU" == "yes" ] ; then
+if [ "${XS_VFIO_IOMMU,,}" == "yes" ] ; then
     # Enable IOMMU
     cpu=$(cat /proc/cpuinfo)
     if [[ $cpu == *"GenuineIntel"* ]]; then
