@@ -13,9 +13,9 @@
 #
 ################################################################################
 #
-# Version: 2.0
+# Tested on Proxmox Version: 7.1
 #
-# Assumptions: proxmox installed
+# Assumptions: Proxmox installed
 #
 # Notes:
 # openvswitch will be disabled (removed) when ifupdown2 is enabled
@@ -60,8 +60,6 @@ XS_IFUPDOWN2="yes"
 XS_JOURNALD="yes"
 # Install kernel source headers
 XS_KERNELHEADERS="yes"
-# Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
-XS_KEXEC="yes"
 # Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
 XS_KSMTUNED="yes"
 # Set language, if chnaged will disable XS_NOAPTLANG
@@ -113,7 +111,9 @@ XS_VZDUMP="yes"
 # Optimise ZFS arc size accoring to memory size
 XS_ZFSARC="yes"
 # Install zfs-auto-snapshot
-XS_ZFSAUTOSNAPSHOT="yes"
+XS_ZFSAUTOSNAPSHOT="no"
+# Enable VFIO IOMMU support for PCIE passthrough
+XS_VFIO_IOMMU="yes"
 
 #################  D O   N O T   E D I T  ######################################
 
@@ -188,7 +188,7 @@ EOF
 apt-get update > /dev/null 2>&1
 
 # Remove conflicting utilities
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd systemd-timesyncd
 
 # Fixes for common apt repo errors
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install apt-transport-https debian-archive-keyring ca-certificates curl
@@ -200,13 +200,14 @@ if [ "$XS_APTUPGRADE" == "yes" ] ; then
 fi
 
 # Install packages which are sometimes missing on some Proxmox installs.
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install zfsutils-linux proxmox-backup-restore-image chrony
 
 if [ "$XS_UTILS" == "yes" ] ; then
 # Install common system utilities
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install \
     axel \
     build-essential \
+    curl \
     dialog \
     dnsutils \
     dos2unix \
@@ -343,6 +344,9 @@ if [ "$XS_AMDFIXES" == "yes" ] ; then
         echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
         echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
         fi
+
+        echo "Installing kernel 5.15"
+        /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.15
     fi
 fi
 
@@ -351,31 +355,31 @@ if [ "$XS_KERNELHEADERS" == "yes" ] ; then
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-headers module-assistant
 fi
 
-if [ "$XS_KEXEC" == "yes" ] ; then
-    ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
-    # use command 'reboot-quick'
-    echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
-    /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install kexec-tools
-    cat <<'EOF' > /etc/systemd/system/kexec-pve.service
-[Unit]
-Description=Loading new kernel into memory
-Documentation=man:kexec(8)
-DefaultDependencies=no
-Before=reboot.target
-RequiresMountsFor=/boot
-#Before=shutdown.target umount.target final.target
+# if [ "$XS_KEXEC" == "yes" ] ; then
+#     ## Install kexec, allows for quick reboots into the latest updated kernel set as primary in the boot-loader.
+#     # use command 'reboot-quick'
+#     echo "kexec-tools kexec-tools/load_kexec boolean false" | debconf-set-selections
+#     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install kexec-tools
+#     cat <<'EOF' > /etc/systemd/system/kexec-pve.service
+# [Unit]
+# Description=Loading new kernel into memory
+# Documentation=man:kexec(8)
+# DefaultDependencies=no
+# Before=reboot.target
+# RequiresMountsFor=/boot
+# #Before=shutdown.target umount.target final.target
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/sbin/kexec -d -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
+# [Service]
+# Type=oneshot
+# RemainAfterExit=yes
+# ExecStart=/sbin/kexec -d -l /boot/pve/vmlinuz --initrd=/boot/pve/initrd.img --reuse-cmdline
 
-[Install]
-WantedBy=default.target
-EOF
-    systemctl enable kexec-pve.service
-    echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
-fi
+# [Install]
+# WantedBy=default.target
+# EOF
+#     systemctl enable kexec-pve.service
+#     echo "alias reboot-quick='systemctl kexec'" >> /root/.bash_profile
+# fi
 
 if [ "$XS_DISABLERPC" == "yes" ] ; then
     ## Disable portmapper / rpcbind (security)
@@ -400,16 +404,6 @@ else
 fi
 
 if [ "$XS_TIMESYNC" == "yes" ] ; then
-    ## Automatically Synchronize the time
-    cat <<EOF > /etc/systemd/timesyncd.conf
-[Time]
-NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
-FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
-RootDistanceMaxSec=5
-PollIntervalMinSec=32
-PollIntervalMaxSec=2048
-EOF
-    service systemd-timesyncd start
     timedatectl set-ntp true
 fi
 
@@ -544,19 +538,20 @@ if [ "$XS_LIMITS" == "yes" ] ; then
 fs.inotify.max_user_watches=1048576
 fs.inotify.max_user_instances=1048576
 fs.inotify.max_queued_events=1048576
+fs.aio-max-nr=524288
 EOF
     ## Increase max FD limit / ulimit
     cat <<EOF >> /etc/security/limits.d/99-xs-limits.conf
 # eXtremeSHOK.com
 # Increase max FD limit / ulimit
-* soft     nproc          256000
-* hard     nproc          256000
-* soft     nofile         256000
-* hard     nofile         256000
-root soft     nproc          256000
-root hard     nproc          256000
-root soft     nofile         256000
-root hard     nofile         256000
+* soft     nproc          1048576
+* hard     nproc          1048576
+* soft     nofile         1048576
+* hard     nofile         1048576
+root soft     nproc          unlimited
+root hard     nproc          unlimited
+root soft     nofile         unlimited
+root hard     nofile         unlimited
 EOF
     ## Increase kernel max Key limit
     cat <<EOF > /etc/sysctl.d/99-xs-maxkeys.conf
@@ -653,8 +648,8 @@ if [ "$XS_MEMORYFIXES" == "yes" ] ; then
 cat <<EOF > /etc/sysctl.d/99-xs-memory.conf
 # eXtremeSHOK.com
 # Memory Optimising
-## Bugfix: reserve 512MB memory for system
-vm.min_free_kbytes=524288
+## Bugfix: reserve 1024MB memory for system
+vm.min_free_kbytes=1048576
 vm.nr_hugepages=72
 # (Redis/MongoDB)
 vm.max_map_count=262144
@@ -807,14 +802,44 @@ EOF
     fi
 fi
 
-# propagate the setting into the kernel
-update-initramfs -u -k all
 
 # Fix missing /etc/network/interfaces.d include
 if ! grep -q 'source /etc/network/interfaces.d/*' "/etc/network/interfaces" ; then
     echo "Added missing include to /etc/network/interfaces"
     echo "source /etc/network/interfaces.d/*" >> /etc/network/interfaces
 fi
+
+if [ "$XS_VFIO_IOMMU" == "yes" ] ; then
+    # Enable IOMMU
+    cpu=$(cat /proc/cpuinfo)
+    if [[ $cpu == *"GenuineIntel"* ]]; then
+        echo "Detected Intel CPU"
+        sed -i 's/quiet/quiet intel_iommu=on iommu=pt/g' /etc/default/grub
+    elif [[ $cpu == *"AuthenticAMD"* ]]; then
+        echo "Detected AMD CPU"
+        sed -i 's/quiet/quiet amd_iommu=on iommu=pt/g' /etc/default/grub
+    else
+        echo "Unknown CPU"
+    fi
+
+    echo "vfio" >> /etc/modules
+    echo "vfio_iommu_type1" >> /etc/modules
+    echo "vfio_pci" >> /etc/modules
+    echo "vfio_virqfd" >> /etc/modules
+
+    echo "blacklist nouveau" >> /etc/modprobe.d/blacklist.conf
+    echo "blacklist lbm-nouveau" >> /etc/modprobe.d/blacklist.conf
+    echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist.conf
+    echo "blacklist amdgpu" >> /etc/modprobe.d/blacklist.conf
+    echo "blacklist radeon" >> /etc/modprobe.d/blacklist.conf
+    echo "blacklist nvidia" >> /etc/modprobe.d/blacklist.conf
+    echo "blacklist nvidiafb" >> /etc/modprobe.d/blacklist.conf
+fi
+
+# propagate the settings
+update-initramfs -u -k all
+update-grub
+pve-efiboot-tool refresh
 
 # cleanup
 ## Remove no longer required packages and purge old cached updates
