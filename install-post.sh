@@ -810,6 +810,12 @@ fi
 # propagate the setting into the kernel
 update-initramfs -u -k all
 
+# Fix missing /etc/network/interfaces.d include
+if ! grep -q 'source /etc/network/interfaces.d/*' "/etc/network/interfaces" ; then
+    echo "Added missing include to /etc/network/interfaces"
+    echo "source /etc/network/interfaces.d/*" >> /etc/network/interfaces
+fi
+
 # cleanup
 ## Remove no longer required packages and purge old cached updates
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
