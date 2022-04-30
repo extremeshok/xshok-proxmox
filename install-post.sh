@@ -235,7 +235,7 @@ fi
 
 if [ "$XS_CEPH" == "yes" ] ; then
     # Add the latest ceph provided by proxmox
-    echo "deb https://download.proxmox.com/debian/ceph-octopus ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
+    echo "deb http://download.proxmox.com/debian/ceph-pacific ${OS_CODENAME} main" > /etc/apt/sources.list.d/ceph.list
     ## Refresh the package lists
     apt-get update > /dev/null 2>&1
     ## Install ceph support
