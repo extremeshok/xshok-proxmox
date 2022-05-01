@@ -342,8 +342,6 @@ if [ "${XS_AMDFIXES,,}" == "yes" ] ; then
         ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
         echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
         echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
-        fi
-
         echo "Installing kernel 5.15"
         /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.15
     fi
