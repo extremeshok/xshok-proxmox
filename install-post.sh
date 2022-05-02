@@ -33,88 +33,169 @@
 #####  T O   S E T   Y O U R   O P T I O N S  ######
 # User Defined Options for (install-post.sh) post-installation script for Proxmox
 # are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
+## Alternatively, set the varible via the export
+# Example to disable to motd
+# export XS_MOTD="no" ; bash install-post.sh
+###############################
 #####  D O   N O T   E D I T   B E L O W  ######
 
 #### VARIABLES / options
 # Detect AMD EPYC and Ryzen CPU and Apply Fixes
-XS_AMDFIXES="yes"
+if [ -z "$XS_AMDFIXES" ] ; then
+    XS_AMDFIXES="yes"
+fi
 # Force APT to use IPv4
-XS_APTIPV4="yes"
+if [ -z "$XS_APTIPV4" ] ; then
+    XS_APTIPV4="yes"
+fi
 # Update proxmox and install various system utils
-XS_APTUPGRADE="yes"
+if [ -z "$XS_APTUPGRADE" ] ; then
+    XS_APTUPGRADE="yes"
+fi
 # Customise bashrc
-XS_BASHRC="yes"
+if [ -z "$XS_BASHRC" ] ; then
+    XS_BASHRC="yes"
+fi
 # Add the latest ceph provided by proxmox
-XS_CEPH="no"
+if [ -z "$XS_CEPH" ] ; then
+    XS_CEPH="no"
+fi
 # Disable portmapper / rpcbind (security)
-XS_DISABLERPC="yes"
+if [ -z "$XS_DISABLERPC" ] ; then
+    XS_DISABLERPC="yes"
+fi
 # Ensure Entropy Pools are Populated, prevents slowdowns whilst waiting for entropy
-XS_ENTROPY="yes"
+if [ -z "$XS_ENTROPY" ] ; then
+    XS_ENTROPY="yes"
+fi
 # Protect the web interface with fail2ban
-XS_FAIL2BAN="yes"
+if [ -z "$XS_FAIL2BAN" ] ; then
+    XS_FAIL2BAN="yes"
+fi
 # Detect if is a virtual machine and install the relavant guest agent
-XS_GUESTAGENT="yes"
+if [ -z "$XS_GUESTAGENT" ] ; then
+    XS_GUESTAGENT="yes"
+fi
 # Install ifupdown2 for a virtual internal network allows rebootless networking changes (not compatible with openvswitch-switch)
-XS_IFUPDOWN2="yes"
+if [ -z "$XS_IFUPDOWN2" ] ; then
+    XS_IFUPDOWN2="yes"
+fi
 # Limit the size and optimise journald
-XS_JOURNALD="yes"
+if [ -z "$XS_JOURNALD" ] ; then
+    XS_JOURNALD="yes"
+fi
 # Install kernel source headers
-XS_KERNELHEADERS="yes"
+if [ -z "$XS_KERNELHEADERS" ] ; then
+    XS_KERNELHEADERS="yes"
+fi
 # Ensure ksmtuned (ksm-control-daemon) is enabled and optimise according to ram size
-XS_KSMTUNED="yes"
+if [ -z "$XS_KSMTUNED" ] ; then
+    XS_KSMTUNED="yes"
+fi
 # Set language, if changed will disable XS_NOAPTLANG
-XS_LANG="en_US.UTF-8"
+if [ -z "$XS_LANG" ] ; then
+    XS_LANG="en_US.UTF-8"
+fi
 # Enable restart on kernel panic, kernel oops and hardlockup
-XS_KERNELPANIC="yes"
+if [ -z "$XS_KERNELPANIC" ] ; then
+    XS_KERNELPANIC="yes"
+fi
 # Increase max user watches, FD limit, FD ulimit, max key limit, ulimits
-XS_LIMITS="yes"
+if [ -z "$XS_LIMITS" ] ; then
+    XS_LIMITS="yes"
+fi
 # Optimise logrotate
-XS_LOGROTATE="yes"
+if [ -z "$XS_LOGROTATE" ] ; then
+    XS_LOGROTATE="yes"
+fi
 # Lynis security scan tool by Cisofy
-XS_LYNIS="yes"
+if [ -z "$XS_LYNIS" ] ; then
+    XS_LYNIS="yes"
+fi
 # Increase Max FS open files
-XS_MAXFS="yes"
+if [ -z "$XS_MAXFS" ] ; then
+    XS_MAXFS="yes"
+fi
 # Optimise Memory
-XS_MEMORYFIXES="yes"
+if [ -z "$XS_MEMORYFIXES" ] ; then
+    XS_MEMORYFIXES="yes"
+fi
 # Pretty MOTD BANNER
-XS_MOTD="yes"
+if [ -z "$XS_MOTD" ] ; then
+    XS_MOTD="yes"
+fi
 # Enable Network optimising
-XS_NET="yes"
+if [ -z "$XS_NET" ] ; then
+    XS_NET="yes"
+fi
 # Save bandwidth and skip downloading additional languages, requires XS_LANG="en_US.UTF-8"
-XS_NOAPTLANG="yes"
+if [ -z "$XS_NOAPTLANG" ] ; then
+    XS_NOAPTLANG="yes"
+fi
 # Disable enterprise proxmox repo
-XS_NOENTREPO="yes"
+if [ -z "$XS_NOENTREPO" ] ; then
+    XS_NOENTREPO="yes"
+fi
 # Remove subscription banner
-XS_NOSUBBANNER="yes"
+if [ -z "$XS_NOSUBBANNER" ] ; then
+    XS_NOSUBBANNER="yes"
+fi
 # Install openvswitch for a virtual internal network
-XS_OPENVSWITCH="no"
+if [ -z "$XS_OPENVSWITCH" ] ; then
+    XS_OPENVSWITCH="no"
+fi
 # Detect if this is an OVH server and install OVH Real Time Monitoring
-XS_OVHRTM="yes"
+if [ -z "$XS_OVHRTM" ] ; then
+    XS_OVHRTM="yes"
+fi
 # Set pigz to replace gzip, 2x faster gzip compression
-XS_PIGZ="yes"
+if [ -z "$XS_PIGZ" ] ; then
+    XS_PIGZ="yes"
+fi
 # Bugfix: high swap usage with low memory usage
-XS_SWAPPINESS="yes"
+if [ -z "$XS_SWAPPINESS" ] ; then
+    XS_SWAPPINESS="yes"
+fi
 # Enable TCP BBR congestion control
-XS_TCPBBR="yes"
+if [ -z "$XS_TCPBBR" ] ; then
+    XS_TCPBBR="yes"
+fi
 # Enable TCP fastopen
-XS_TCPFASTOPEN="yes"
+if [ -z "$XS_TCPFASTOPEN" ] ; then
+    XS_TCPFASTOPEN="yes"
+fi
 # Enable testing proxmox repo
-XS_TESTREPO="no"
+if [ -z "$XS_TESTREPO" ] ; then
+    XS_TESTREPO="no"
+fi
 # Automatically Synchronize the time
-XS_TIMESYNC="yes"
+if [ -z "$XS_TIMESYNC" ] ; then
+    XS_TIMESYNC="yes"
+fi
 # Set Timezone, empty = set automatically by IP
-XS_TIMEZONE=""
+if [ -z "$XS_TIMEZONE" ] ; then
+    XS_TIMEZONE=""
+fi
 # Install common system utilities
-XS_UTILS="yes"
+if [ -z "$XS_UTILS" ] ; then
+    XS_UTILS="yes"
+fi
 # Increase vzdump backup speed
-XS_VZDUMP="yes"
+if [ -z "$XS_VZDUMP" ] ; then
+    XS_VZDUMP="yes"
+fi
 # Optimise ZFS arc size accoring to memory size
-XS_ZFSARC="yes"
+if [ -z "$XS_ZFSARC" ] ; then
+    XS_ZFSARC="yes"
+fi
 # Install zfs-auto-snapshot
-XS_ZFSAUTOSNAPSHOT="no"
+if [ -z "$XS_ZFSAUTOSNAPSHOT" ] ; then
+    XS_ZFSAUTOSNAPSHOT="no"
+fi
 # Enable VFIO IOMMU support for PCIE passthrough
-XS_VFIO_IOMMU="yes"
-
+if [ -z "$XS_VFIO_IOMMU" ] ; then
+    XS_VFIO_IOMMU="yes"
+fi
 #################  D O   N O T   E D I T  ######################################
 
 echo "Processing .... "
@@ -122,7 +203,7 @@ echo "Processing .... "
 # VARIABLES are overrideen with xs-install-post.env
 if [ -f "xs-install-post.env" ] ; then
     echo "Loading variables from xs-install-post.env ..."
-# shellcheck disable=SC1091
+    # shellcheck disable=SC1091
     source xs-install-post.env;
 fi
 
@@ -342,7 +423,6 @@ if [ "${XS_AMDFIXES,,}" == "yes" ] ; then
         ## Add msrs ignore to fix Windows guest on EPIC/Ryzen host
         echo "options kvm ignore_msrs=Y" >> /etc/modprobe.d/kvm.conf
         echo "options kvm report_ignored_msrs=N" >> /etc/modprobe.d/kvm.conf
-        fi
 
         echo "Installing kernel 5.15"
         /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.15
@@ -533,7 +613,6 @@ if [ "${XS_LIMITS,,}" == "yes" ] ; then
 fs.inotify.max_user_watches=1048576
 fs.inotify.max_user_instances=1048576
 fs.inotify.max_queued_events=1048576
-fs.aio-max-nr=524288
 EOF
     ## Increase max FD limit / ulimit
     cat <<EOF >> /etc/security/limits.d/99-xs-limits.conf
@@ -738,6 +817,7 @@ if [ "${XS_MAXFS,,}" == "yes" ] ; then
 # Max FS Optimising
 fs.nr_open=12000000
 fs.file-max=9000000
+fs.aio-max-nr=524288
 EOF
 fi
 
@@ -817,18 +897,26 @@ if [ "${XS_VFIO_IOMMU,,}" == "yes" ] ; then
         echo "Unknown CPU"
     fi
 
-    echo "vfio" >> /etc/modules
-    echo "vfio_iommu_type1" >> /etc/modules
-    echo "vfio_pci" >> /etc/modules
-    echo "vfio_virqfd" >> /etc/modules
+    cat <<EOF >> /etc/modules
+# eXtremeSHOK.com
+vfio
+vfio_iommu_type1
+vfio_pci
+vfio_virqfd
 
-    echo "blacklist nouveau" >> /etc/modprobe.d/blacklist.conf
-    echo "blacklist lbm-nouveau" >> /etc/modprobe.d/blacklist.conf
-    echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist.conf
-    echo "blacklist amdgpu" >> /etc/modprobe.d/blacklist.conf
-    echo "blacklist radeon" >> /etc/modprobe.d/blacklist.conf
-    echo "blacklist nvidia" >> /etc/modprobe.d/blacklist.conf
-    echo "blacklist nvidiafb" >> /etc/modprobe.d/blacklist.conf
+EOF
+    cat <<EOF >> /etc/modprobe.d/blacklist.conf
+# eXtremeSHOK.com
+blacklist nouveau
+blacklist lbm-nouveau
+options nouveau modeset=0
+blacklist amdgpu
+blacklist radeon
+blacklist nvidia
+blacklist nvidiafb
+
+EOF
+
 fi
 
 # propagate the settings

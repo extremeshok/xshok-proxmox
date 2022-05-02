@@ -62,12 +62,19 @@ return value is 0
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
 ```
 
-##  TO SET AND USE YOUR OWN OPTIONS
+##  TO SET AND USE YOUR OWN OPTIONS (using xs-post-install.env)
 User Defined Options for (install-post.sh) post-installation script for Proxmox are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
 ```
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xs-install-post.env.sample -c -O xs-install-post.env
 wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh
 nano xs-install-post.env
+bash install-post.sh
+```
+##  TO SET AND USE YOUR OWN OPTIONS (using ENV)
+Examnple to disable the MOTD banner
+```
+wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh
+export XS_MOTD="no"
 bash install-post.sh
 ```
 
