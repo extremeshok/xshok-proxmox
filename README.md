@@ -55,19 +55,19 @@ Turns a fresh proxmox install into an optimised proxmox host
 * Optimise ZFS arc size accoring to memory size
 * Install zfs-auto-snapshot
 
-https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
+https://raw.githubusercontent.com/romspeu/proxmox/master/install-post.sh
 
 return value is 0
 
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh
 ```
 
 ##  TO SET AND USE YOUR OWN OPTIONS
 User Defined Options for (install-post.sh) post-installation script for Proxmox are set in the xs-install-post.env, see the sample : xs-install-post.env.sample
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/xs-install-post.env.sample -c -O xs-install-post.env
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/xs-install-post.env.sample -c -O xs-install-post.env
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/install-post.sh -c -O install-post.sh
 nano xs-install-post.env
 bash install-post.sh
 ```
@@ -98,7 +98,7 @@ Assumptions: Debian9 installed with a valid FQDN hostname set
 * Will automatically generate a correct /etc/hosts
 * Note: will automatically run the install-post.sh script
 ```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
+curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
 ./debian10-2-proxmox6.sh
 ```
 
@@ -109,14 +109,14 @@ Assumptions: Debian9 installed with a valid FQDN hostname set
 * Will automatically generate a correct /etc/hosts
 * Note: will automatically run the install-post.sh script
 ```
-curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
+curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/debian-2-proxmox/debian9-2-proxmox5.sh && chmod +x debian9-2-proxmox5.sh
 ./debian9-2-proxmox5.sh
 ```
 
 ## Enable Docker support for an LXC container (pve-enable-lxc-docker.sh) *optional*
 There can be security implications as the LXC container is running in a higher privileged mode.
 ```
-curl https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/helpers/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
+curl https://raw.githubusercontent.com/romspeu/proxmox/master/helpers/pve-enable-lxc-docker.sh --output /usr/sbin/pve-enable-lxc-docker && chmod +x /usr/sbin/pve-enable-lxc-docker
 pve-enable-lxc-docker container_id
 ```
 
@@ -138,7 +138,7 @@ Converts the a MDADM BASED LVM into a ZFS raid 1 (mirror)
 
 **NOTE: WILL  DESTROY ALL DATA ON LVM_MOUNT_POINT**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh && chmod +x lvm-2-zfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh && chmod +x lvm-2-zfs.sh
 ./lvm-2-zfs.sh
 ```
 
@@ -153,7 +153,7 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
 ./createzfs.sh poolname /dev/device1 /dev/device2
 ```
 
@@ -163,7 +163,7 @@ Creates a zfs pool from specified devices
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 ./xshok_slog_cache-2-zfs.sh poolname
 ```
 
@@ -188,21 +188,21 @@ ALSO CREATES A NAT Private Network as vmbr1
  NOTE: WILL OVERWRITE /etc/network/interfaces
  A backup will be created as /etc/network/interfaces.timestamp
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 ./network-configure.sh && rm network-configure.sh
 ```
 
 ##  Creates default routes to allow for extra ip ranges to be used (network-addiprange.sh) *optional*
 If no interface is specified the default gateway interface will be detected and used.
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-addiprange.sh -c -O network-addiprange.sh && chmod +x network-addiprange.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/networking/network-addiprange.sh -c -O network-addiprange.sh && chmod +x network-addiprange.sh
 ./network-addiprange.sh ip.xx.xx.xx/cidr interface_optional
 ```
 
 ## Create Private mesh vpn/network (tincvpn.sh)
 tinc private mesh vpn/network which supports multicast, ideal for private cluster communication
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/tincvpn.sh -c -O tincvpn.sh && chmod +x tincvpn.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/networking/tincvpn.sh -c -O tincvpn.sh && chmod +x tincvpn.sh
 ./tincvpn.sh -h
 ```
 ### Example for 3 node Cluster

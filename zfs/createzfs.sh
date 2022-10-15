@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # Will create a ZFS pool from the devices specified with the correct raid level
 #
@@ -35,7 +35,7 @@
 # NOTE: WILL  DESTROY ALL DATA ON DEVICES SPECIFED
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/createzfs.sh && chmod +x createzfs.sh
+# curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/createzfs.sh && chmod +x createzfs.sh
 # ./createzfs.sh poolname /dev/sda /dev/sdb
 #
 ################################################################################

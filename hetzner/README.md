@@ -11,21 +11,21 @@
 * Wait a few mins
 * Connect via ssh/terminal to the rescue system running on your server and run the following
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/hetzner/hetzner-install-proxmox.sh -c -O hetzner-install-proxmox.sh && chmod +x hetzner-install-proxmox.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/hetzner/hetzner-install-proxmox.sh -c -O hetzner-install-proxmox.sh && chmod +x hetzner-install-proxmox.sh
 ./hetzner-install-proxmox.sh "your.hostname.here"
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ## LVM to ZFS
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
  ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ## NETWORKING (vmbr0 vmbr1)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 ./network-configure.sh && rm network-configure.sh
 ```
 * Reboot

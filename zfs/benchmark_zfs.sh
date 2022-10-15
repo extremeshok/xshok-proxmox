@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 # Based on https://blog.programster.org/zfs-add-intent-log-device
 #
 # License: BSD (Berkeley Software Distribution)

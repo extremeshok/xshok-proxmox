@@ -17,21 +17,21 @@ Select install for the specific server, via the ovh manager
 * * 3	LV	xfs	/var/lib/vz	data	1	REMAINING GB *(use all the remaining space)*
 * --NEXT-->
 * Hostname: server.fqdn.com
-* Installation script (URL): https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh
+* Installation script (URL): https://raw.githubusercontent.com/romspeu/proxmox/master/install-post.sh
 * Script return value: 0
 * SSH keys: *(always suggested, however if this value is used a webinterface login will not work without setting a root password in shell)*
 * --CONFIRM-->
 After installation, Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ## LVM to ZFS
 ````
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/lvm-2-zfs.sh -c -O lvm-2-zfs.sh  && chmod +x lvm-2-zfs.sh
  ./lvm-2-zfs.sh && rm lvm-2-zfs.sh
 ````
 * Reboot
 * Connect via ssh/terminal to the new Proxmox system running on your server and run the following
 ## NETWORKING (vmbr0 vmbr1)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/networking/network-configure.sh -c -O network-configure.sh && chmod +x network-configure.sh
 ./network-configure.sh && rm network-configure.sh
 ```
 * Reboot
@@ -45,14 +45,14 @@ Assumptions: Proxmox installed, SSD raid1 partitions mounted as /xshok/zfs-slog 
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED DEVICES**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/createzfs.sh -c -O createzfs.sh && chmod +x createzfs.sh
 ./createzfs.sh poolname /dev/device1 /dev/device2
 ```
 ## Create ZFS cache and slog from /xshok/zfs-cache and /xshok/zfs-slog partitions and adds them to a zpool (xshok_slog_cache-2-zfs.sh) *optional*
 
 **NOTE: WILL  DESTROY ALL DATA ON SPECIFIED PARTITIONS**
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+wget https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/xshok_slog_cache-2-zfs.sh -c -O xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 ./xshok_slog_cache-2-zfs.sh poolname
 ```
 * Reboot

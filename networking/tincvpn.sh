@@ -5,14 +5,14 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # tinc vpn - installation script for Proxmox, Debian, CentOS and RedHat based servers
 #
 # License: BSD (Berkeley Software Distribution)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/networking/tincvpn.sh && chmod +x tincvpn.sh
+# curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/networking/tincvpn.sh && chmod +x tincvpn.sh
 # ./tincvpn.sh -h
 #
 # Example for 3 node Cluster

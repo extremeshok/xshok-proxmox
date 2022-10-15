@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # Debian 10 to Proxmox 6 conversion script
 #
@@ -25,7 +25,7 @@
 # Thank you @floco
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
+# curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/debian-2-proxmox/debian10-2-proxmox6.sh && chmod +x debian10-2-proxmox6.sh
 # ./debian10-2-proxmox6.sh
 #
 #

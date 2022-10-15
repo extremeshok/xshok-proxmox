@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # post-installation script for Proxmox
 #
@@ -35,7 +35,7 @@
 # Assumes LVM on top of a MD raid (linux software raid)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/lvm2zfs.sh && chmod +x lvm-2-zfs.sh
+# curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/lvm2zfs.sh && chmod +x lvm-2-zfs.sh
 # ./lvm-2-zfs.sh LVM_MOUNT_POINT
 #
 ################################################################################

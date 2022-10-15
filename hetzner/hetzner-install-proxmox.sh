@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # hetzner installation script for Proxmox
 #
@@ -247,7 +247,7 @@ fi
 curl "https://raw.githubusercontent.com/hetzneronline/installimage/master/post-install/proxmox6" --output /post-install
 
 #Customising post install file
-echo "wget https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
+echo "wget https://raw.githubusercontent.com/romspeu/proxmox/master/install-post.sh -c -O install-post.sh && bash install-post.sh && rm install-post.sh" >> /post-install
 
 if grep -q '#!/bin/bash' "/post-install"; then
   chmod 777 /post-install

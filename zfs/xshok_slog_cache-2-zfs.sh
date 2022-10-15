@@ -5,7 +5,7 @@
 # Copyright (c) Adrian Jon Kriel :: admin@extremeshok.com
 ################################################################################
 #
-# Script updates can be found at: https://github.com/extremeshok/xshok-proxmox
+# Script updates can be found at: https://github.com/romspeu/proxmox
 #
 # post-installation script for Proxmox
 #
@@ -18,7 +18,7 @@
 # Assumes mounted MD raid partitions (linux software raid)
 #
 # Usage:
-# curl -O https://raw.githubusercontent.com/extremeshok/xshok-proxmox/master/zfs/xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
+# curl -O https://raw.githubusercontent.com/romspeu/proxmox/master/zfs/xshok_slog_cache-2-zfs.sh && chmod +x xshok_slog_cache-2-zfs.sh
 # ./xshok_slog_cache-2-zfs.sh MY_ZFS_POOL
 #
 # NOTES: remove slog with
