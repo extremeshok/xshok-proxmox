@@ -262,7 +262,7 @@ deb https://ftp.debian.org/debian ${OS_CODENAME}-updates main contrib
 # non-free
 deb https://httpredir.debian.org/debian/ ${OS_CODENAME} main contrib non-free
 # security updates
-deb https://security.debian.org/debian-security ${OS_CODENAME}/updates main contrib
+deb https://security.debian.org/debian-security ${OS_CODENAME}-security main contrib
 EOF
 
 # Refresh the package lists
