@@ -67,13 +67,13 @@ MY_IP4_GATEWAY="$(ip route | grep default | xargs | cut -d" " -f3)"
 MY_DNS_SERVER="$(resolvectl status | grep "Current DNS Server" | cut -d":" -f2 | xargs)"
 
 if [ "$OS" == "PBS" ] ; then
-  if [ ! -f INSTALL_IMAGE="proxmox-pbs.iso" ] ; then
-    wget "http://download.proxmox.com/iso/proxmox-backup-server_2.1-1.iso" -c -O proxmox-pbs.iso || exit 1
+  if [ ! -f $INSTALL_IMAGE ] ; then
+    wget "http://download.proxmox.com/iso/proxmox-backup-server_2.4-1.iso" -c -O proxmox-pbs.iso || exit 1
   fi
   INSTALL_IMAGE="proxmox-pbs.iso"
 else
-  if [ ! -f INSTALL_IMAGE="" ] ; then
-     wget "http://download.proxmox.com/iso/proxmox-ve_7.1-2.iso" -c -O proxmox-ve.iso || exit 1
+  if [ ! -f $INSTALL_IMAGE ] ; then
+     wget "http://download.proxmox.com/iso/proxmox-ve_7.4-1.iso" -c -O proxmox-ve.iso || exit 1
   fi
   INSTALL_IMAGE="proxmox-ve.iso"
 fi
